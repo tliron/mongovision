@@ -10,7 +10,7 @@ at http://threecrickets.com/
 */
 
 .x-view-over {
-	background-color: #DFE8F6;
+	background-color: #DDDDDD;
 }
 
 .x-view-selected {
@@ -29,4 +29,10 @@ at http://threecrickets.com/
 
 .x-mongo-nowrap {
 	white-space: nowrap;
+}
+
+.x-mongo-grid {
+	font: normal 12px tahoma, arial, helvetica, sans-serif;
+	border-bottom: 1px #CCCCCC solid;
+	border-right: 1px #CCCCCC solid;
 }

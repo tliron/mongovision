@@ -165,31 +165,25 @@ Mongo.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 					}.createDelegate(this)
 				}
 			},
-			selModel: new Ext.tree.DefaultSelectionModel({
-				listeners: {
-					selectionchange: function(selModel, node) {
-						if (node.isLeaf()) {
-							var mongoCollections = Ext.getCmp(config.mongoCollections);
-							var mongoCollection = mongoCollections.get(node.id);
-							if (mongoCollection) {
-								mongoCollection.reload();
-							}
-							else {
-								var mongoCollection = new Mongo.CollectionPanel({
-									mongoCollection: node.id,
-									mongoEditor: config.mongoEditor
-								});
-								mongoCollections.add(mongoCollection);
-							}
-							mongoCollections.activate(mongoCollection);
-						}
-					}
-				}
-			}),
 			listeners: {
 				click: function(node) {
 					if (!node.isLeaf()) {
 						node.toggle();
+					}
+					else {
+						var mongoCollections = Ext.getCmp(config.mongoCollections);
+						var mongoCollection = mongoCollections.get(node.id);
+						if (mongoCollection) {
+							mongoCollection.reload();
+						}
+						else {
+							var mongoCollection = new Mongo.CollectionPanel({
+								mongoCollection: node.id,
+								mongoEditor: config.mongoEditor
+							});
+							mongoCollections.add(mongoCollection);
+						}
+						mongoCollections.activate(mongoCollection);
 					}
 				}
 			}
@@ -239,7 +233,7 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 			}
 		});
 		
-		var store = new Ext.data.Store({
+		this.store = new Ext.data.Store({
 			restful: true,
 			proxy: proxy,
 			reader: reader,
@@ -248,7 +242,7 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 		
 		var pageSize = 25;
 		
-		store.load({
+		this.store.load({
 			params: {
 				start: 0,
 				limit: pageSize
@@ -257,12 +251,13 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 		
 		var tpl = new Ext.XTemplate(
 			'<tpl for=".">',
-			'<div class="x-mongo-document x-unselectable<tpl if="this.nowrap"> x-mongo-nowrap</tpl>" id="', config.mongoCollection, '/{id}">',
+			'<div class="x-mongo-document x-unselectable<tpl if="!this.wrap"> x-mongo-nowrap</tpl>" id="', config.mongoCollection, '/{id}">',
 			'{[Mongo.json(values.document,true,false)]}',
 			'</div>',
 			'</tpl>',
 			'<div class="x-clear"></div>', {
-			compiled: true
+			compiled: true,
+			wrap: true
 		});
 		
 		function popupEditor() {
@@ -290,18 +285,45 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 			}).show();
 		}
 		
-		config = Ext.apply({
-			title: config.mongoCollection,
-			id: config.mongoCollection,
-			closable: true,
-			autoScroll: true,
-			items: {
-				xtype: 'dataview',
-				store: store,
-				tpl: tpl,
+		var dataview = new Ext.DataView({
+			store: this.store,
+			tpl: tpl,
+			overClass: 'x-view-over',
+			itemSelector: 'div.x-mongo-document',
+			singleSelect: true,
+			emptyText: '<div class="x-document">No documents in collection</div>',
+			listeners: {
+				selectionchange: function(dataview) {
+					var record = dataview.getSelectedRecords()[0];
+					var mongoEditor = Ext.getCmp(this.mongoEditor);
+					mongoEditor.setRecord(record);
+				}.createDelegate(this)
+			}
+		});
+		
+		var createListView = function() {
+			var columns = [];
+			// Try to use currently selected record; default to first record in store
+			var selected = dataview.getSelectedRecords()
+			var record = selected.length ? selected[0] : this.store.getAt(0);
+			if (record) {
+				var document = record.data.document;
+				for (var key in document) {
+					columns.push({
+						header: '<b>' + key + '</b>',
+						dataIndex: 'document',
+						cls: 'x-mongo-grid',
+						tpl: '{[Mongo.json(values.document.' + key + ',true,false)]}'
+					});
+				}
+			}
+			
+			return new Ext.ListView({
+				store: this.store,
+				columns: columns,
 				overClass: 'x-view-over',
-				itemSelector: 'div.x-mongo-document',
 				singleSelect: true,
+				columnSort: false,
 				emptyText: '<div class="x-document">No documents in collection</div>',
 				listeners: {
 					selectionchange: function(dataview) {
@@ -310,21 +332,50 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 						mongoEditor.setRecord(record);
 					}.createDelegate(this)
 				}
-			},
+			});
+		}.createDelegate(this);
+		
+		config = Ext.apply({
+			title: config.mongoCollection,
+			id: config.mongoCollection,
+			closable: true,
+			autoScroll: true,
+			items: dataview,
 			bbar: {
 				xtype: 'paging',
 				pageSize: pageSize,
-				store: store,
+				store: this.store,
 				displayInfo: true,
 				displayMsg: 'Displaying documents {0} to {1} of {2}',
 				emptyMsg: 'No documents in collection',
 				items: ['-', {
+					id: config.mongoCollection + '-wrap',
 					pressed: true,
 					enableToggle: true,
 					text: 'Wrap',
 					toggleHandler: function(button, pressed) {
-						tpl.nowrap = !pressed;
-						this.items.get(0).refresh();
+						tpl.wrap = pressed;
+						dataview.refresh();
+					}.createDelegate(this)
+				}, '-', {
+					enableToggle: true,
+					text: 'Grid',
+					toggleHandler: function(button, pressed) {
+						var view;
+						if (pressed) {
+							this.removeAll(false);
+							dataview.hide();
+							view = createListView();
+							Ext.getCmp(config.mongoCollection + '-wrap').disable();
+						}
+						else {
+							this.removeAll(true);
+							view = dataview;
+							Ext.getCmp(config.mongoCollection + '-wrap').enable();
+						}
+						this.add(view);
+						this.doLayout();
+						view.show();
 					}.createDelegate(this)
 				}, '-', {
 					xtype: 'label',
@@ -376,16 +427,15 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 	},
 	
 	load: function() {
-		var store = this.items.get(0).getStore();
-		store.setBaseParam('sort', Ext.getCmp(this.initialConfig.mongoCollection + '/sort').getValue());
-		store.setBaseParam('query', Ext.getCmp(this.initialConfig.mongoCollection + '/query').getValue());
-		store.load({
-			params: store.baseParams
+		this.store.setBaseParam('sort', Ext.getCmp(this.initialConfig.mongoCollection + '/sort').getValue());
+		this.store.setBaseParam('query', Ext.getCmp(this.initialConfig.mongoCollection + '/query').getValue());
+		this.store.load({
+			params: this.store.baseParams
 		});
 	},
 		
 	reload: function() {
-		this.items.get(0).getStore().reload();		
+		this.store.reload();		
 	}
 });
 
@@ -402,54 +452,41 @@ Mongo.EditorPanel = Ext.extend(Ext.Panel, {
 	constructor: function(config) {
 		
 		config = Ext.apply({
-			border: false,
 			layout: 'border',
-			margins: '0 20 20 0',
-			items: [{
-				region: 'north',
-				split: true,
-				xtype: 'tabpanel',
-				id: 'mongo-collections',
-				enableTabScroll: true
-			}, {
+			items: {
 				region: 'center',
-				split: true,
-				layout: 'border',
-				items: {
-					region: 'center',
-					xtype: 'textarea',
-					id: config.id + '-textarea',
-					autoCreate: {
-						tag: 'textarea',
-						spellcheck: 'false'
-					},
-					style: 'border: none;'
+				xtype: 'textarea',
+				id: config.id + '-textarea',
+				autoCreate: {
+					tag: 'textarea',
+					spellcheck: 'false'
 				},
-				bbar: {
-					items: [{
-						id: config.id + '-save',
-						text: 'Save',
-						disabled: true,
-						handler: function() {
-							if (this.record) {
-								var textarea = Ext.getCmp(config.id + '-textarea');
-								var document = Ext.util.JSON.decode('{' + textarea.getValue() + '}');
-								this.record.set('document', document);
-								this.record.commit();
-							}
-						}.createDelegate(this)
-					}, '-', {
-						pressed: true,
-						enableToggle: true,
-						text: 'Wrap',
-						toggleHandler: function(button, pressed) {
+				style: 'border: none;'
+			},
+			bbar: {
+				items: [{
+					id: config.id + '-save',
+					text: 'Save',
+					disabled: true,
+					handler: function() {
+						if (this.record) {
 							var textarea = Ext.getCmp(config.id + '-textarea');
-							this.wrap = pressed;
-							textarea.setWrap(this.wrap);
-						}.createDelegate(this)
-					}]
-				}
-			}]
+							var document = Ext.util.JSON.decode('{' + textarea.getValue() + '}');
+							this.record.set('document', document);
+							this.record.commit();
+						}
+					}.createDelegate(this)
+				}, '-', {
+					pressed: true,
+					enableToggle: true,
+					text: 'Wrap',
+					toggleHandler: function(button, pressed) {
+						var textarea = Ext.getCmp(config.id + '-textarea');
+						this.wrap = pressed;
+						textarea.setWrap(this.wrap);
+					}.createDelegate(this)
+				}]
+			}
 		}, config);
 		
 		Mongo.EditorPanel.superclass.constructor.call(this, config);
@@ -502,9 +539,23 @@ Ext.onReady(function() {
 			mongoEditor: 'mongo-editor'
 		}, {
 			region: 'center',
-			split: true,
-			id: 'mongo-editor',
-			xtype: 'mongoeditor'
+			layout: 'border',
+			border: false,
+			margins: '0 20 20 0',
+			items: [{
+				region: 'center',
+				split: true,
+				xtype: 'tabpanel',
+				id: 'mongo-collections',
+				enableTabScroll: true
+			}, {
+				region: 'south',
+				split: true,
+				id: 'mongo-editor',
+				xtype: 'mongoeditor',
+				height: 200
+				//stateful: false
+			}]
 		}]
 	});
 });
