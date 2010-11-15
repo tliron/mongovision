@@ -30,6 +30,9 @@
 		<copy todir="${content}/applications/mongovision/libraries/util">
 			<fileset dir="${lib}/mongo-rhino/lib" includes="*.js" />
 		</copy>
+		<copy todir="${content}/applications/mongovision/web/static/script/sencha">
+			<fileset dir="${lib}/ext-js/lib" />
+		</copy>
 	</target>
 	
 	<target name="application" description="Fetch MongoVision application">
