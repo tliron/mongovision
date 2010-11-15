@@ -89,7 +89,7 @@ Mongo.json = function(value, html, multiline) {
 				for (var i = 0; i < length - 1; i++) {
 					json += toJSON(value[i], html, multiline, true, depth + 1) + (multiline ? (html ? ',<br/>' : ',\n') : ', ');
 				}
-				json += toJSON(value[i]);
+				json += toJSON(value[i], html, multiline, true, depth + 1);
 			}
 			json += indentation + ']';
 		}
@@ -115,7 +115,7 @@ Mongo.json = function(value, html, multiline) {
 				if (multiline && (depth > -1)) {
 					json += indentation + (html ? '&nbsp;' : ' ');
 				}
-				json += keys[i] + ': ' + toJSON(value[keys[i]]);
+				json += keys[i] + ': ' + toJSON(value[keys[i]], html, multiline, false, depth + 1);
 				if (multiline && (depth > -1)) {
 					json += html ? '<br/>' : '\n';
 				}

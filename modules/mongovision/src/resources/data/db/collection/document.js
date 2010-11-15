@@ -25,13 +25,13 @@ function handlePost(conversation) {
 	if (!text) {
 		return 400
 	}
-	var data = JSON.from(text)
+	var data = JSON.from(text, true)
 	var doc = data.data.document
 	
-	print('Update: ' + JSON.to(doc, true) + '\n')
+	//print('Update: ' + JSON.to(doc, true) + '\n')
 
 	var collection = new Mongo.Collection(collection, {db: database})
-	print(collection.save(doc)+'\n')
+	collection.save(doc)
 	
 	var result = {
 		success: true,

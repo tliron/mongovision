@@ -28,13 +28,13 @@ function handleGet(conversation) {
 		if (query.charAt(0) != '{') {
 			query = '{' + query + '}'
 		}
-		query = JSON.from(query)
+		query = JSON.from(query, true)
 	}
 	if (sort) {
 		if (sort.charAt(0) != '{') {
 			sort = '{' + sort + '}'
 		}
-		sort = JSON.from(sort)
+		sort = JSON.from(sort, true)
 	}
 	if (start) {
 		start = parseInt(start)
