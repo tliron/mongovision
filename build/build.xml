@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<project name="MongoVision" default="build">
+	
+	<property name="src" value="../modules/mongovision/src" />
+	<property name="lib" value="../libraries" />
+	<property name="deploy" value="../modules/mongovision/deploy" />
+	<property name="dist" value="./distribution" />
+	<property name="content" value="${dist}/content" />
+
+	<target name="licenses" description="Fetch licences">
+		<copy todir="${content}/licenses/mongo-java-driver">
+			<fileset dir="${lib}/mongo-java-driver/license" />
+		</copy>
+		<copy todir="${content}/licenses/mongo-rhino">
+			<fileset dir="${lib}/mongo-rhino/license" />
+		</copy>
+		<copy todir="${content}/licenses/ext-js">
+			<fileset dir="${lib}/ext-js/license" />
+		</copy>
+	</target>
+
+	<target name="libraries" description="Fetch libraries">
+		<copy todir="${content}/libraries">
+			<fileset dir="${lib}/mongo-java-driver/lib" />
+			<fileset dir="${lib}/mongo-rhino/lib" includes="*.jar" />
+		</copy>
+		<copy todir="${content}/libraries">
+			<fileset dir="${lib}" includes="*.txt" />
+		</copy>
+		<copy todir="${content}/applications/mongovision/libraries/util">
+			<fileset dir="${lib}/mongo-rhino/lib" includes="*.js" />
+		</copy>
+	</target>
+	
+	<target name="application" description="Fetch MongoVision application">
+		<copy todir="${content}/applications/mongovision">
+			<fileset dir="${src}" />
+		</copy>
+	</target>
+
+	<target name="deploy" depends="application, libraries" description="Fetch deployment">
+		<copy todir="${content}">
+			<fileset dir="${deploy}" />
+		</copy>
+	</target>
+	
+	<target name="package" depends="licenses, deploy" description="Create MongoVision zip">
+		<zip destfile="${content}/mongovision.prudence.zip" basedir="${content}/applications" includes="**/*" />
+		<zip destfile="mongovision.zip" basedir="${content}" includes="**/*" />
+	</target>
+	
+	<target name="build" depends="package" description="Build distribution" />
+	
+	<target name="clean" description="Clean">
+		<delete dir="${dist}" />
+	</target>
+	
+	<target name="rebuild" depends="clean, build" description="Clean and build distribution" />
+
+</project>
