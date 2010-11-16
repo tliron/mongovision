@@ -16,6 +16,10 @@ function handleInit(conversation) {
 	conversation.addMediaTypeByName('text/plain')
 }
 
+function isSystem(collectionName) {
+return collectionName.substr(0, 7) == 'system.'
+}
+
 function handleGet(conversation) {
 	var node = conversation.query.get('node')
 	
@@ -27,6 +31,7 @@ function handleGet(conversation) {
 			var databaseName = databaseNames[d]
 			var database = Mongo.defaultConnection.getDB(databaseName)
 			var children = []
+			var systemChildren = []
 			var collectionNames = database.collectionNames.toArray()
 			for (var c in collectionNames) {
 				var collectionName = collectionNames[c]
@@ -35,11 +40,15 @@ function handleGet(conversation) {
 					text: collectionName,
 					leaf: true
 				}
-				if (collectionName.substr(0, 7) == 'system.') {
+				if (isSystem(collectionName)) {
 					n.cls = 'x-mongo-system-collection'
+					systemChildren.push(n)
 				}
-				children.push(n)
+				else {
+					children.push(n)
+				}
 			}
+			children = children.concat(systemChildren)
 			nodes.push({
 				id: databaseName,
 				text: databaseName,

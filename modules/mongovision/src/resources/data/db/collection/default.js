@@ -61,7 +61,13 @@ function handleGet(conversation) {
 	}
 	while (cursor.hasNext()) {
 		var doc = cursor.next()
-		var id = doc._id ? Mongo.idToString(doc._id) : doc.name
+		var id
+		try {
+			id = doc._id.toStringMongod()
+		}
+		catch(x) {
+			id = doc.name
+		}
 		array.push({
 			id: id,
 			document: doc
