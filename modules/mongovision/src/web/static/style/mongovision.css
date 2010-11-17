@@ -25,6 +25,7 @@ at http://threecrickets.com/
 	font: normal 12px tahoma, arial, helvetica, sans-serif;
 	line-height: 180%;
 	border-bottom: 1px #CCCCCC solid;
+	padding-left: 5px;
 }
 
 .x-mongo-nowrap {
@@ -35,4 +36,9 @@ at http://threecrickets.com/
 	font: normal 12px tahoma, arial, helvetica, sans-serif;
 	border-bottom: 1px #CCCCCC solid;
 	border-right: 1px #CCCCCC solid;
+}
+
+.x-mongo-message {
+	font: normal 12px tahoma, arial, helvetica, sans-serif;
+	padding: 5px 5px 5px 5px;
 }

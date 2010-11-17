@@ -291,7 +291,7 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 			overClass: 'x-view-over',
 			itemSelector: 'div.x-mongo-document',
 			singleSelect: true,
-			emptyText: '<div class="x-document">No documents in collection</div>',
+			emptyText: '<div class="x-mongo-message">No documents in collection</div>',
 			listeners: {
 				selectionchange: function(dataview) {
 					var record = dataview.getSelectedRecords()[0];
@@ -313,7 +313,7 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 						header: '<b>' + key + '</b>',
 						dataIndex: 'document',
 						cls: 'x-mongo-grid',
-						tpl: '{[Mongo.json(values.document.' + key + ',true,false)]}'
+						tpl: '{[Mongo.json(values.document.' + key + ',true,false) || "&nbsp;"]}'
 					});
 				}
 			}
@@ -324,7 +324,7 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 				overClass: 'x-view-over',
 				singleSelect: true,
 				columnSort: false,
-				emptyText: '<div class="x-document">No documents in collection</div>',
+				emptyText: '<div class="x-mongo-message">No documents in collection</div>',
 				listeners: {
 					selectionchange: function(dataview) {
 						var record = dataview.getSelectedRecords()[0];
