@@ -21,6 +21,7 @@ function handleGet(conversation) {
 	var collection = conversation.locals.get('collection')
 	var query = conversation.query.get('query')
 	var sort = conversation.query.get('sort')
+	var dir = conversation.query.get('dir')
 	var start = conversation.query.get('start')
 	var limit = conversation.query.get('limit')
 	
@@ -31,6 +32,9 @@ function handleGet(conversation) {
 		query = JSON.from(query, true)
 	}
 	if (sort) {
+		if (dir) {
+			sort += ':' + (dir == 'ASC' ? '1' : '-1')
+		}
 		if (sort.charAt(0) != '{') {
 			sort = '{' + sort + '}'
 		}
@@ -48,7 +52,7 @@ function handleGet(conversation) {
 	
 	var collection = new Mongo.Collection(collection, {db: database})
 	
-	var array = []
+	var documents = []
 	var cursor = collection.find(query)
 	if (sort) {
 		cursor.sort(sort)
@@ -68,7 +72,7 @@ function handleGet(conversation) {
 		catch(x) {
 			id = doc.name
 		}
-		array.push({
+		documents.push({
 			id: id,
 			document: doc
 		})
@@ -78,7 +82,7 @@ function handleGet(conversation) {
 		success: true,
 		message: 'Loaded data',
 		total: collection.getCount(),
-		data: array
+		documents: documents
 	}
 	
 	return JSON.to(data, conversation.query.get('human') == 'true')
