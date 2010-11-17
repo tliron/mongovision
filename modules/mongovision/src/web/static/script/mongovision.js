@@ -277,6 +277,7 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 		var dataview = new Ext.DataView({
 			store: dataviewStore,
 			tpl: tpl,
+			autoWidth: true,
 			overClass: 'x-view-over',
 			itemSelector: 'div.x-mongo-document',
 			singleSelect: true,
@@ -319,7 +320,6 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 			}),
 			overClass: 'x-view-over',
 			listeners: {
-
 				sortchange: function(grid, sortInfo) {
 					// We'll update the "sort" box to reflect in JSON what the current sort is 
 					Ext.getCmp(this.initialConfig.mongoCollection + '/sort').setValue(sortInfo.field + ':' + (sortInfo.direction == 'ASC' ? '1' : '-1'));
@@ -433,14 +433,17 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 					enableToggle: true,
 					text: 'Grid',
 					toggleHandler: function(button, pressed) {
+						Ext.getCmp(config.mongoCollection + '-wrap').setDisabled(pressed);
+						this.getLayout().setActiveItem(pressed ? 1 : 0);
 						if (pressed) {
 							updateGridView();
 						}
 						else {
 							switchStore(dataviewStore);
 						}
-						Ext.getCmp(config.mongoCollection + '-wrap').setDisabled(pressed);
-						this.getLayout().setActiveItem(pressed ? 1 : 0);
+						/*if (pressed) {
+							gridview.getView().refresh();
+						}*/
 					}.createDelegate(this)
 				}, '-', {
 					xtype: 'label',
