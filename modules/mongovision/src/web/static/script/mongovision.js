@@ -246,6 +246,8 @@ Ext.reg('mongodatabases', MongoVision.DatabasesPanel);
 // CollectionPanel
 //
 
+MongoVision.gridviewKeyPrefix = '_gridviewKey_';
+
 MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	constructor: function(config) {
 	
@@ -352,8 +354,9 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			overClass: 'x-view-over',
 			listeners: {
 				sortchange: function(grid, sortInfo) {
-					// We'll update the "sort" box to reflect in JSON what the current sort is 
-					Ext.getCmp(this.initialConfig.mongoCollection + '/sort').setValue(sortInfo.field + ':' + (sortInfo.direction == 'ASC' ? '1' : '-1'));
+					// We'll update the "sort" box to reflect in JSON what the current sort is
+					var field = sortInfo.field.substr(MongoVision.gridviewKeyPrefix.length);
+					Ext.getCmp(this.initialConfig.mongoCollection + '/sort').setValue(field + ':' + (sortInfo.direction == 'ASC' ? '1' : '-1'));
 				}.createDelegate(this)
 			}
 		});
@@ -376,14 +379,14 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			
 			for (var key in document) {
 				fields.push({
-					name: '_gridviewKey_' + key,
+					name: MongoVision.gridviewKeyPrefix + key,
 					key: key,
 					convert: function(value, record) {
 						return record.document[this.key]
 					}
 				});
 				columns.push({
-					dataIndex: '_gridviewKey_' + key,
+					dataIndex: MongoVision.gridviewKeyPrefix + key,
 					header: key,
 					renderer: cellRenderer
 				});
@@ -561,7 +564,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 		
 	reload: function() {
 		var store = this.getStore();
-		this.store.reload();		
+		store.reload();		
 	}
 });
 
