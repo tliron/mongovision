@@ -44,12 +44,43 @@ Ext.override(Ext.form.TextArea, {
 });
 
 //
-// Store extension
+// ReusableJsonStore
 //
 
+// Store extension
+
 Ext.override(Ext.data.Store, {
-	loadFromJsonStore: function(store) {
-		// We're re-using the existing data
+});
+
+Ext.namespace('Ext.ux');
+
+Ext.ux.ReusableJsonStore = Ext.extend(Ext.data.JsonStore, {
+	constructor: function(config) {
+		// Since we will be reusing the data for reuse(), we need to update it
+		config = Ext.apply({
+			listeners: {
+				remove: function(store, record, index) {
+					store.reader.jsonData.documents.splice(index, 1);
+				},
+				update: function(store, record, operation) {
+					if (operation == Ext.data.Record.EDIT) {
+						for (var i = 0, length = store.reader.jsonData.documents.length; i < length; i++) {
+							var document = store.reader.jsonData.documents[i]; 
+							if (document.id == record.id) {
+								document.document = record.data.document;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}, config);
+
+		Ext.ux.ReusableJsonStore.superclass.constructor.call(this, config);
+	},
+
+	reuse: function(store) {
+		// We're re-using the existing data and options
 		var records = this.reader.readRecords(store.reader.jsonData);
 		this.lastOptions = store.lastOptions;
 		this.loadRecords(records, {
@@ -59,13 +90,13 @@ Ext.override(Ext.data.Store, {
 	}
 });
 
-Ext.namespace('Mongo');
+Ext.namespace('MongoVision');
 
 //
 // JSON
 //
 
-Mongo.json = function(value, html, multiline) {
+MongoVision.json = function(value, html, multiline) {
 	function toJSON(value, html, multiline, indent, depth) {
 		var json = '';
 		
@@ -151,7 +182,7 @@ Mongo.json = function(value, html, multiline) {
 // DatabasesPanel
 //
 
-Mongo.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
+MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 	constructor: function(config) {
 	
 		var loader = new Ext.tree.TreeLoader({
@@ -193,7 +224,7 @@ Mongo.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 							mongoCollection.reload();
 						}
 						else {
-							var mongoCollection = new Mongo.CollectionPanel({
+							var mongoCollection = new MongoVision.CollectionPanel({
 								mongoCollection: node.id,
 								mongoEditor: config.mongoEditor
 							});
@@ -205,17 +236,17 @@ Mongo.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 			}
 		}, config);
 		
-		Mongo.DatabasesPanel.superclass.constructor.call(this, config);
+		MongoVision.DatabasesPanel.superclass.constructor.call(this, config);
 	}
 });
 
-Ext.reg('mongodatabases', Mongo.DatabasesPanel);
+Ext.reg('mongodatabases', MongoVision.DatabasesPanel);
 
 //
 // CollectionPanel
 //
 
-Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
+MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	constructor: function(config) {
 	
 		var proxy = new Ext.data.HttpProxy({
@@ -237,7 +268,7 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 			encode: false
 		});
 		
-		var dataviewStore = new Ext.data.JsonStore({
+		var dataviewStore = new Ext.ux.ReusableJsonStore({
 			restful: true,
 			remoteSort: true,
 			proxy: proxy,
@@ -266,7 +297,7 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 		var tpl = new Ext.XTemplate(
 			'<tpl for=".">',
 			'<div class="x-mongo-document x-unselectable<tpl if="!this.wrap"> x-mongo-nowrap</tpl>" id="', config.mongoCollection, '/{id}">',
-			'{[Mongo.json(values.document,true,false)]}',
+			'{[MongoVision.json(values.document,true,false)]}',
 			'</div>',
 			'</tpl>',
 			'<div class="x-clear"></div>', {
@@ -292,7 +323,7 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 		});
 		
 		function cellRenderer(value) {
-			return Mongo.json(value, true, false) || '&nbsp;'
+			return MongoVision.json(value, true, false) || '&nbsp;'
 		}
 
 		var gridview = new Ext.grid.GridPanel({
@@ -336,22 +367,29 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 			}
 			var document = record.data.document;
 			
-			var columns = [], fields = [{name: id}];
+			var fields = [{
+				name: id
+			}, {
+				name: 'document'
+			}];
+			var columns = [];
+			
 			for (var key in document) {
 				fields.push({
-					name: key,
+					name: '_gridviewKey_' + key,
+					key: key,
 					convert: function(value, record) {
-						return record.document[this.name]
+						return record.document[this.key]
 					}
 				});
 				columns.push({
-					dataIndex: key,
+					dataIndex: '_gridviewKey_' + key,
 					header: key,
 					renderer: cellRenderer
 				});
 			}
 			
-			var gridviewStore = new Ext.data.JsonStore({
+			var gridviewStore = new Ext.ux.ReusableJsonStore({
 				restful: true,
 				remoteSort: true,
 				proxy: proxy,
@@ -364,17 +402,33 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 				fields: fields
 			});
 			
-			switchStore(gridviewStore);
+			/*gridviewStore.reader.readResponse = function(action, response) {
+				var response = Ext.decode(response.responseText)
+				console.debug('response')
+				console.debug(response)
+		        var root = this.getRoot(response);
+				console.debug('root')
+				console.debug(root)
+				var values = Ext.data.JsonReader.prototype.readResponse.call(this, action, response);
+				console.debug('readResponse')
+				console.debug(values)
+		        return values;
+			};*/
+
+			/*gridviewStore.reader.extractData = function(root, returnRecords) {
+				var values = Ext.data.JsonReader.prototype.extractData.call(this, root, returnRecords);
+				console.debug('exctractData')
+				console.debug(values)
+		        return values;
+			};*/
+			
+			this.getBottomToolbar().bindStore(gridviewStore);
+			gridviewStore.reuse(this.getStore());
 			
 			gridview.reconfigure(gridviewStore, new Ext.grid.ColumnModel({
 				columns: columns,
 				defaultSortable: true
 			}));
-		}.createDelegate(this);
-		
-		var switchStore = function(store) {
-			this.getBottomToolbar().bindStore(store);
-			store.loadFromJsonStore(this.getStore());
 		}.createDelegate(this);
 		
 		function popupEditor() {
@@ -439,11 +493,9 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 							updateGridView();
 						}
 						else {
-							switchStore(dataviewStore);
+							this.getBottomToolbar().bindStore(dataviewStore);
+							dataviewStore.reuse(this.getStore());
 						}
-						/*if (pressed) {
-							gridview.getView().refresh();
-						}*/
 					}.createDelegate(this)
 				}, '-', {
 					xtype: 'label',
@@ -491,7 +543,7 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 			}
 		}, config);
 		
-		Mongo.CollectionPanel.superclass.constructor.call(this, config);
+		MongoVision.CollectionPanel.superclass.constructor.call(this, config);
 	},
 	
 	getStore: function() {
@@ -513,13 +565,13 @@ Mongo.CollectionPanel = Ext.extend(Ext.Panel, {
 	}
 });
 
-Ext.reg('mongocollection', Mongo.CollectionPanel);
+Ext.reg('mongocollection', MongoVision.CollectionPanel);
 
 //
 // EditorPanel
 //
 
-Mongo.EditorPanel = Ext.extend(Ext.Panel, {
+MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 	record: null,
 	wrap: true,
 	
@@ -550,6 +602,19 @@ Mongo.EditorPanel = Ext.extend(Ext.Panel, {
 							this.record.commit();
 						}
 					}.createDelegate(this)
+				}, {
+					id: config.id + '-delete',
+					text: 'Delete',
+					disabled: true,
+					handler: function() {
+						if (this.record) {
+							Ext.MessageBox.confirm('Delete', 'Are you sure you want to delete this document?', function(id) {
+								if (id == 'yes') {
+									this.record.store.remove(this.record);
+								}
+							}, this);
+						}
+					}.createDelegate(this)
 				}, '-', {
 					pressed: true,
 					enableToggle: true,
@@ -563,19 +628,20 @@ Mongo.EditorPanel = Ext.extend(Ext.Panel, {
 			}
 		}, config);
 		
-		Mongo.EditorPanel.superclass.constructor.call(this, config);
+		MongoVision.EditorPanel.superclass.constructor.call(this, config);
 	},
 	
 	setRecord: function(record) {
 		this.record = record;
 		Ext.getCmp(this.id + '-save').setDisabled(record == null);
+		Ext.getCmp(this.id + '-delete').setDisabled(record == null);
 		var textarea = Ext.getCmp(this.id + '-textarea');
 		textarea.setWrap(this.wrap);
-		textarea.setValue(record ? Mongo.json(record.json.document, false, true) : '');
+		textarea.setValue(record ? MongoVision.json(record.json.document, false, true) : '');
 	}
 });
 
-Ext.reg('mongoeditor', Mongo.EditorPanel);
+Ext.reg('mongoeditor', MongoVision.EditorPanel);
 
 //
 // Initialization

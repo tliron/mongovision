@@ -17,7 +17,7 @@ function handleInit(conversation) {
 }
 
 function isSystem(collectionName) {
-return collectionName.substr(0, 7) == 'system.'
+	return collectionName.substr(0, 7) == 'system.'
 }
 
 function handleGet(conversation) {

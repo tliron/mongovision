@@ -26,17 +26,35 @@ function handlePost(conversation) {
 		return 400
 	}
 	var data = JSON.from(text, true)
-	var doc = data.data.document
+	var doc = data.documents.document
 	
-	//print('Update: ' + JSON.to(doc, true) + '\n')
-
 	var collection = new Mongo.Collection(collection, {db: database})
 	collection.save(doc)
+
+	application.logger.fine('Updated document in ' + database + '.' + collection.collection.name + ': ' + id)
 	
 	var result = {
 		success: true,
-		data: data,
-		message: 'Updated document ' + id
+		documents: data.documents,
+		message: 'Updated document ' + id + ' from ' + database + '.' + collection.collection.name
+	}
+	
+	return JSON.to(result, conversation.query.get('human') == 'true')
+}
+
+function handleDelete(conversation) {
+	var database = conversation.locals.get('database')
+	var collection = conversation.locals.get('collection')
+	var id = conversation.locals.get('id')
+	
+	var collection = new Mongo.Collection(collection, {db: database})
+	collection.remove(doc)
+
+	application.logger.fine('Removed document from ' + database + '.' + collection.collection.name + ': ' + id)
+	
+	var result = {
+		success: true,
+		message: 'Deleted document ' + id + ' from ' + database + '.' + collection.collection.name
 	}
 	
 	return JSON.to(result, conversation.query.get('human') == 'true')
