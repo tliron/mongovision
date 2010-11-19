@@ -325,7 +325,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 		});
 		
 		function cellRenderer(value) {
-			return MongoVision.json(value, true, false) || '&nbsp;'
+			return value != null ? MongoVision.json(value, true, false) : '&nbsp;'
 		}
 
 		var gridview = new Ext.grid.GridPanel({
