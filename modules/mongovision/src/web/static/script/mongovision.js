@@ -20,16 +20,50 @@ Ext.data.DataProxy.addListener('exception', function(proxy, type, action, option
 });
 
 //
-// ReusableJsonStore
+// TextField extension
 //
 
-// Store extension
+Ext.override(Ext.form.TextField, {
+	popupEditor: function() {
+		new Ext.Window({
+			title: 'Text', // TODO
+			width: 600,
+			height: 400,
+			layout: 'border',
+			items: {
+				region: 'center',
+				xtype: 'textarea',
+				value: this.getValue(),
+				autoCreate: {
+					tag: 'textarea',
+					spellcheck: 'false'
+				}
+			},
+			listeners: {
+				close: function(window) {
+					this.setValue(window.items.get(0).getValue());
+					this.focus();
+				}.createDelegate(this)
+			}
+		}).show();
+	}
+});		
+
+//
+// Ext.ux.ReusableJsonStore
+//
+// Makes its data available for reuse by other ReusableJsonStores. This is a good way
+// to have multiple stores, each having different record structures, based on the same
+// loaded data. 
+//
 
 Ext.namespace('Ext.ux');
 
 Ext.ux.ReusableJsonStore = Ext.extend(Ext.data.JsonStore, {
 	constructor: function(config) {
-		// Since we will be reusing the data for reuse(), we need to update it
+		// Since we will be reusing the jsonData for reuse(), we need to make sure to keep
+		// it up to date to changes to the store (this is not usually the case for JsonReader
+		// which is ignorant of the store using it)
 		config = Ext.apply({
 			listeners: {
 				remove: function(store, record, index) {
@@ -56,6 +90,10 @@ Ext.ux.ReusableJsonStore = Ext.extend(Ext.data.JsonStore, {
 		// We're re-using the existing data and options
 		var records = this.reader.readRecords(store.reader.jsonData);
 		this.lastOptions = store.lastOptions;
+		
+		// This is an undocumented function used internally in load();
+		// Note our explicit addition of the params, even though they are
+		// already in lastOptions
 		this.loadRecords(records, {
 			add: false,
 			params: this.lastOptions.params
@@ -66,7 +104,9 @@ Ext.ux.ReusableJsonStore = Ext.extend(Ext.data.JsonStore, {
 Ext.namespace('MongoVision');
 
 //
-// Internationalization
+// MongoVision.text
+//
+// Internationalization light. ;)
 //
 
 MongoVision.text = {
@@ -86,7 +126,13 @@ MongoVision.text = {
 };
 
 //
-// JSON
+// MongoVision.json
+//
+// A JSON encoder that supports optional multiline indenting, HTML vs. plain text,
+// and removing curly brackets from the root object.
+//
+// We've been inspired by the code in Ext.util.JSON, though have diverged
+// significantly.
 //
 
 MongoVision.json = function(value, html, multiline) {
@@ -172,7 +218,12 @@ MongoVision.json = function(value, html, multiline) {
 };
 
 //
-// DatabasesPanel
+// MongoVision.DatabasesPanel
+//
+// A tree view listing the MongoDB databases and collections. Clicking a collection
+// will open a new or refresh the existing MongoVision.CollectionPanel in the panel
+// specified by 'mongoVisionCollections'. The 'mongoVisionEditor' config option is
+// passed to the collection panel.
 //
 
 MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
@@ -211,19 +262,19 @@ MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 						node.toggle();
 					}
 					else {
-						var mongoCollections = Ext.getCmp(config.mongoCollections);
-						var mongoCollection = mongoCollections.get(node.id);
-						if (mongoCollection) {
-							mongoCollection.reload();
+						var mongoVisionCollections = Ext.getCmp(config.mongoVisionCollections);
+						var mongovisionCollection = mongoVisionCollections.get(node.id);
+						if (mongovisionCollection) {
+							mongovisionCollection.reload();
 						}
 						else {
-							var mongoCollection = new MongoVision.CollectionPanel({
-								mongoCollection: node.id,
-								mongoEditor: config.mongoEditor
+							var mongovisionCollection = new MongoVision.CollectionPanel({
+								mongovisionCollection: node.id,
+								mongoVisionEditor: config.mongoVisionEditor
 							});
-							mongoCollections.add(mongoCollection);
+							mongoVisionCollections.add(mongovisionCollection);
 						}
-						mongoCollections.activate(mongoCollection);
+						mongoVisionCollections.activate(mongovisionCollection);
 					}
 				}
 			}
@@ -233,29 +284,43 @@ MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 	}
 });
 
-Ext.reg('mongodatabases', MongoVision.DatabasesPanel);
+Ext.reg('mongovisiondatabases', MongoVision.DatabasesPanel);
 
 //
-// CollectionPanel
+// MongoVision.CollectionPanel
+//
+// Displays a MongoDB collection, supporting two different views: a DataView showing raw JSON data,
+// and a dynamically restructured GridPanel where the columns are based on the currently selected row in
+// the DataView. Each view requires a different record structure, and thus a different store, which is
+// why we created Ext.ux.ReusableJsonStore to allow us to use the same data for both stores.
+//
+// An extended PagingToolbar allows user-configured paging, MongoDB querying and sorting. The gridview
+// column sorting is kinda linked to the toolbar sort box. (Faked, really: the column sorting is
+// specially handled on the server.)
+//
+// Selecting a row in either view opens it in a MongoVision.EditorPanel specified by 'mongoVisionEditor'.
 //
 
 MongoVision.gridviewKeyPrefix = '_gridviewKey_';
 
 MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	constructor: function(config) {
-	
+
+		// The default Ext JS single-URL-based proxy is not quite RESTful
+		// enough for our tastes, so lets configure it (in particular, we prefer
+		// HTTP PUT for the CRUD create operation)
 		var proxy = new Ext.data.HttpProxy({
 			api: {
-				read: 'data/db/' + config.mongoCollection + '/',
+				read: 'data/db/' + config.mongovisionCollection + '/',
 				create: {
-					url: 'data/db/' + config.mongoCollection,
+					url: 'data/db/' + config.mongovisionCollection,
 					method: 'PUT'
 				},
 				update: {
-					url: 'data/db/' + config.mongoCollection,
+					url: 'data/db/' + config.mongovisionCollection,
 					method: 'POST'
 				},
-				destroy: 'data/db/' + config.mongoCollection
+				destroy: 'data/db/' + config.mongovisionCollection
 			}
 		});
 		
@@ -278,6 +343,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			fields: [{
 				name: 'id'
 			}, {
+				// The entire MongoDB document will be in this field
 				name: 'document'
 			}],
 			autoLoad: {
@@ -290,7 +356,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 		
 		var tpl = new Ext.XTemplate(
 			'<tpl for=".">',
-			'<div class="x-mongo-document x-unselectable<tpl if="!this.wrap"> x-mongo-nowrap</tpl>" id="', config.mongoCollection, '/{id}">',
+			'<div class="x-mongovision-document x-unselectable<tpl if="!this.wrap"> x-mongovision-nowrap</tpl>" id="', config.mongovisionCollection, '/{id}">',
 			'{[MongoVision.json(values.document,true,false)]}',
 			'</div>',
 			'</tpl>',
@@ -304,14 +370,15 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			tpl: tpl,
 			autoWidth: true,
 			overClass: 'x-view-over',
-			itemSelector: 'div.x-mongo-document',
+			itemSelector: 'div.x-mongovision-document',
 			singleSelect: true,
 			emptyText: '<div class="x-grid-empty">' + MongoVision.text.noDocuments + '</div>',
 			listeners: {
 				selectionchange: function(dataview) {
+					// Show selected row in editor
 					var record = dataview.getSelectedRecords()[0];
-					var mongoEditor = Ext.getCmp(this.mongoEditor);
-					mongoEditor.setRecord(record);
+					var mongoVisionEditor = Ext.getCmp(this.mongoVisionEditor);
+					mongoVisionEditor.setRecord(record);
 				}.createDelegate(this)
 			}
 		});
@@ -338,17 +405,19 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				singleSelect: true,
 				listeners: {
 					rowselect: function(selmodel, index, record) {
-						var mongoEditor = Ext.getCmp(this.mongoEditor);
-						mongoEditor.setRecord(record);
+						// Show selected row in editor
+						var mongoVisionEditor = Ext.getCmp(this.mongoVisionEditor);
+						mongoVisionEditor.setRecord(record);
 					}.createDelegate(this)					
 				}
 			}),
 			overClass: 'x-view-over',
 			listeners: {
 				sortchange: function(grid, sortInfo) {
-					// We'll update the "sort" box to reflect in JSON what the current sort is
+					// We'll update the "sort" box to reflect what the current sort is
+					// (this is faked: the sorted column is handled specially by the server)
 					var field = sortInfo.field.substr(MongoVision.gridviewKeyPrefix.length);
-					Ext.getCmp(this.initialConfig.mongoCollection + '/sort').setValue(field + ':' + (sortInfo.direction == 'ASC' ? '1' : '-1'));
+					Ext.getCmp(this.initialConfig.mongovisionCollection + '/sort').setValue(field + ':' + (sortInfo.direction == 'ASC' ? '1' : '-1'));
 				}.createDelegate(this)
 			}
 		});
@@ -371,6 +440,10 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			
 			for (var key in document) {
 				fields.push({
+					// This is the tricky part: since we are creating a fake record structure,
+					// we are prefixing our fake fields with a special prefix, and then using
+					// the convert function to fetch their value from 'document', which is the
+					// only real field value returned by the server
 					name: MongoVision.gridviewKeyPrefix + key,
 					key: key,
 					convert: function(value, record) {
@@ -406,34 +479,9 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			}));
 		}.createDelegate(this);
 		
-		function popupEditor() {
-			var textfield = this;
-			new Ext.Window({
-				title: 'Query',
-				width: 600,
-				height: 400,
-				layout: 'border',
-				items: {
-					region: 'center',
-					xtype: 'textarea',
-					value: this.getValue(),
-					autoCreate: {
-						tag: 'textarea',
-						spellcheck: 'false'
-					}
-				},
-				listeners: {
-					close: function() {
-						textfield.setValue(this.items.get(0).getValue());
-						textfield.focus();
-					}
-				}
-			}).show();
-		}
-		
 		config = Ext.apply({
-			title: config.mongoCollection,
-			id: config.mongoCollection,
+			title: config.mongovisionCollection,
+			id: config.mongovisionCollection,
 			closable: true,
 			autoScroll: true,
 			layout: 'card',
@@ -450,7 +498,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				displayMsg: MongoVision.text.documentsDisplayed,
 				emptyMsg: MongoVision.text.noDocuments,
 				items: ['-', {
-					id: config.mongoCollection + '-wrap',
+					id: config.mongovisionCollection + '-wrap',
 					pressed: true,
 					enableToggle: true,
 					text: MongoVision.text.wrap,
@@ -462,9 +510,13 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					enableToggle: true,
 					text: MongoVision.text.grid,
 					toggleHandler: function(button, pressed) {
-						Ext.getCmp(config.mongoCollection + '-wrap').setDisabled(pressed);
+						// Wrap is only available for dataviews
+						Ext.getCmp(config.mongovisionCollection + '-wrap').setDisabled(pressed);
+						
+						// Switch view (feature of CardLayout)
 						this.getLayout().setActiveItem(pressed ? 1 : 0);
 						if (pressed) {
+							// This will update the gridview according to our currently selected row
 							updateGridView();
 						}
 						else {
@@ -480,7 +532,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					width: 5
 				}, {
 					xtype: 'textfield',
-					id: config.mongoCollection + '/query',
+					id: config.mongovisionCollection + '/query',
 					value: '',
 					width: 200,
 					listeners: {
@@ -490,7 +542,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 							}
 						}.createDelegate(this),
 						render: function() {
-							this.el.on('dblclick', popupEditor.createDelegate(this));
+							this.el.on('dblclick', this.popupEditor.createDelegate(this));
 						}
 					}
 				}, '-', {
@@ -501,7 +553,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					width: 5
 				}, {
 					xtype: 'textfield',
-					id: config.mongoCollection + '/sort',
+					id: config.mongovisionCollection + '/sort',
 					value: '',
 					width: 200,
 					listeners: {
@@ -511,10 +563,12 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 							}
 						}.createDelegate(this),
 						render: function() {
-							this.el.on('dblclick', popupEditor.createDelegate(this));
+							this.el.on('dblclick', this.popupEditor.createDelegate(this));
 						}
 					}
 				}, '->', '-', {
+					// ComboBox to allow user to change page size; this seems overly complicated,
+					// but that's just because the Ext JS ComboBox is such a flexible widget 
 					xtype: 'combo',
 					store: new Ext.data.ArrayStore({
 						fields: ['id'],
@@ -560,8 +614,8 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	
 	load: function() {
 		var store = this.getStore();
-		store.setBaseParam('sort', Ext.getCmp(this.initialConfig.mongoCollection + '/sort').getValue());
-		store.setBaseParam('query', Ext.getCmp(this.initialConfig.mongoCollection + '/query').getValue());
+		store.setBaseParam('sort', Ext.getCmp(this.initialConfig.mongovisionCollection + '/sort').getValue());
+		store.setBaseParam('query', Ext.getCmp(this.initialConfig.mongovisionCollection + '/query').getValue());
 		store.load({
 			params: store.baseParams
 		});
@@ -573,10 +627,15 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	}
 });
 
-Ext.reg('mongocollection', MongoVision.CollectionPanel);
+Ext.reg('mongovisioncollection', MongoVision.CollectionPanel);
 
 //
-// EditorPanel
+// MongoVision.EditorPanel
+//
+// Contains a TextArea for editing a MongoDB document. The bottom toolbar has buttons for
+// saving and deleting the document, as well as an indicator for the current JSON validity
+// of the content. The Save button will only be enabled if the document is both valid and
+// also decodes into a value different from that of the current record. Smart!
 //
 
 MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
@@ -596,13 +655,14 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 						if (this.record) {
 							var textarea = Ext.getCmp(config.id + '-textarea');
 							try {
+								// MongoVision.json encoded this without curly brackets for the root object, so we need to add them
 								var document = Ext.decode('{' + textarea.getValue() + '}');
 								this.record.set('document', document);
-								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.validJSON).removeClass('x-mongo-invalid');
+								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.validJSON).removeClass('x-mongovision-invalid');
 							}
 							catch (x) {
-								// We should never get here! The "save" button should be disabled if invalid
-								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.invalidJSON).addClass('x-mongo-invalid');
+								// We should never get here! The Save button should be disabled if invalid
+								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.invalidJSON).addClass('x-mongovision-invalid');
 							}
 						}
 					}.createDelegate(this)
@@ -629,7 +689,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 						var value = textarea.getValue();
 						
 						// Some browsers (Mozilla, looking at you!) don't allow changing the wrap value of a textarea,
-						// so just to be sure we'll recreate it each time we need to change the value.
+						// so for best portability we'll be sure to recreate it each time we need to change the wrap value
 						this.createTextArea(value);
 					}.createDelegate(this)
 				}, '-', {
@@ -658,6 +718,8 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 			enableKeyEvents: true,
 			listeners: {
 				keypress: {
+					// Note we are buffering this by half a second, so that the validity check would not happen if the
+					// user is frantically typing :)
 					fn: function(textarea, event) {
 						if (this.record) {
 							var textarea = Ext.getCmp(this.id + '-textarea');
@@ -665,11 +727,11 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 								var value = Ext.encode(Ext.decode('{' + textarea.getValue() + '}'));
 								var document = Ext.encode(this.record.get('document'));
 								Ext.getCmp(this.id + '-save').setDisabled(value == document);
-								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.validJSON).removeClass('x-mongo-invalid');
+								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.validJSON).removeClass('x-mongovision-invalid');
 							}
 							catch (x) {
 								Ext.getCmp(this.id + '-save').setDisabled(true);
-								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.invalidJSON).addClass('x-mongo-invalid');
+								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.invalidJSON).addClass('x-mongovision-invalid');
 							}
 						}
 					}.createDelegate(this),
@@ -690,6 +752,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 		var value = record ? MongoVision.json(record.json.document, false, true) : '';
 		var textarea = this.items.get(0);
 		if (textarea) {
+			// Reuse existing textarea
 			textarea.setValue(value);
 		}
 		else {
@@ -698,7 +761,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 	}
 });
 
-Ext.reg('mongoeditor', MongoVision.EditorPanel);
+Ext.reg('mongovisioneditor', MongoVision.EditorPanel);
 
 //
 // Initialization
@@ -706,6 +769,9 @@ Ext.reg('mongoeditor', MongoVision.EditorPanel);
 
 Ext.onReady(function() {
 	Ext.QuickTips.init();
+	
+	// Our ViewPort: a DatabasesPanel in the east, a TabPanel containing CollectionPanels in the
+	// center, an EditorPanel in the south, and a header in the north
 	
 	var viewport = new Ext.Viewport({
 		layout: 'border',
@@ -717,13 +783,13 @@ Ext.onReady(function() {
 			bodyCssClass: 'x-border-layout-ct',
 			contentEl: 'header'
 		}, {
-			xtype: 'mongodatabases',
+			xtype: 'mongovisiondatabases',
 			region: 'west',
 			margins: '0 0 20 20',
 			split: true,
 			width: 200,
-			mongoCollections: 'mongo-collections',
-			mongoEditor: 'mongo-editor'
+			mongoVisionCollections: 'mongovision-collections',
+			mongoVisionEditor: 'mongovision-editor'
 		}, {
 			region: 'center',
 			layout: 'border',
@@ -733,13 +799,13 @@ Ext.onReady(function() {
 				region: 'center',
 				split: true,
 				xtype: 'tabpanel',
-				id: 'mongo-collections',
+				id: 'mongovision-collections',
 				enableTabScroll: true
 			}, {
 				region: 'south',
 				split: true,
-				id: 'mongo-editor',
-				xtype: 'mongoeditor',
+				id: 'mongovision-editor',
+				xtype: 'mongovisioneditor',
 				height: 200
 				//stateful: false
 			}]

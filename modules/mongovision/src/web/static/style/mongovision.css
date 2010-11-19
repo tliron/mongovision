@@ -17,11 +17,11 @@ at http://threecrickets.com/
 	background-color: #D0DEF0;
 }
 
-.x-mongo-system-collection a span {
+.x-mongovision-system-collection a span {
 	color: #999999;
 }
 
-.x-mongo-document {
+.x-mongovision-document {
 	_font: normal 12px tahoma, arial, helvetica, sans-serif;
 	font: 11px/13px arial, tahoma, helvetica, sans-serif;
 	line-height: 180%;
@@ -29,10 +29,10 @@ at http://threecrickets.com/
 	padding-left: 5px;
 }
 
-.x-mongo-nowrap {
+.x-mongovision-nowrap {
 	white-space: nowrap;
 }
 
-.x-mongo-invalid {
+.x-mongovision-invalid {
 	color: red;
 }

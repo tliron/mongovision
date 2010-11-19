@@ -41,7 +41,7 @@ function handleGet(conversation) {
 					leaf: true
 				}
 				if (isSystem(collectionName)) {
-					n.cls = 'x-mongo-system-collection'
+					n.cls = 'x-mongovision-system-collection'
 					systemChildren.push(n)
 				}
 				else {
