@@ -81,7 +81,6 @@ Ext.ux.ReusableJsonStore = Ext.extend(Ext.data.JsonStore, {
 
 	reuse: function(store) {
 		// We're re-using the existing data and options
-		console.debug(store)
 		var records = this.reader.readRecords(store.reader.jsonData);
 		this.lastOptions = store.lastOptions;
 		this.loadRecords(records, {
@@ -271,6 +270,8 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			encode: false
 		});
 		
+		var pageSize = 20;
+		
 		var dataviewStore = new Ext.ux.ReusableJsonStore({
 			restful: true,
 			remoteSort: true,
@@ -285,15 +286,12 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				name: 'id'
 			}, {
 				name: 'document'
-			}]
-		});
-		
-		var pageSize = 25;
-		
-		dataviewStore.load({
-			params: {
-				start: 0,
-				limit: pageSize
+			}],
+			autoLoad: {
+				params: {
+					start: 0,
+					limit: pageSize
+				}
 			}
 		});
 		
@@ -406,26 +404,6 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				fields: fields
 			});
 			
-			/*gridviewStore.reader.readResponse = function(action, response) {
-				var response = Ext.decode(response.responseText)
-				console.debug('response')
-				console.debug(response)
-		        var root = this.getRoot(response);
-				console.debug('root')
-				console.debug(root)
-				var values = Ext.data.JsonReader.prototype.readResponse.call(this, action, response);
-				console.debug('readResponse')
-				console.debug(values)
-		        return values;
-			};*/
-
-			/*gridviewStore.reader.extractData = function(root, returnRecords) {
-				var values = Ext.data.JsonReader.prototype.extractData.call(this, root, returnRecords);
-				console.debug('exctractData')
-				console.debug(values)
-		        return values;
-			};*/
-			
 			this.getBottomToolbar().bindStore(gridviewStore);
 			gridviewStore.reuse(this.getStore());
 			
@@ -487,19 +465,19 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 						tpl.wrap = pressed;
 						dataview.refresh();
 					}.createDelegate(this)
-				}, '-', {
+				}, {
 					enableToggle: true,
 					text: 'Grid',
 					toggleHandler: function(button, pressed) {
 						Ext.getCmp(config.mongoCollection + '-wrap').setDisabled(pressed);
+						this.getLayout().setActiveItem(pressed ? 1 : 0);
 						if (pressed) {
 							updateGridView();
 						}
 						else {
 							this.getBottomToolbar().bindStore(dataviewStore);
-							dataviewStore.reuse(this.getStore());
+							dataviewStore.reuse(gridview.getStore());
 						}
-						this.getLayout().setActiveItem(pressed ? 1 : 0);
 					}.createDelegate(this)
 				}, '-', {
 					xtype: 'label',
@@ -543,6 +521,36 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 							this.el.on('dblclick', popupEditor.createDelegate(this));
 						}
 					}
+				}, '->', '-', {
+					xtype: 'combo',
+					store: new Ext.data.ArrayStore({
+						fields: ['id'],
+						data: [
+							['10'],
+							['20'],
+							['40'],
+							['60']
+						]
+					}),
+					mode : 'local',
+					value: pageSize,
+					listWidth: 40,
+					width: 40,
+					triggerAction: 'all',
+					displayField: 'id',
+					valueField: 'id',
+					editable: false,
+					forceSelection: true,
+					listeners: {
+						select: function(combo, record) {
+							var toolbar = this.getBottomToolbar();
+							toolbar.pageSize = record.get('id');
+							toolbar.doLoad(toolbar.cursor);
+						}.createDelegate(this)
+					}
+				}, {
+					xtype: 'label',
+					text: 'Per Page'
 				}]
 			}
 		}, config);
