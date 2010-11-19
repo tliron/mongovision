@@ -31,3 +31,5 @@ predefinedGlobals['mongovision.extJS.debug'] = false
 //predefinedGlobals['mongodb.defaultServers'] = ['127.0.0.1']
 //predefinedGlobals['mongodb.defaultDB'] = 'dbname'
 //predefinedGlobals['mongodb.defaultIdsCollectionName'] = 'ids'
+
+//staticWebCompress = false

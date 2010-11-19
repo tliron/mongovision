@@ -59,6 +59,7 @@ function handleGet(conversation) {
 	
 	var documents = []
 	var cursor = collection.find(query)
+	var count = cursor.count()
 	if (sort) {
 		cursor.sort(sort)
 	}
@@ -86,7 +87,7 @@ function handleGet(conversation) {
 	var data = {
 		success: true,
 		message: 'Loaded data',
-		total: collection.getCount(query),
+		total: count,
 		documents: documents
 	}
 	

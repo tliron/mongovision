@@ -81,6 +81,7 @@ Ext.ux.ReusableJsonStore = Ext.extend(Ext.data.JsonStore, {
 
 	reuse: function(store) {
 		// We're re-using the existing data and options
+		console.debug(store)
 		var records = this.reader.readRecords(store.reader.jsonData);
 		this.lastOptions = store.lastOptions;
 		this.loadRecords(records, {
@@ -491,7 +492,6 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					text: 'Grid',
 					toggleHandler: function(button, pressed) {
 						Ext.getCmp(config.mongoCollection + '-wrap').setDisabled(pressed);
-						this.getLayout().setActiveItem(pressed ? 1 : 0);
 						if (pressed) {
 							updateGridView();
 						}
@@ -499,6 +499,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 							this.getBottomToolbar().bindStore(dataviewStore);
 							dataviewStore.reuse(this.getStore());
 						}
+						this.getLayout().setActiveItem(pressed ? 1 : 0);
 					}.createDelegate(this)
 				}, '-', {
 					xtype: 'label',
