@@ -86,7 +86,7 @@ function handleGet(conversation) {
 	var data = {
 		success: true,
 		message: 'Loaded data',
-		total: collection.getCount(),
+		total: collection.getCount(query),
 		documents: documents
 	}
 	
