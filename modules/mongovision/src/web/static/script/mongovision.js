@@ -787,7 +787,7 @@ Ext.onReady(function() {
 			region: 'north',
 			margins: '0 0 0 0',
 			border: false,
-			padding: '10 10 10 10',
+			padding: '5 10 5 10',
 			bodyCssClass: 'x-border-layout-ct',
 			contentEl: 'header'
 		}, {
