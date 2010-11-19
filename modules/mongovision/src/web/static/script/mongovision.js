@@ -49,9 +49,6 @@ Ext.override(Ext.form.TextArea, {
 
 // Store extension
 
-Ext.override(Ext.data.Store, {
-});
-
 Ext.namespace('Ext.ux');
 
 Ext.ux.ReusableJsonStore = Ext.extend(Ext.data.JsonStore, {
@@ -465,7 +462,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 						tpl.wrap = pressed;
 						dataview.refresh();
 					}.createDelegate(this)
-				}, {
+				}, ' ', {
 					enableToggle: true,
 					text: 'Grid',
 					toggleHandler: function(button, pressed) {
@@ -549,8 +546,11 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 						}.createDelegate(this)
 					}
 				}, {
+					xtype: 'tbspacer',
+					width: 5
+				}, {
 					xtype: 'label',
-					text: 'Per Page'
+					text: 'per page'
 				}]
 			}
 		}, config);
@@ -672,7 +672,7 @@ Ext.onReady(function() {
 			bodyCssClass: 'x-border-layout-ct',
 			html: ['<table width="100%" height="100%"><tr>',
 				'<td width="50%" align="left">',
-				'<h2>MongoVision</h2>',
+				'<h2><a href="http://code.google.com/p/mongo-vision/">MongoVision</a></h2>',
 				'<span style="font-size: x-small;">Version 1.0 alpha</span>',
 				'</td>',
 				'<td width="50%" align="right" style="font-size: x-small;">',
