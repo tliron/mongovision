@@ -20,30 +20,6 @@ Ext.data.DataProxy.addListener('exception', function(proxy, type, action, option
 });
 
 //
-// TextArea extension
-//
-
-Ext.override(Ext.form.TextArea, {
-	setWrap: function(wrap) {
-		wrap = wrap ? 'hard' : 'off';
-		var textarea = this.el.dom;
-		if (textarea.wrap) {
-			textarea.wrap = wrap;
-		}
-		else {
-			// Wrap attribute not supported - try Mozilla workaround
-			if (wrap != textarea.getAttribute('wrap')) {
-				textarea.setAttribute('wrap', wrap);
-				var newarea = textarea.cloneNode(true);
-				newarea.value = textarea.value;
-				textarea.parentNode.replaceChild(newarea, textarea);
-				this.el.dom = newarea;
-			}
-		}
-	}
-});
-
-//
 // ReusableJsonStore
 //
 
@@ -103,7 +79,10 @@ MongoVision.text = {
 	sort: 'Sort:',
 	perPage: 'per page',
 	'delete': 'Delete',
-	deleteMessage: 'Are you sure you want to delete this document?'
+	deleteMessage: 'Are you sure you want to delete this document?',
+	save: 'Save',
+	validJSON: 'Valid JSON',
+	invalidJSON: 'Invalid JSON'
 };
 
 //
@@ -607,28 +586,23 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 	constructor: function(config) {
 		
 		config = Ext.apply({
-			layout: 'border',
-			items: {
-				region: 'center',
-				xtype: 'textarea',
-				id: config.id + '-textarea',
-				autoCreate: {
-					tag: 'textarea',
-					spellcheck: 'false'
-				},
-				style: 'border: none;'
-			},
+			layout: 'fit',
 			bbar: {
 				items: [{
 					id: config.id + '-save',
-					text: 'Save',
+					text: MongoVision.text.save,
 					disabled: true,
 					handler: function() {
 						if (this.record) {
 							var textarea = Ext.getCmp(config.id + '-textarea');
-							var document = Ext.util.JSON.decode('{' + textarea.getValue() + '}');
-							this.record.set('document', document);
-							this.record.commit();
+							try {
+								var document = Ext.decode('{' + textarea.getValue() + '}');
+								this.record.set('document', document);
+								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.validJSON).removeClass('x-mongo-invalid');
+							}
+							catch (x) {
+								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.invalidJSON).addClass('x-mongo-invalid');
+							}
 						}
 					}.createDelegate(this)
 				}, {
@@ -647,12 +621,21 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 				}, '-', {
 					pressed: true,
 					enableToggle: true,
-					text: 'Wrap',
+					text: MongoVision.text.wrap,
 					toggleHandler: function(button, pressed) {
-						var textarea = Ext.getCmp(config.id + '-textarea');
 						this.wrap = pressed;
-						textarea.setWrap(this.wrap);
+						var textarea = Ext.getCmp(config.id + '-textarea');
+						var value = textarea.getValue();
+						
+						// Some browsers (Mozilla, looking at you!) don't allow changing the wrap value of a textarea,
+						// so just to be sure we'll recreate it each time we need to change the value.
+						this.createTextArea(value);
 					}.createDelegate(this)
+				}, '-', {
+					id: config.id + '-validity',
+					disabled: true,
+					xtype: 'label',
+					text: MongoVision.text.validJSON
 				}]
 			}
 		}, config);
@@ -660,13 +643,56 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 		MongoVision.EditorPanel.superclass.constructor.call(this, config);
 	},
 	
+	createTextArea: function(value) {
+		var textarea = new Ext.form.TextArea({
+			xtype: 'textarea',
+			id: this.id + '-textarea',
+			value: value,
+			autoCreate: {
+				tag: 'textarea',
+				spellcheck: 'false',
+				wrap: this.wrap ? 'hard' : 'off'
+			},
+			style: 'border: none;',
+			enableKeyEvents: true,
+			listeners: {
+				keypress: {
+					fn: function(textarea, event) {
+						if (this.record) {
+							var textarea = Ext.getCmp(this.id + '-textarea');
+							try {
+								var value = Ext.encode(Ext.decode('{' + textarea.getValue() + '}'));
+								var document = Ext.encode(this.record.get('document'));
+								Ext.getCmp(this.id + '-save').setDisabled(value == document);
+								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.validJSON).removeClass('x-mongo-invalid');
+							}
+							catch (x) {
+								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.invalidJSON).addClass('x-mongo-invalid');
+							}
+						}
+					}.createDelegate(this),
+					buffer: 500
+				}
+			}
+		});
+		this.removeAll();
+		this.add(textarea);
+		this.doLayout();
+	},
+	
 	setRecord: function(record) {
 		this.record = record;
-		Ext.getCmp(this.id + '-save').setDisabled(record == null);
 		Ext.getCmp(this.id + '-delete').setDisabled(record == null);
+		Ext.getCmp(this.id + '-validity').setDisabled(record == null);
 		var textarea = Ext.getCmp(this.id + '-textarea');
-		textarea.setWrap(this.wrap);
-		textarea.setValue(record ? MongoVision.json(record.json.document, false, true) : '');
+		var value = record ? MongoVision.json(record.json.document, false, true) : '';
+		var textarea = this.items.get(0);
+		if (textarea) {
+			textarea.setValue(value);
+		}
+		else {
+			this.createTextArea(value);
+		}
 	}
 });
 
