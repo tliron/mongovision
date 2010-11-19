@@ -601,6 +601,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.validJSON).removeClass('x-mongo-invalid');
 							}
 							catch (x) {
+								// We should never get here! The "save" button should be disabled if invalid
 								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.invalidJSON).addClass('x-mongo-invalid');
 							}
 						}
@@ -667,6 +668,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.validJSON).removeClass('x-mongo-invalid');
 							}
 							catch (x) {
+								Ext.getCmp(this.id + '-save').setDisabled(true);
 								Ext.getCmp(this.id + '-validity').setText(MongoVision.text.invalidJSON).addClass('x-mongo-invalid');
 							}
 						}
