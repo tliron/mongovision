@@ -20,34 +20,46 @@ Ext.data.DataProxy.addListener('exception', function(proxy, type, action, option
 });
 
 //
-// TextField extension
+// Ext.ux.TextFieldPopup
+//
+// A TextField plugin that allows the user to double click the textfield in order to open a
+// window with a TextArea with more room to edit the content. The title of the window is taken
+// from the TextField's 'fieldLabel' config.
 //
 
-Ext.override(Ext.form.TextField, {
-	popupEditor: function() {
-		new Ext.Window({
-			title: 'Text', // TODO
-			width: 600,
-			height: 400,
-			layout: 'border',
-			items: {
-				region: 'center',
-				xtype: 'textarea',
-				value: this.getValue(),
-				autoCreate: {
-					tag: 'textarea',
-					spellcheck: 'false'
+Ext.namespace('Ext.ux');
+
+Ext.ux.TextFieldPopup = Ext.extend(Object, {
+	init: function(textfield) {
+		var popupEditor = function() {
+			new Ext.Window({
+				title: textfield.initialConfig.fieldLabel,
+				width: 600,
+				height: 400,
+				layout: 'border',
+				items: {
+					region: 'center',
+					xtype: 'textarea',
+					value: this.getValue(),
+					autoCreate: {
+						tag: 'textarea',
+						spellcheck: 'false'
+					}
+				},
+				listeners: {
+					close: function(window) {
+						this.setValue(window.items.get(0).getValue());
+						this.focus();
+					}.createDelegate(this)
 				}
-			},
-			listeners: {
-				close: function(window) {
-					this.setValue(window.items.get(0).getValue());
-					this.focus();
-				}.createDelegate(this)
-			}
-		}).show();
+			}).show();
+		}.createDelegate(textfield);
+		
+		textfield.on('render', function(textfield) {
+			textfield.el.on('dblclick', popupEditor);
+		});
 	}
-});		
+});
 
 //
 // Ext.ux.ReusableJsonStore
@@ -115,8 +127,8 @@ MongoVision.text = {
 	documentsDisplayed: 'Documents {0} to {1} of {2}',
 	wrap: 'Wrap',
 	grid: 'Grid',
-	query: 'Query:',
-	sort: 'Sort:',
+	query: 'Query',
+	sort: 'Sort',
 	perPage: 'per page',
 	'delete': 'Delete',
 	deleteMessage: 'Are you sure you want to delete this document?',
@@ -533,17 +545,15 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				}, {
 					xtype: 'textfield',
 					id: config.mongovisionCollection + '/query',
-					value: '',
+					fieldLabel: MongoVision.text.query,
+					plugins: new Ext.ux.TextFieldPopup(),
 					width: 200,
 					listeners: {
 						specialkey: function(textfield, event) {
 							if (event.getKey() == event.ENTER) {
 								this.load();
 							}
-						}.createDelegate(this),
-						render: function() {
-							this.el.on('dblclick', this.popupEditor.createDelegate(this));
-						}
+						}.createDelegate(this)
 					}
 				}, '-', {
 					xtype: 'label',
@@ -553,18 +563,16 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					width: 5
 				}, {
 					xtype: 'textfield',
+					fieldLabel: MongoVision.text.sort,
+					plugins: new Ext.ux.TextFieldPopup(),
 					id: config.mongovisionCollection + '/sort',
-					value: '',
 					width: 200,
 					listeners: {
 						specialkey: function(textfield, event) {
 							if (event.getKey() == event.ENTER) {
 								this.load();
 							}
-						}.createDelegate(this),
-						render: function() {
-							this.el.on('dblclick', this.popupEditor.createDelegate(this));
-						}
+						}.createDelegate(this)
 					}
 				}, '->', '-', {
 					// ComboBox to allow user to change page size; this seems overly complicated,
