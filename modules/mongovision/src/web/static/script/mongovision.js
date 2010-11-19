@@ -90,6 +90,23 @@ Ext.ux.ReusableJsonStore = Ext.extend(Ext.data.JsonStore, {
 Ext.namespace('MongoVision');
 
 //
+// Internationalization
+//
+
+MongoVision.text = {
+	collections: 'Collections',
+	noDocuments: 'No documents to display',
+	documentsDisplayed: 'Documents {0} to {1} of {2}',
+	wrap: 'Wrap',
+	grid: 'Grid',
+	query: 'Query:',
+	sort: 'Sort:',
+	perPage: 'per page',
+	'delete': 'Delete',
+	deleteMessage: 'Are you sure you want to delete this document?'
+};
+
+//
 // JSON
 //
 
@@ -193,7 +210,7 @@ MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 		});
 		
 		config = Ext.apply({
-			title: 'Collections',
+			title: MongoVision.text.collections,
 			autoScroll: true,
 			loader: loader,
 			rootVisible: false,
@@ -310,7 +327,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			overClass: 'x-view-over',
 			itemSelector: 'div.x-mongo-document',
 			singleSelect: true,
-			emptyText: '<div class="x-grid-empty">No documents to display</div>',
+			emptyText: '<div class="x-grid-empty">' + MongoVision.text.noDocuments + '</div>',
 			listeners: {
 				selectionchange: function(dataview) {
 					var record = dataview.getSelectedRecords()[0];
@@ -336,7 +353,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			}),
 			viewConfig: {
 				forceFit: true,
-				emptyText: 'No documents to display'
+				emptyText: MongoVision.text.noDocuments
 			},
 			selModel: new Ext.grid.RowSelectionModel({
 				singleSelect: true,
@@ -451,20 +468,20 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				pageSize: pageSize,
 				store: dataviewStore,
 				displayInfo: true,
-				displayMsg: 'Documents {0} to {1} of {2}',
-				emptyMsg: 'No documents to display',
+				displayMsg: MongoVision.text.documentsDisplayed,
+				emptyMsg: MongoVision.text.noDocuments,
 				items: ['-', {
 					id: config.mongoCollection + '-wrap',
 					pressed: true,
 					enableToggle: true,
-					text: 'Wrap',
+					text: MongoVision.text.wrap,
 					toggleHandler: function(button, pressed) {
 						tpl.wrap = pressed;
 						dataview.refresh();
 					}.createDelegate(this)
 				}, ' ', {
 					enableToggle: true,
-					text: 'Grid',
+					text: MongoVision.text.grid,
 					toggleHandler: function(button, pressed) {
 						Ext.getCmp(config.mongoCollection + '-wrap').setDisabled(pressed);
 						this.getLayout().setActiveItem(pressed ? 1 : 0);
@@ -478,7 +495,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					}.createDelegate(this)
 				}, '-', {
 					xtype: 'label',
-					text: 'Query:'
+					text: MongoVision.text.query
 				}, {
 					xtype: 'tbspacer',
 					width: 5
@@ -499,7 +516,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					}
 				}, '-', {
 					xtype: 'label',
-					text: 'Sort:'
+					text: MongoVision.text.sort
 				}, {
 					xtype: 'tbspacer',
 					width: 5
@@ -550,8 +567,8 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					width: 5
 				}, {
 					xtype: 'label',
-					text: 'per page'
-				}]
+					text: MongoVision.text.perPage
+				}, ' ']
 			}
 		}, config);
 		
@@ -616,11 +633,11 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 					}.createDelegate(this)
 				}, {
 					id: config.id + '-delete',
-					text: 'Delete',
+					text: MongoVision.text['delete'],
 					disabled: true,
 					handler: function() {
 						if (this.record) {
-							Ext.MessageBox.confirm('Delete', 'Are you sure you want to delete this document?', function(id) {
+							Ext.MessageBox.confirm(MongoVision.text['delete'], MongoVision.text.deleteMessage, function(id) {
 								if (id == 'yes') {
 									this.record.store.remove(this.record);
 								}
