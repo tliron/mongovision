@@ -12,9 +12,11 @@
 //
 // Ext.ux.PerPage
 //
-// A PagingToolbar plugin allowing the user to change the page size.
+// A PagingToolbar plugin allowing the user to change the page size with a
+// combobox.
 //
-// Config options: 'pageSizeOptions' is an array of the options.
+// Config options: 'pageSizeOptions' is an array of the options, 'label' is the
+// text to show after the combobox.
 //
 
 Ext.namespace('Ext.ux');
@@ -25,6 +27,7 @@ Ext.ux.PerPage = Ext.extend(Object, {
 		for (var o = 0, length = config.pageSizeOptions.length; o < length; o++) {
 			this.data.push([String(config.pageSizeOptions[o])]);
 		}
+		this.label = config.label;
 	},
 	
 	init: function(toolbar) {
@@ -57,7 +60,7 @@ Ext.ux.PerPage = Ext.extend(Object, {
 			width: 5
 		}, {
 			xtype: 'tbtext',
-			text: MongoVision.text.perPage
+			text: this.label
 		}, '-');
 	}
 });

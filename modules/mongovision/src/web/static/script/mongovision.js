@@ -436,7 +436,8 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			bbar: {
 				xtype: 'paging',
 				plugins: new Ext.ux.PerPage({
-					pageSizeOptions: [10, 20, 40, 60]
+					pageSizeOptions: [10, 20, 40, 60],
+					label: MongoVision.text.perPage
 				}),
 				pageSize: pageSize,
 				store: dataviewStore,
