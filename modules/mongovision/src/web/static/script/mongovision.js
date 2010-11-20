@@ -104,10 +104,10 @@ Ext.reg('mongovisiondatabases', MongoVision.DatabasesPanel);
 MongoVision.gridviewKeyPrefix = '_gridviewKey_';
 
 MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
+	wrap: true,
+	
 	constructor: function(config) {
 		
-		this.wrap = true;
-
 		// The default Ext JS single-URL-based proxy is not quite RESTful
 		// enough for our tastes, so lets configure it (in particular, we prefer
 		// HTTP PUT for the CRUD create operation)
@@ -186,7 +186,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					// Show selected row in editor
 					var record = dataview.getSelectedRecords()[0];
 					var mongoVisionEditor = Ext.getCmp(this.mongoVisionEditor);
-					mongoVisionEditor.setRecord(record);
+					mongoVisionEditor.setRecord(record, this);
 				}.createDelegate(this)
 			}
 		});
@@ -220,7 +220,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					rowselect: function(selmodel, index, record) {
 						// Show selected row in editor
 						var mongoVisionEditor = Ext.getCmp(this.mongoVisionEditor);
-						mongoVisionEditor.setRecord(record);
+						mongoVisionEditor.setRecord(record, this);
 					}.createDelegate(this)					
 				}
 			}),
@@ -435,6 +435,58 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 		
 	reload: function() {
 		this.getStore().reload();		
+	},
+	
+	select: function(index) {
+		var view = this.getView();
+		view.select(index);
+	},
+	
+	selectPrevious: function(record) {
+		var store = this.getStore();
+		var index = store.indexOf(record);
+		index--;
+		if (index < 0) {
+			// Move to previous page, if available
+			var toolbar = this.getBottomToolbar();
+			if (toolbar.cursor > 0) {
+				store.on('load', function(store) {
+					// Select last record on page
+					var index = store.getCount() - 1;
+					this.select(index);
+				}.createDelegate(this, [store]), {
+					single: true
+				});
+				toolbar.movePrevious();
+			}
+		}
+		else {
+			this.select(index);
+		}
+	},
+	
+	selectNext: function(record) {
+		var view = this.getView();
+		var store = view.getStore();
+		var index = store.indexOf(record);
+		index++;
+		if (index == store.getCount())
+		{
+			// Move to next page, if available
+			var toolbar = this.getBottomToolbar();
+			if (toolbar.cursor < (store.getTotalCount() - toolbar.pageSize)) {
+				store.on('load', function(store) {
+					// Select first record on page
+					this.select(0);
+				}.createDelegate(this, [store]), {
+					single: true
+				});
+				toolbar.moveNext();
+			}
+		}
+		else {
+			view.select(index);
+		}
 	}
 });
 
@@ -451,6 +503,7 @@ Ext.reg('mongovisioncollection', MongoVision.CollectionPanel);
 
 MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 	record: null,
+	collectionPanel: null,
 	wrap: true,
 	
 	constructor: function(config) {
@@ -470,6 +523,8 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 								var document = Ext.decode('{' + textarea.getValue() + '}');
 								this.record.set('document', document);
 								Ext.getCmp(this.id + '-validity').removeClass('x-mongovision-invalid').setText(MongoVision.text.validJSON);
+								
+								// TODO: detect if _id changed, in which case we create a new record
 							}
 							catch (x) {
 								// We should never get here! The Save button should be disabled if invalid
@@ -508,6 +563,19 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 					disabled: true,
 					xtype: 'tbtext',
 					text: MongoVision.text.validJSON
+				}, '->', {
+					id: config.id + '-collection',
+					xtype: 'tbtext'
+				}, {
+					iconCls: 'x-tbar-page-prev',
+					handler: function() {
+						this.collectionPanel.selectPrevious(this.record);
+					}.createDelegate(this)
+				}, {
+					iconCls: 'x-tbar-page-next',
+					handler: function() {
+						this.collectionPanel.selectNext(this.record);
+					}.createDelegate(this)
 				}]
 			}
 		}, config);
@@ -555,10 +623,12 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 		this.doLayout();
 	},
 	
-	setRecord: function(record) {
+	setRecord: function(record, collectionPanel) {
 		this.record = record;
+		this.collectionPanel = collectionPanel;
 		Ext.getCmp(this.id + '-delete').setDisabled(record == null);
 		Ext.getCmp(this.id + '-validity').setDisabled(record == null);
+		Ext.getCmp(this.id + '-collection').setText(record == null ? '' : collectionPanel.initialConfig.title);
 		var textarea = Ext.getCmp(this.id + '-textarea');
 		var value = record ? Ext.ux.JSON.encode(record.json.document, false, true) : '';
 		var textarea = this.items.get(0);

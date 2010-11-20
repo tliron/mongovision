@@ -50,8 +50,8 @@ Ext.ux.PerPage = Ext.extend(Object, {
 			forceSelection: true,
 			listeners: {
 				select: function(combo, record) {
-					this.pageSize = record.get('id');
-					// Undocumented function: doLoad
+					this.pageSize = parseInt(record.get('id'));
+					// Undocumented function
 					this.doLoad(this.cursor);
 				}.createDelegate(toolbar)
 			}
