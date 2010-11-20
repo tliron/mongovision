@@ -26,8 +26,10 @@ Ext.ux.JSON.encode = function(value, html, multiline) {
 		var json = '';
 		
 		var indentation = '';
-		for (var i = 0; i < depth; i++) {
-			indentation += (html ? '&nbsp;' : ' ');
+		if (multiline) {
+			for (var i = 0; i < depth; i++) {
+				indentation += (html ? '&nbsp;' : ' ');
+			}
 		}
 		if (indent) {
 			json += indentation;
