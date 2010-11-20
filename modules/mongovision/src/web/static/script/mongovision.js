@@ -439,7 +439,12 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	
 	select: function(index) {
 		var view = this.getView();
-		view.select(index);
+		if (view.getXType() == 'dataview') {
+			view.select(index);
+		}
+		else {
+			view.getSelectionModel().selectRow(index);
+		}
 	},
 	
 	selectPrevious: function(record) {
@@ -485,7 +490,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			}
 		}
 		else {
-			view.select(index);
+			this.select(index);
 		}
 	}
 });
