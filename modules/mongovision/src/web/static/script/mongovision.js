@@ -127,7 +127,8 @@ MongoVision.text = {
 	invalidJSON: 'Invalid JSON',
 	loading: 'Loading...',
 	exception: 'The operation failed.',
-	update: 'Updated'
+	'action.update': 'Update',
+	'action.destroy': 'Delete'
 };
 
 //
@@ -783,14 +784,15 @@ Ext.reg('mongovisioneditor', MongoVision.EditorPanel);
 
 Ext.data.DataProxy.on('write', function(proxy, action, data, response) {
 	new Ext.gritter.add({
-		title: MongoVision.text[action],
+		title: MongoVision.text['action.' + action],
 		text: response.message
 	}); 
 });
 
-Ext.data.DataProxy.on('exception', function() {
+Ext.data.DataProxy.on('exception', function(proxy, type, action) {
+	console.debug(action)
 	new Ext.gritter.add({
-		title: MongoVision.text[action],
+		title: MongoVision.text['action.' + action],
 		text: MongoVision.text.exception
 	}); 
 });

@@ -48,7 +48,7 @@ function handleDelete(conversation) {
 	var id = conversation.locals.get('id')
 	
 	var collection = new Mongo.Collection(collection, {db: database})
-	collection.remove(doc)
+	collection.remove({_id: Mongo.id(id)})
 
 	application.logger.fine('Removed document from ' + database + '.' + collection.collection.name + ': ' + id)
 	
