@@ -34,6 +34,7 @@ MongoVision.text = {
 	invalidJSON: 'Invalid JSON',
 	loading: 'Loading...',
 	exception: 'The operation failed.',
+	'action.read': 'Get',
 	'action.update': 'Update',
 	'action.destroy': 'Delete'
 };
