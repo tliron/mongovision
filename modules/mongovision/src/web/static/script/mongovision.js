@@ -595,8 +595,6 @@ Ext.data.DataProxy.on('exception', function(proxy, type, action) {
 });
 
 Ext.onReady(function() {
-	Ext.QuickTips.init();
-	
 	// Our ViewPort: a DatabasesPanel in the east, a TabPanel containing CollectionPanels in the
 	// center, an EditorPanel in the south, and a header in the north
 	

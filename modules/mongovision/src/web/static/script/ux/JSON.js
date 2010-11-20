@@ -53,17 +53,20 @@ Ext.ux.JSON.encode = function(value, html, multiline) {
 		}
 		else if (Ext.isArray(value)) {
 			json += '[';
-			if (multiline) {
-				json += html ? '<br/>' : '\n';
-			}
 			var length = value.length;
 			if (length > 0) {
+				if (multiline) {
+					json += html ? '<br/>' : '\n';
+				}
 				for (var i = 0; i < length - 1; i++) {
 					json += toJSON(value[i], html, multiline, true, depth + 1) + (multiline ? (html ? ',<br/>' : ',\n') : ', ');
 				}
 				json += toJSON(value[i], html, multiline, true, depth + 1);
+				if (multiline) {
+					json += (html ? '<br/>' : '\n') + indentation;
+				}
 			}
-			json += indentation + ']';
+			json += ']';
 		}
 		else {
 			if (depth > -1) {
@@ -89,11 +92,11 @@ Ext.ux.JSON.encode = function(value, html, multiline) {
 				}
 				json += keys[i] + ': ' + toJSON(value[keys[i]], html, multiline, false, depth + 1);
 				if (multiline && (depth > -1)) {
-					json += html ? '<br/>' : '\n';
+					json += (html ? '<br/>' : '\n') + indentation;
 				}
 			}
 			if (depth > -1) {
-				json += indentation + '}';
+				json += '}';
 			}
 		}
 	
