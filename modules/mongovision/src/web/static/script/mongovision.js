@@ -52,6 +52,48 @@ Ext.ux.TextFieldPopup = Ext.extend(Object, {
 });
 
 //
+// Ext.ux.LoadMask
+//
+// A simple plugin that can add a LoadMask to any component's element.
+//
+// The config is sent to the LoadMask. A special 'treeLoader' config is supported
+// to allow listening on a TreeLoader.
+//
+
+Ext.ux.LoadMask = Ext.extend(Object, {
+	constructor: function(config) {
+		this.config = config;
+	},
+
+	init: function(cmp) {
+		cmp.on('render', function(cmp) {
+			var loadmask = new Ext.LoadMask(cmp.el, this.config);
+			
+			if (this.config.treeLoader) {
+				// See: http://www.sencha.com/forum/showthread.php?86323-Tree-LoadMask-not-centering-properly
+				
+			    loadmask.onBeforeLoad = loadmask.onBeforeLoad.createInterceptor(function(loader) {
+					// Must check if the loader is still loading before displaying the mask. Otherwise if
+					// we did not, we have a potential race-condition if the load completes before the 
+					// mask is shown, which would result in the mask never being cleared.
+					return loader.isLoading();
+				});
+
+				loadmask.destroy = function() {
+					this.config.treeLoader.un('beforeload', loadmask.onBeforeLoad);
+					this.config.treeLoader.un('load', loadmask.onLoad);
+					this.config.treeLoader.un('loadexception', loadmask.onLoad);
+				}.createDelegate(this);
+
+				this.config.treeLoader.on('beforeload', loadmask.onBeforeLoad, loadmask, {delay: 1});
+				this.config.treeLoader.on('load', loadmask.onLoad, loadmask);
+				this.config.treeLoader.on('loadexception', loadmask.onLoad, loadmask);
+			}
+		}.createDelegate(this));
+	}
+});
+
+//
 // Ext.ux.PerPage
 //
 // A PagingToolbar plugin allowing the user to change the page size.
@@ -303,6 +345,10 @@ MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 				id: 'root',
 				text: 'databases'
 			},
+			plugins: new Ext.ux.LoadMask({
+				msg: MongoVision.text.loading,
+				treeLoader: loader
+			}),
 			bbar: {
 				items: {
 					iconCls: 'x-tbar-loading',
@@ -428,21 +474,19 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			itemSelector: 'div.x-mongovision-document',
 			singleSelect: true,
 			emptyText: '<div class="x-grid-empty">' + MongoVision.text.noDocuments + '</div>',
+			// DataView does support a 'loadingText' config, but a LoadMask is nicer
+			// (and more consistent with the GridPanel, which supports LoadMask)
+			plugins: new Ext.ux.LoadMask({
+				msg: MongoVision.text.loading,
+				store: dataviewStore
+			}),
 			listeners: {
 				selectionchange: function(dataview) {
 					// Show selected row in editor
 					var record = dataview.getSelectedRecords()[0];
 					var mongoVisionEditor = Ext.getCmp(this.mongoVisionEditor);
 					mongoVisionEditor.setRecord(record);
-				}.createDelegate(this),
-				render: function(dataview) {
-					// DataView does support a 'loadingText' config, but a LoadMask is nicer
-					// (and more consistent with the GridPanel, which supports LoadMask)
-					new Ext.LoadMask(dataview.el, {
-						msg: MongoVision.text.loading,
-						store: dataviewStore
-					});
-				}
+				}.createDelegate(this)
 			}
 		});
 		
