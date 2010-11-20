@@ -21,6 +21,7 @@ MongoVision.text = {
 	collections: 'Collections',
 	noDocuments: 'No documents to display',
 	documentsDisplayed: 'Documents {0} to {1} of {2}',
+	keepRefreshing: 'Keep Refreshing',
 	wrap: 'Wrap',
 	grid: 'Grid',
 	query: 'Query',
@@ -356,6 +357,14 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			}
 		});
 		
+		this.keepRefreshingTask = {
+			run: function() {
+				this.reload();
+			},
+			interval: 5000,
+			scope: this
+		};
+		
 		var updateGridView = function() {
 			// Try to use currently selected record in dataview; default to first record in store
 			var selected = dataview.getSelectedRecords()
@@ -434,7 +443,18 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				displayInfo: true,
 				displayMsg: MongoVision.text.documentsDisplayed,
 				emptyMsg: MongoVision.text.noDocuments,
-				items: ['-', {
+				items: [{
+					enableToggle: true,
+					text: MongoVision.text.keepRefreshing,
+					toggleHandler: function(button, pressed) {
+						if (pressed) {
+							Ext.TaskMgr.start(this.keepRefreshingTask);
+						}
+						else {
+							Ext.TaskMgr.stop(this.keepRefreshingTask);
+						}
+					}.createDelegate(this)
+				}, '-', {
 					id: config.mongoVisionCollection + '-wrap',
 					pressed: this.wrap,
 					enableToggle: true,
@@ -506,6 +526,11 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 						}.createDelegate(this)
 					}
 				}]
+			},
+			listeners: {
+				destroy: function() {
+					Ext.TaskMgr.stop(this.keepRefreshingTask);					
+				}
 			}
 		}, config);
 		
