@@ -474,9 +474,6 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					enableToggle: true,
 					text: MongoVision.text.grid,
 					toggleHandler: function(button, pressed) {
-						// Wrap is only available for dataviews
-						//Ext.getCmp(config.mongoVisionCollection + '-wrap').setDisabled(pressed);
-						
 						// Switch view (feature of CardLayout)
 						this.getLayout().setActiveItem(pressed ? 1 : 0);
 						if (pressed) {
