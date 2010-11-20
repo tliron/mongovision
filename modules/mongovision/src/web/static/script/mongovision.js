@@ -12,125 +12,6 @@
 Ext.namespace('MongoVision');
 
 //
-// MongoVision.text
-//
-// Internationalization light. ;)
-//
-
-MongoVision.text = {
-	collections: 'Collections',
-	noDocuments: 'No documents to display',
-	documentsDisplayed: 'Documents {0} to {1} of {2}',
-	keepRefreshing: 'Keep Refreshing',
-	wrap: 'Wrap',
-	grid: 'Grid',
-	query: 'Query',
-	sort: 'Sort',
-	perPage: 'per page',
-	'delete': 'Delete',
-	deleteMessage: 'Are you sure you want to delete this document?',
-	save: 'Save',
-	validJSON: 'Valid JSON',
-	invalidJSON: 'Invalid JSON',
-	loading: 'Loading...',
-	exception: 'The operation failed.',
-	'action.update': 'Update',
-	'action.destroy': 'Delete'
-};
-
-//
-// MongoVision.json
-//
-// A JSON encoder that supports optional multiline indenting, HTML vs. plain text,
-// and removing curly brackets from the root object.
-//
-// We've been inspired by the code in Ext.util.JSON, though have diverged
-// significantly.
-//
-
-MongoVision.json = function(value, html, multiline) {
-	function toJSON(value, html, multiline, indent, depth) {
-		var json = '';
-		
-		var indentation = '';
-		for (var i = 0; i < depth; i++) {
-			indentation += (html ? '&nbsp;' : ' ');
-		}
-		if (indent) {
-			json += indentation;
-		}
-		
-		if ((value == null) || !Ext.isDefined(value)) {
-			json += 'null';
-		}
-		else if (Ext.isString(value)) {
-			if (html) {
-				value = value.replace(/</g, '&lt;');
-				value = value.replace(/>/g, '&gt;');
-			}
-			value = value.replace(/"/g, '\\"');
-			json += '"' + value + '"';
-		}
-		else if (typeof value == 'number') {
-			// Don't use isNumber here, since finite checks happen inside isNumber
-			json += (isFinite(value) ? String(value) : 'null');
-		}
-		else if (Ext.isBoolean(value)) {
-			json += String(value);
-		}
-		else if (Ext.isArray(value)) {
-			json += '[';
-			if (multiline) {
-				json += html ? '<br/>' : '\n';
-			}
-			var length = value.length;
-			if (length > 0) {
-				for (var i = 0; i < length - 1; i++) {
-					json += toJSON(value[i], html, multiline, true, depth + 1) + (multiline ? (html ? ',<br/>' : ',\n') : ', ');
-				}
-				json += toJSON(value[i], html, multiline, true, depth + 1);
-			}
-			json += indentation + ']';
-		}
-		else {
-			if (depth > -1) {
-				json += '{';
-			}
-			var keys = [];
-			for (var key in value) {
-				keys.push(key);
-			}
-			var length = keys.length;
-			if (length > 0) {
-				if (multiline && (depth > -1)) {
-					json += html ? '<br/>' : '\n';
-				}
-				for (var i = 0; i < length - 1; i++) {
-					if (multiline && (depth > -1)) {
-						json += indentation + (html ? '&nbsp;' : ' ');
-					}
-					json += keys[i] + ': ' + toJSON(value[keys[i]], html, multiline, false, depth + 1) + (multiline ? (html ? ',<br/>' : ',\n') : ', ');
-				}
-				if (multiline && (depth > -1)) {
-					json += indentation + (html ? '&nbsp;' : ' ');
-				}
-				json += keys[i] + ': ' + toJSON(value[keys[i]], html, multiline, false, depth + 1);
-				if (multiline && (depth > -1)) {
-					json += html ? '<br/>' : '\n';
-				}
-			}
-			if (depth > -1) {
-				json += indentation + '}';
-			}
-		}
-	
-		return json;
-	}
-
-	return toJSON(value, html, multiline, false, -1);
-};
-
-//
 // MongoVision.DatabasesPanel
 //
 // A tree view listing the MongoDB databases and collections. Clicking a collection
@@ -278,7 +159,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 		var tpl = new Ext.XTemplate(
 			'<tpl for=".">',
 			'<div class="x-mongovision-document x-unselectable<tpl if="!this.scope.wrap"> x-mongovision-nowrap</tpl>" id="', config.mongoVisionCollection, '/{id}">',
-			'{[MongoVision.json(values.document,true,false)]}',
+			'{[Ext.ux.JSON.encode(values.document,true,false)]}',
 			'</div>',
 			'</tpl>',
 			'<div class="x-clear"></div>', {
@@ -311,7 +192,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 		});
 		
 		var cellRenderer = function(value) {
-			var html = value != null ? MongoVision.json(value, true, false) : '&nbsp;'
+			var html = value != null ? Ext.ux.JSON.encode(value, true, false) : '&nbsp;'
 			if (this.wrap) {
 				html = '<div style="white-space:normal !important;">' + html + '</div>';
 			}
@@ -585,7 +466,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 						if (this.record) {
 							var textarea = Ext.getCmp(config.id + '-textarea');
 							try {
-								// MongoVision.json encoded this without curly brackets for the root object, so we need to add them
+								// Ext.ux.JSON.encode encoded this without curly brackets for the root object, so we need to add them
 								var document = Ext.decode('{' + textarea.getValue() + '}');
 								this.record.set('document', document);
 								Ext.getCmp(this.id + '-validity').removeClass('x-mongovision-invalid').setText(MongoVision.text.validJSON);
@@ -679,7 +560,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 		Ext.getCmp(this.id + '-delete').setDisabled(record == null);
 		Ext.getCmp(this.id + '-validity').setDisabled(record == null);
 		var textarea = Ext.getCmp(this.id + '-textarea');
-		var value = record ? MongoVision.json(record.json.document, false, true) : '';
+		var value = record ? Ext.ux.JSON.encode(record.json.document, false, true) : '';
 		var textarea = this.items.get(0);
 		if (textarea) {
 			// Reuse existing textarea
