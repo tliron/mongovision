@@ -1,5 +1,6 @@
 <%
 var base = conversation.pathToBase
+document.cacheDuration = 5000
 %>
 <html>
 <head>
@@ -44,7 +45,7 @@ if (debug && debug.booleanValue()) {
 					</td>
 					<td>
 						<h2>MongoVision</h2>
-						<span style="font-size: x-small;">Version 1.0 alpha</span>
+						<span style="font-size: x-small;">Version <%= application.globals.get('mongovision.version') %></span>
 					</td>
 				</tr></table>		
 			</td>

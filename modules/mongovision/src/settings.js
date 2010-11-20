@@ -26,6 +26,7 @@ showDebugOnError = true
 //resourcesMinimumTimeBetweenValidityChecks = 0
 //dynamicWebMinimumTimeBetweenValidityChecks = 0
 
+predefinedGlobals['mongovision.version'] = '1.0 alpha'
 predefinedGlobals['mongovision.extJS.debug'] = false
 
 //predefinedGlobals['mongodb.defaultServers'] = ['127.0.0.1']

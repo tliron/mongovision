@@ -154,6 +154,8 @@ MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 		config = Ext.apply({
 			title: MongoVision.text.collections,
 			autoScroll: true,
+			useArrows: true,
+			trackMouseOver: true,
 			loader: loader,
 			rootVisible: false,
 			root: {
@@ -221,6 +223,8 @@ MongoVision.gridviewKeyPrefix = '_gridviewKey_';
 
 MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	constructor: function(config) {
+		
+		this.wrap = true;
 
 		// The default Ext JS single-URL-based proxy is not quite RESTful
 		// enough for our tastes, so lets configure it (in particular, we prefer
@@ -272,13 +276,13 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 		
 		var tpl = new Ext.XTemplate(
 			'<tpl for=".">',
-			'<div class="x-mongovision-document x-unselectable<tpl if="!this.wrap"> x-mongovision-nowrap</tpl>" id="', config.mongoVisionCollection, '/{id}">',
+			'<div class="x-mongovision-document x-unselectable<tpl if="!this.scope.wrap"> x-mongovision-nowrap</tpl>" id="', config.mongoVisionCollection, '/{id}">',
 			'{[MongoVision.json(values.document,true,false)]}',
 			'</div>',
 			'</tpl>',
 			'<div class="x-clear"></div>', {
 			compiled: true,
-			wrap: true
+			scope: this
 		});
 		
 		var dataview = new Ext.DataView({
@@ -305,9 +309,13 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			}
 		});
 		
-		function cellRenderer(value) {
-			return value != null ? MongoVision.json(value, true, false) : '&nbsp;'
-		}
+		var cellRenderer = function(value) {
+			var html = value != null ? MongoVision.json(value, true, false) : '&nbsp;'
+			if (this.wrap) {
+				html = '<div style="white-space:normal !important;">' + html + '</div>';
+			}
+			return html
+		}.createDelegate(this);
 
 		var gridview = new Ext.grid.GridPanel({
 			store: dataviewStore,
@@ -321,7 +329,8 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			}),
 			viewConfig: {
 				forceFit: true,
-				emptyText: MongoVision.text.noDocuments
+				emptyText: MongoVision.text.noDocuments,
+				rowOverCls: 'x-view-over'
 			},
 			selModel: new Ext.grid.RowSelectionModel({
 				singleSelect: true,
@@ -333,7 +342,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					}.createDelegate(this)					
 				}
 			}),
-			overClass: 'x-view-over',
+			columnLines: true,
 			loadMask: {
 				msg: MongoVision.text.loading
 			},
@@ -427,19 +436,25 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				emptyMsg: MongoVision.text.noDocuments,
 				items: ['-', {
 					id: config.mongoVisionCollection + '-wrap',
-					pressed: true,
+					pressed: this.wrap,
 					enableToggle: true,
 					text: MongoVision.text.wrap,
 					toggleHandler: function(button, pressed) {
-						tpl.wrap = pressed;
-						dataview.refresh();
+						this.wrap = pressed;
+						var view = this.getView();
+						if (view === gridview) {
+							this.getView().getView().refresh();
+						}
+						else {
+							this.getView().refresh();
+						}
 					}.createDelegate(this)
 				}, ' ', {
 					enableToggle: true,
 					text: MongoVision.text.grid,
 					toggleHandler: function(button, pressed) {
 						// Wrap is only available for dataviews
-						Ext.getCmp(config.mongoVisionCollection + '-wrap').setDisabled(pressed);
+						//Ext.getCmp(config.mongoVisionCollection + '-wrap').setDisabled(pressed);
 						
 						// Switch view (feature of CardLayout)
 						this.getLayout().setActiveItem(pressed ? 1 : 0);
@@ -497,8 +512,12 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 		MongoVision.CollectionPanel.superclass.constructor.call(this, config);
 	},
 	
+	getView: function() {
+		return this.getLayout().activeItem;
+	},
+	
 	getStore: function() {
-		return this.getLayout().activeItem.getStore();
+		return this.getView().getStore();
 	},
 	
 	load: function() {
@@ -511,8 +530,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	},
 		
 	reload: function() {
-		var store = this.getStore();
-		store.reload();		
+		this.getStore().reload();		
 	}
 });
 
