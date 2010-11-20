@@ -578,7 +578,7 @@ Ext.reg('mongovisioneditor', MongoVision.EditorPanel);
 // Initialization
 //
 
-// Server communication notifications
+// DataProxy notifications
 
 Ext.data.DataProxy.on('write', function(proxy, action, data, response) {
 	new Ext.gritter.add({
@@ -588,7 +588,6 @@ Ext.data.DataProxy.on('write', function(proxy, action, data, response) {
 });
 
 Ext.data.DataProxy.on('exception', function(proxy, type, action) {
-	console.debug(action)
 	new Ext.gritter.add({
 		title: MongoVision.text['action.' + action],
 		text: MongoVision.text.exception
