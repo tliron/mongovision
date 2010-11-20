@@ -91,5 +91,7 @@ function handleGet(conversation) {
 		documents: documents
 	}
 	
+	//java.lang.Thread.sleep(3000)
+	
 	return JSON.to(data, conversation.query.get('human') == 'true')
 }

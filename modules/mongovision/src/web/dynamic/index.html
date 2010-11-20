@@ -20,15 +20,20 @@ if (debug && debug.booleanValue()) {
 	<script type="text/javascript" src="<%= base %>/script/sencha/adapter/ext/ext-base.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/sencha/ext-all.js"></script>
 <% } %>
+	<!-- See https://github.com/zir/ext-growl -->
+	<link rel="stylesheet" type="text/css" href="<%= base %>/script/sencha/ux/gritter/css/ext-growl.css" />
+	<script type="text/javascript" src="<%= base %>/script/sencha/ux/gritter/ext-growl.js"></script>
+
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/mongovision.css" />
-	<script type="text/javascript" src="<%= base %>/script/sencha/ux/App.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/mongovision.js"></script>
+	
+	<script type="text/javascript" src="<%= base %>/script/sencha/ux/App.js"></script>
 
 	<link rel="shortcut icon" href="<%= base %>/media/mongodb-leaf.ico" />
 </head>
 <body id="body">
-	<div id="header">
-		<table width="100%" height="100%"><tr>
+	<div id="header" style="visibility: hidden;">
+		<table width="100%"><tr>
 			<td width="50%" align="left">
 				<table height="100%"><tr>
 					<td style="padding-right: 10px;">

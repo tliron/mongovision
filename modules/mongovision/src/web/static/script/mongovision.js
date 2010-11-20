@@ -9,16 +9,6 @@
 // at http://threecrickets.com/
 //
 
-var App = new Ext.App({});
-
-Ext.data.DataProxy.addListener('write', function(proxy, action, result, res, rs) {
-	App.setAlert(true, action + ': ' + res.message);
-});
-
-Ext.data.DataProxy.addListener('exception', function(proxy, type, action, options, res) {
-	App.setAlert(false, 'Server failed during ' + action);
-});
-
 //
 // Ext.ux.TextFieldPopup
 //
@@ -134,7 +124,10 @@ MongoVision.text = {
 	deleteMessage: 'Are you sure you want to delete this document?',
 	save: 'Save',
 	validJSON: 'Valid JSON',
-	invalidJSON: 'Invalid JSON'
+	invalidJSON: 'Invalid JSON',
+	loading: 'Loading...',
+	exception: 'The operation failed.',
+	update: 'Updated'
 };
 
 //
@@ -391,7 +384,15 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					var record = dataview.getSelectedRecords()[0];
 					var mongoVisionEditor = Ext.getCmp(this.mongoVisionEditor);
 					mongoVisionEditor.setRecord(record);
-				}.createDelegate(this)
+				}.createDelegate(this),
+				render: function(dataview) {
+					// DataView does support a 'loadingText' config, but a LoadMask is nicer
+					// (and more consistent with the GridPanel, which supports LoadMask)
+					new Ext.LoadMask(dataview.el, {
+						msg: MongoVision.text.loading,
+						store: dataviewStore
+					});
+				}
 			}
 		});
 		
@@ -424,6 +425,9 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				}
 			}),
 			overClass: 'x-view-over',
+			loadMask: {
+				msg: MongoVision.text.loading
+			},
 			listeners: {
 				sortchange: function(grid, sortInfo) {
 					// We'll update the "sort" box to reflect what the current sort is
@@ -775,6 +779,22 @@ Ext.reg('mongovisioneditor', MongoVision.EditorPanel);
 // Initialization
 //
 
+// Server communication notifications
+
+Ext.data.DataProxy.on('write', function(proxy, action, data, response) {
+	new Ext.gritter.add({
+		title: MongoVision.text[action],
+		text: response.message
+	}); 
+});
+
+Ext.data.DataProxy.on('exception', function() {
+	new Ext.gritter.add({
+		title: MongoVision.text[action],
+		text: MongoVision.text.exception
+	}); 
+});
+
 Ext.onReady(function() {
 	Ext.QuickTips.init();
 	
@@ -789,7 +809,12 @@ Ext.onReady(function() {
 			border: false,
 			padding: '5 10 5 10',
 			bodyCssClass: 'x-border-layout-ct',
-			contentEl: 'header'
+			contentEl: 'header',
+			listeners: {
+				render: function() {
+					Ext.fly('header').show();
+				}
+			}
 		}, {
 			xtype: 'mongovisiondatabases',
 			region: 'west',
