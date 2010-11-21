@@ -47,14 +47,23 @@ if (debug && debug.booleanValue()) {
 					</td>
 					<td>
 						<h2>MongoVision</h2>
-						<span style="font-size: x-small;">Version <%= application.globals.get('mongovision.version') %></span>
+						<span  style="font-size: x-small;">
+						Version <%= application.globals.get('mongovision.version') %><br />
+						<a href="http://code.google.com/p/mongo-vision/">Community and Support Site</a>
+						</span>
 					</td>
 				</tr></table>		
 			</td>
-			<td width="50%" align="right" style="font-size: x-small;">
-				<a href="http://code.google.com/p/mongo-vision/">Community and Support</a><br />
-				Made with <a href="http://threecrickets.com/prudence/">Prudence</a><br />
-				By <a href="http://threecrickets.com/">Three Crickets</a>
+			<td width="50%" align="right">
+				<table height="100%"><tr>
+					<td style="font-size: x-small;">
+						Made with <a href="http://threecrickets.com/prudence/">Prudence</a><br />
+						By <a href="http://threecrickets.com/">Three Crickets</a>
+					</td>
+					<td style="padding-left: 10px;">
+						<a href="http://threecrickets.com/prudence/"><img src="<%= base %>/media/prudence-small.png" /></a>
+					</td>
+				</tr></table>		
 			</td>
 		</tr></table>		
 	</div>
