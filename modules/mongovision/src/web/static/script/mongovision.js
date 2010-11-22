@@ -368,25 +368,6 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					}.createDelegate(this)
 				}, '-', {
 					xtype: 'tbtext',
-					text: MongoVision.text.query
-				}, {
-					xtype: 'tbspacer',
-					width: 5
-				}, {
-					xtype: 'textfield',
-					plugins: new Ext.ux.TextFieldPopup(),
-					id: config.mongoVisionCollection + '/query',
-					fieldLabel: MongoVision.text.query,
-					width: 200,
-					listeners: {
-						specialkey: function(textfield, event) {
-							if (event.getKey() == event.ENTER) {
-								this.load();
-							}
-						}.createDelegate(this)
-					}
-				}, '-', {
-					xtype: 'tbtext',
 					text: MongoVision.text.sort
 				}, {
 					xtype: 'tbspacer',
@@ -396,7 +377,26 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					plugins: new Ext.ux.TextFieldPopup(),
 					fieldLabel: MongoVision.text.sort,
 					id: config.mongoVisionCollection + '/sort',
-					width: 200,
+					width: 150,
+					listeners: {
+						specialkey: function(textfield, event) {
+							if (event.getKey() == event.ENTER) {
+								this.load();
+							}
+						}.createDelegate(this)
+					}
+				}, '-', {
+					xtype: 'tbtext',
+					text: MongoVision.text.query
+				}, {
+					xtype: 'tbspacer',
+					width: 5
+				}, {
+					xtype: 'textfield',
+					plugins: new Ext.ux.TextFieldPopup(),
+					id: config.mongoVisionCollection + '/query',
+					fieldLabel: MongoVision.text.query,
+					width: 150,
 					listeners: {
 						specialkey: function(textfield, event) {
 							if (event.getKey() == event.ENTER) {
@@ -572,11 +572,15 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 					id: config.id + '-collection',
 					xtype: 'tbtext'
 				}, {
+					id: config.id + '-prev',
+					disabled: true,
 					iconCls: 'x-tbar-page-prev',
 					handler: function() {
 						this.collectionPanel.selectPrevious(this.record);
 					}.createDelegate(this)
 				}, {
+					id: config.id + '-next',
+					disabled: true,
 					iconCls: 'x-tbar-page-next',
 					handler: function() {
 						this.collectionPanel.selectNext(this.record);
@@ -631,9 +635,17 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 	setRecord: function(record, collectionPanel) {
 		this.record = record;
 		this.collectionPanel = collectionPanel;
+		
+		var store = collectionPanel.getStore();
+		var cursor = store.indexOf(record) + collectionPanel.getBottomToolbar().cursor;
+		var total = store.getTotalCount();
+		
 		Ext.getCmp(this.id + '-delete').setDisabled(record == null);
 		Ext.getCmp(this.id + '-validity').setDisabled(record == null);
+		Ext.getCmp(this.id + '-prev').setDisabled(cursor <= 0);
+		Ext.getCmp(this.id + '-next').setDisabled(cursor >= total - 1);
 		Ext.getCmp(this.id + '-collection').setText(record == null ? '' : collectionPanel.initialConfig.title);
+		
 		var textarea = Ext.getCmp(this.id + '-textarea');
 		var value = record ? Ext.ux.JSON.encode(record.json.document, false, true) : '';
 		var textarea = this.items.get(0);
