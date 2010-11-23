@@ -94,14 +94,14 @@ Ext.reg('mongovisiondatabases', MongoVision.DatabasesPanel);
 // the DataView. Each view requires a different record structure, and thus a different store, which is
 // why we created Ext.ux.ReusableJsonStore to allow us to use the same data for both stores.
 //
-// An extended PagingToolbar allows user-configured paging, MongoDB querying and sorting. The gridview
+// An extended PagingToolbar allows user-configured paging, MongoDB querying and sorting. The tabular view
 // column sorting is kinda linked to the toolbar sort box. (Faked, really: the column sorting is
 // specially handled on the server.)
 //
 // Selecting a row in either view opens it in a MongoVision.EditorPanel specified by 'mongoVisionEditor'.
 //
 
-MongoVision.gridviewKeyPrefix = '_gridviewKey_';
+MongoVision.tabularKeyPrefix = '_tabular_';
 
 MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	wrap: true,
@@ -199,7 +199,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			return html
 		}.createDelegate(this);
 
-		var gridview = new Ext.grid.GridPanel({
+		var tabular = new Ext.grid.GridPanel({
 			store: dataviewStore,
 			colModel: new Ext.grid.ColumnModel({
 				columns: [{
@@ -229,10 +229,10 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				msg: MongoVision.text.loading
 			},
 			listeners: {
-				sortchange: function(grid, sortInfo) {
+				sortchange: function(gridPanel, sortInfo) {
 					// We'll update the "sort" box to reflect what the current sort is
 					// (this is faked: the sorted column is handled specially by the server)
-					var field = sortInfo.field.substr(MongoVision.gridviewKeyPrefix.length);
+					var field = sortInfo.field.substr(MongoVision.tabularKeyPrefix.length);
 					Ext.getCmp(this.initialConfig.mongoVisionCollection + '/sort').setValue(field + ':' + (sortInfo.direction == 'ASC' ? '1' : '-1'));
 				}.createDelegate(this)
 			}
@@ -246,7 +246,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			scope: this
 		};
 		
-		var updateGridView = function() {
+		var updateTabular = function() {
 			// Try to use currently selected record in dataview; default to first record in store
 			var selected = dataview.getSelectedRecords()
 			var record = selected.length ? selected[0] : dataview.getStore().getAt(0);
@@ -268,20 +268,20 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					// we are prefixing our fake fields with a special prefix, and then using
 					// the convert function to fetch their value from 'document', which is the
 					// only real field value returned by the server
-					name: MongoVision.gridviewKeyPrefix + key,
+					name: MongoVision.tabularKeyPrefix + key,
 					key: key,
 					convert: function(value, record) {
 						return record.document[this.key]
 					}
 				});
 				columns.push({
-					dataIndex: MongoVision.gridviewKeyPrefix + key,
+					dataIndex: MongoVision.tabularKeyPrefix + key,
 					header: key,
 					renderer: cellRenderer
 				});
 			}
 			
-			var gridviewStore = new Ext.ux.ReusableJsonStore({
+			var tabularStore = new Ext.ux.ReusableJsonStore({
 				restful: true,
 				remoteSort: true,
 				proxy: proxy,
@@ -294,10 +294,10 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				fields: fields
 			});
 			
-			this.getBottomToolbar().bindStore(gridviewStore);
-			gridviewStore.reuse(this.getStore());
+			this.getBottomToolbar().bindStore(tabularStore);
+			tabularStore.reuse(this.getStore());
 			
-			gridview.reconfigure(gridviewStore, new Ext.grid.ColumnModel({
+			tabular.reconfigure(tabularStore, new Ext.grid.ColumnModel({
 				columns: columns,
 				defaultSortable: true
 			}));
@@ -312,7 +312,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 			activeItem: 0,
 			items: [
 				dataview,
-				gridview
+				tabular
 			],
 			bbar: {
 				xtype: 'paging',
@@ -344,7 +344,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					toggleHandler: function(button, pressed) {
 						this.wrap = pressed;
 						var view = this.getView();
-						if (view === gridview) {
+						if (view === tabular) {
 							this.getView().getView().refresh();
 						}
 						else {
@@ -353,17 +353,17 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					}.createDelegate(this)
 				}, ' ', {
 					enableToggle: true,
-					text: MongoVision.text.grid,
+					text: MongoVision.text.tabular,
 					toggleHandler: function(button, pressed) {
 						// Switch view (feature of CardLayout)
 						this.getLayout().setActiveItem(pressed ? 1 : 0);
 						if (pressed) {
-							// This will update the gridview according to our currently selected row
-							updateGridView();
+							// This will update the tabular view according to our currently selected row
+							updateTabular();
 						}
 						else {
 							this.getBottomToolbar().bindStore(dataviewStore);
-							dataviewStore.reuse(gridview.getStore());
+							dataviewStore.reuse(tabular.getStore());
 						}
 					}.createDelegate(this)
 				}, '-', {

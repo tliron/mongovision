@@ -16,7 +16,7 @@ function handleInit(conversation) {
 	conversation.addMediaTypeByName('text/plain')
 }
 
-var gridviewKeyPrefix = '_gridviewKey_'
+var tabularKeyPrefix = '_tabular_'
 
 function handleGet(conversation) {
 	var database = conversation.locals.get('database')
@@ -34,8 +34,8 @@ function handleGet(conversation) {
 		query = JSON.from(query, true)
 	}
 	if (sort) {
-		if (sort.substr(0, gridviewKeyPrefix.length) == gridviewKeyPrefix) {
-			sort = sort.substr(gridviewKeyPrefix.length)
+		if (sort.substr(0, tabularKeyPrefix.length) == tabularKeyPrefix) {
+			sort = sort.substr(tabularKeyPrefix.length)
 		}
 		if (dir) {
 			sort += ':' + (dir == 'ASC' ? '1' : '-1')
