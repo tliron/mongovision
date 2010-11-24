@@ -49,12 +49,19 @@ function handleGet(conversation) {
 				}
 			}
 			children = children.concat(systemChildren)
-			nodes.push({
+			n = {
 				id: databaseName,
 				text: databaseName,
 				children: children,
+				singleClickExpand: true,
 				expanded: true
-			})
+			}
+			if (children.length == 0) {
+				// Ext-JS will annoyingly use a leaf icon for nodes without children.
+				// This class of ours will override it.
+				n.cls = 'x-tree-node-expanded-important'
+			}
+			nodes.push(n)
 		}
 	}
 	

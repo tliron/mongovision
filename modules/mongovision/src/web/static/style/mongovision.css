@@ -44,3 +44,7 @@ div#header a:hover {
 .x-mongovision-invalid {
 	color: red;
 }
+
+.x-tree-node-expanded-important .x-tree-node-icon {
+	background-image: url('../script/sencha/resources/images/default/tree/folder-open.gif') !important;
+}

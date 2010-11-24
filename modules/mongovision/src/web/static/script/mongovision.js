@@ -25,18 +25,18 @@ MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 	
 		var loader = new Ext.tree.TreeLoader({
 			url: 'data/databases/',
-			requestMethod: 'GET'
+			requestMethod: 'GET',
+			preloadChildren: true
 		});
 		
 		config = Ext.apply({
 			title: MongoVision.text.collections,
+			loader: loader,
 			autoScroll: true,
 			useArrows: true,
 			trackMouseOver: true,
-			loader: loader,
 			rootVisible: false,
 			root: {
-				nodeType: 'async',
 				id: 'root',
 				text: 'databases'
 			},
@@ -54,10 +54,7 @@ MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 			},
 			listeners: {
 				click: function(node) {
-					if (!node.isLeaf()) {
-						node.toggle();
-					}
-					else {
+					if (node.isLeaf()) {
 						var mongoVisionCollections = Ext.getCmp(config.mongoVisionCollections);
 						var mongoVisionCollection = mongoVisionCollections.get(node.id);
 						if (mongoVisionCollection) {
