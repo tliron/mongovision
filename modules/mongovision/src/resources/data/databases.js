@@ -52,7 +52,8 @@ function handleGet(conversation) {
 			nodes.push({
 				id: databaseName,
 				text: databaseName,
-				children: children
+				children: children,
+				expanded: true
 			})
 		}
 	}

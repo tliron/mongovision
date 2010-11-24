@@ -25,12 +25,7 @@ MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 	
 		var loader = new Ext.tree.TreeLoader({
 			url: 'data/databases/',
-			requestMethod: 'GET',
-			listeners: {
-				load: function(loader, node) {
-					node.expand(true);
-				}
-			}
+			requestMethod: 'GET'
 		});
 		
 		config = Ext.apply({
@@ -41,6 +36,7 @@ MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 			loader: loader,
 			rootVisible: false,
 			root: {
+				nodeType: 'async',
 				id: 'root',
 				text: 'databases'
 			},
