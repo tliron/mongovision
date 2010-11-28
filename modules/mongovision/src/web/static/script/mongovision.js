@@ -503,6 +503,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 	record: null,
 	collectionPanel: null,
 	wrap: true,
+	multiline: false,
 	
 	constructor: function(config) {
 		
@@ -520,13 +521,12 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 								// Ext.ux.JSON.encode encoded this without curly brackets for the root object, so we need to add them
 								var document = Ext.decode('{' + textarea.getValue() + '}');
 								this.record.set('document', document);
-								Ext.getCmp(this.id + '-validity').removeClass('x-mongovision-invalid').setText(MongoVision.text.validJSON);
-								
+								Ext.getCmp(this.id + '-save').setDisabled(true);
 								// TODO: detect if _id changed, in which case we create a new record
 							}
 							catch (x) {
 								// We should never get here! The Save button should be disabled if invalid
-								Ext.getCmp(this.id + '-validity').addClass('x-mongovision-invalid').setText(MongoVision.text.invalidJSON);
+								this.updateValidity(false);
 							}
 						}
 					}.createDelegate(this)
@@ -544,17 +544,40 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 						}
 					}.createDelegate(this)
 				}, '-', {
-					pressed: true,
+					id: config.id + '-multiline',
+					pressed: this.multiline,
+					enableToggle: true,
+					text: MongoVision.text.multiline,
+					toggleHandler: function(button, pressed) {
+						this.multiline = pressed;
+						var textarea = Ext.getCmp(this.id + '-textarea');
+						if (textarea) {
+							// Re-encode
+							try {
+								var value = Ext.decode('{' + textarea.getValue() + '}');
+								value = Ext.ux.JSON.encode(value, false, this.multiline);
+								textarea.setValue(value);
+							}
+							catch (x) {
+								console.debug(x)
+								this.updateValidity(false);
+							}
+						}
+					}.createDelegate(this)
+				}, {
+					pressed: this.wrap,
 					enableToggle: true,
 					text: MongoVision.text.wrap,
 					toggleHandler: function(button, pressed) {
 						this.wrap = pressed;
-						var textarea = Ext.getCmp(config.id + '-textarea');
-						var value = textarea.getValue();
-						
-						// Some browsers (Mozilla, looking at you!) don't allow changing the wrap value of a textarea,
-						// so for best portability we'll be sure to recreate it each time we need to change the wrap value
-						this.createTextArea(value);
+						var textarea = Ext.getCmp(this.id + '-textarea');
+						if (textarea) {
+							var value = textarea.getValue();
+							
+							// Some browsers (Mozilla, looking at you!) don't allow changing the wrap value of a textarea,
+							// so for best portability we'll be sure to recreate it each time we need to change the wrap value
+							this.createTextArea(value);
+						}
 					}.createDelegate(this)
 				}, '-', {
 					id: config.id + '-validity',
@@ -608,11 +631,10 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 								var value = Ext.encode(Ext.decode('{' + textarea.getValue() + '}'));
 								var document = Ext.encode(this.record.get('document'));
 								Ext.getCmp(this.id + '-save').setDisabled(value == document);
-								Ext.getCmp(this.id + '-validity').removeClass('x-mongovision-invalid').setText(MongoVision.text.validJSON);
+								this.updateValidity(true);
 							}
 							catch (x) {
-								Ext.getCmp(this.id + '-save').setDisabled(true);
-								Ext.getCmp(this.id + '-validity').addClass('x-mongovision-invalid').setText(MongoVision.text.invalidJSON);
+								this.updateValidity(false);
 							}
 						}
 					}.createDelegate(this),
@@ -623,6 +645,18 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 		this.removeAll();
 		this.add(textarea);
 		this.doLayout();
+	},
+	
+	updateValidity: function(valid) {
+		if (valid) {
+			Ext.getCmp(this.id + '-multiline').setDisabled(false);
+			Ext.getCmp(this.id + '-validity').removeClass('x-mongovision-invalid').setText(MongoVision.text.validJSON);
+		}
+		else {
+			Ext.getCmp(this.id + '-save').setDisabled(true);
+			Ext.getCmp(this.id + '-multiline').setDisabled(true);
+			Ext.getCmp(this.id + '-validity').addClass('x-mongovision-invalid').setText(MongoVision.text.invalidJSON);
+		}
 	},
 	
 	setRecord: function(record, collectionPanel) {
@@ -640,7 +674,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 		Ext.getCmp(this.id + '-collection').setText(record == null ? '' : collectionPanel.initialConfig.title);
 		
 		var textarea = Ext.getCmp(this.id + '-textarea');
-		var value = record ? Ext.ux.JSON.encode(record.json.document, false, true) : '';
+		var value = record ? Ext.ux.JSON.encode(record.json.document, false, this.multiline) : '';
 		var textarea = this.items.get(0);
 		if (textarea) {
 			// Reuse existing textarea

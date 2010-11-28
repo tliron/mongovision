@@ -23,6 +23,7 @@ MongoVision.text = {
 	documentsDisplayed: 'Documents {0} to {1} of {2}',
 	keepRefreshing: 'Keep Refreshing',
 	wrap: 'Wrap',
+	multiline: 'Multiline',
 	tabular: 'Tabular',
 	query: 'Query',
 	sort: 'Sort',
