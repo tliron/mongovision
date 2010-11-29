@@ -187,7 +187,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 		var cellRenderer = function(value) {
 			var html = value != null ? Ext.ux.JSON.encode(value, true, false) : '&nbsp;'
 			if (this.wrap) {
-				html = '<div style="white-space:normal !important;">' + html + '</div>';
+				html = '<div style="x-mongovision-wrap">' + html + '</div>';
 			}
 			return html
 		}.createDelegate(this);
