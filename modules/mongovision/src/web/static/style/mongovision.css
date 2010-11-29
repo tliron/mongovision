@@ -61,3 +61,7 @@ td.x-grid3-cell {
 div.x-grid3-row-selected {
 	border-top-color: #DFE8F6 !important;
 }
+
+div.x-grid3-hd-inner {
+	font-weight: bold;
+}
