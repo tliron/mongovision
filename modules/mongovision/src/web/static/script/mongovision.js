@@ -554,14 +554,13 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 						this.multiline = pressed;
 						var textarea = Ext.getCmp(this.id + '-textarea');
 						if (textarea) {
-							// Re-encode
 							try {
+								// Re-encode
 								var value = Ext.decode('{' + textarea.getValue() + '}');
 								value = Ext.ux.JSON.encode(value, false, this.multiline);
 								textarea.setValue(value);
 							}
 							catch (x) {
-								console.debug(x)
 								this.updateValidity(false);
 							}
 						}
