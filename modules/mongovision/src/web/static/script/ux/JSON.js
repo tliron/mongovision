@@ -52,10 +52,14 @@ Ext.ux.JSON.encode = function(value, html, multiline) {
 	function toJSON(value, html, multiline, indent, depth) {
 		var json = '';
 		
+		function space() {
+			return html ? '&nbsp;&nbsp;&nbsp;' : '\t';
+		}
+		
 		var indentation = '';
 		if (multiline) {
 			for (var i = 0; i < depth; i++) {
-				indentation += (html ? '&nbsp;' : ' ');
+				indentation += space();
 			}
 		}
 		if (indent) {
@@ -111,12 +115,12 @@ Ext.ux.JSON.encode = function(value, html, multiline) {
 				}
 				for (var i = 0; i < length - 1; i++) {
 					if (multiline && (depth > -1)) {
-						json += indentation + (html ? '&nbsp;' : ' ');
+						json += indentation + space();
 					}
 					json += keys[i] + ': ' + toJSON(value[keys[i]], html, multiline, false, depth + 1) + (multiline ? (html ? ',<br/>' : ',\n') : ', ');
 				}
 				if (multiline && (depth > -1)) {
-					json += indentation + (html ? '&nbsp;' : ' ');
+					json += indentation + space();
 				}
 				json += keys[i] + ': ' + toJSON(value[keys[i]], html, multiline, false, depth + 1);
 				if (multiline && (depth > -1)) {

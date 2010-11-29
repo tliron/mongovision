@@ -519,10 +519,12 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 							var textarea = Ext.getCmp(config.id + '-textarea');
 							try {
 								// Ext.ux.JSON.encode encoded this without curly brackets for the root object, so we need to add them
-								var document = Ext.decode('{' + textarea.getValue() + '}');
-								this.record.set('document', document);
+								var value = Ext.decode('{' + textarea.getValue() + '}');
+								var document = this.record ? this.record.get('document') : null;
+								var create = !document || !value._id || (Ext.encode(value._id) != Ext.encode(document._id));
+								// TODO: handle create
+								this.record.set('document', value);
 								Ext.getCmp(this.id + '-save').setDisabled(true);
-								// TODO: detect if _id changed, in which case we create a new record
 							}
 							catch (x) {
 								// We should never get here! The Save button should be disabled if invalid
@@ -564,7 +566,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 							}
 						}
 					}.createDelegate(this)
-				}, {
+				}, ' ', {
 					pressed: this.wrap,
 					enableToggle: true,
 					text: MongoVision.text.wrap,
@@ -628,9 +630,9 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 						if (this.record) {
 							var textarea = Ext.getCmp(this.id + '-textarea');
 							try {
-								var value = Ext.encode(Ext.decode('{' + textarea.getValue() + '}'));
-								var document = Ext.encode(this.record.get('document'));
-								Ext.getCmp(this.id + '-save').setDisabled(value == document);
+								var value = Ext.decode('{' + textarea.getValue() + '}')
+								var document = this.record.get('document');
+								Ext.getCmp(this.id + '-save').setDisabled(Ext.encode(value) == Ext.encode(document));
 								this.updateValidity(true);
 							}
 							catch (x) {
