@@ -48,3 +48,15 @@ div#header a:hover {
 .x-tree-node-expanded-important .x-tree-node-icon {
 	background-image: url('../script/sencha/resources/images/default/tree/folder-open.gif') !important;
 }
+
+div.x-grid3-row {
+	border-bottom: 1px #CCCCCC solid;
+}
+
+td.x-grid3-cell {
+    border-right: 1px #CCCCCC solid;
+}
+
+div.x-grid3-row-selected {
+	border-top-color: #DFE8F6 !important;
+}

@@ -202,6 +202,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 				}],
 				defaultSortable: true
 			}),
+			border: false,
 			viewConfig: {
 				forceFit: true,
 				emptyText: MongoVision.text.noDocuments,
@@ -217,7 +218,6 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 					}.createDelegate(this)					
 				}
 			}),
-			columnLines: true,
 			loadMask: {
 				msg: MongoVision.text.loading
 			},
