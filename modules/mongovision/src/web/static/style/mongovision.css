@@ -54,7 +54,8 @@ div.x-grid3-row {
 }
 
 td.x-grid3-cell {
-    border-right: 1px #CCCCCC solid;
+    padding-right:0;
+	border-right: 1px #CCCCCC solid;
 }
 
 div.x-grid3-row-selected {
