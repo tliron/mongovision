@@ -18,7 +18,7 @@
 			<fileset dir="${lib}/ext-js/license" />
 		</copy>
 		<copy todir="${content}/licenses/gritter">
-			<fileset dir="${lib}/ext-js/license" />
+			<fileset dir="${lib}/gritter/license" />
 		</copy>
 	</target>
 
