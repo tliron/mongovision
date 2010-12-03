@@ -17,6 +17,9 @@
 		<copy todir="${content}/licenses/ext-js">
 			<fileset dir="${lib}/ext-js/license" />
 		</copy>
+		<copy todir="${content}/licenses/gritter">
+			<fileset dir="${lib}/ext-js/license" />
+		</copy>
 	</target>
 
 	<target name="libraries" description="Fetch libraries">
@@ -30,8 +33,18 @@
 		<copy todir="${content}/applications/mongovision/libraries/util">
 			<fileset dir="${lib}/mongo-rhino/lib" includes="*.js" />
 		</copy>
-		<copy todir="${content}/applications/mongovision/web/static/script/sencha">
-			<fileset dir="${lib}/ext-js/lib" />
+		<copy todir="${content}/applications/mongovision/web/static/script/ext">
+			<fileset dir="${lib}/ext-js/lib" includes="*.js" />
+			<fileset dir="${lib}/ext-js/lib/adapter/ext" />
+		</copy>
+		<copy todir="${content}/applications/mongovision/web/static/style/ext">
+			<fileset dir="${lib}/ext-js/lib/resources" />
+		</copy>
+		<copy todir="${content}/applications/mongovision/web/static/script/ux">
+			<fileset dir="${lib}/gritter/lib" includes="*.js" />
+		</copy>
+		<copy todir="${content}/applications/mongovision/web/static/style/ux/gritter">
+			<fileset dir="${lib}/gritter/lib/resources" />
 		</copy>
 	</target>
 	

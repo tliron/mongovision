@@ -12,19 +12,19 @@ debug = debug && debug.booleanValue()
 if (debug) {
 %>
 	<!-- Ext-JS Debug -->
-	<link rel="stylesheet" type="text/css" href="<%= base %>/script/sencha/resources/css/reset-min.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/script/sencha/resources/css/ext-all-notheme.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/script/sencha/resources/css/xtheme-blue.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/script/sencha/resources/css/debug.css" />
-	<script type="text/javascript" src="<%= base %>/script/sencha/adapter/ext/ext-base-debug.js"></script>
-	<script type="text/javascript" src="<%= base %>/script/sencha/ext-all-debug.js"></script>
+	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/reset-min.css" />
+	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/ext-all-notheme.css" />
+	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/xtheme-blue.css" />
+	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/debug.css" />
+	<script type="text/javascript" src="<%= base %>/script/ext/ext-base-debug.js"></script>
+	<script type="text/javascript" src="<%= base %>/script/ext/ext-all-debug.js"></script>
 <% } else { %>
 	<!-- Ext-JS -->
-	<link rel="stylesheet" type="text/css" href="<%= base %>/script/sencha/resources/css/reset-min.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/script/sencha/resources/css/ext-all-notheme.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/script/sencha/resources/css/xtheme-blue.css" />
-	<script type="text/javascript" src="<%= base %>/script/sencha/adapter/ext/ext-base.js"></script>
-	<script type="text/javascript" src="<%= base %>/script/sencha/ext-all.js"></script>
+	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/reset-min.css" />
+	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/ext-all-notheme.css" />
+	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/xtheme-blue.css" />
+	<script type="text/javascript" src="<%= base %>/script/ext/ext-base.js"></script>
+	<script type="text/javascript" src="<%= base %>/script/ext/ext-all.js"></script>
 <% } %>
 	<!-- MongoVision's Ext-JS Extensions -->
 	<script type="text/javascript" src="<%= base %>/script/ux/JSON.js"></script>
@@ -34,8 +34,8 @@ if (debug) {
 	<script type="text/javascript" src="<%= base %>/script/ux/TextFieldPopup.js"></script>
 
 	<!-- Gritter Ext-JS Extension (https://github.com/zir/ext-growl) -->
-	<link rel="stylesheet" type="text/css" href="<%= base %>/script/sencha/ux/gritter/css/ext-growl.css" />
-	<script type="text/javascript" src="<%= base %>/script/sencha/ux/gritter/ext-growl.js"></script>
+	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ux/gritter/css/ext-growl.css" />
+	<script type="text/javascript" src="<%= base %>/script/ux/ext-growl.js"></script>
 
 	<!-- MongoVision -->
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/mongovision.css" />
