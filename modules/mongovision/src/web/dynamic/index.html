@@ -1,6 +1,7 @@
 <%
 document.cacheDuration = 5000
 var base = conversation.pathToBase
+var locale = application.globals.get('mongovision.locale') || 'en'
 var debug = application.globals.get('mongovision.extJS.debug')
 debug = debug && debug.booleanValue()
 %>
@@ -41,7 +42,7 @@ if (debug) {
 	<!-- MongoVision -->
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/mongovision.css" />
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/mongovision-blue.css" id="mongovision-theme" />
-	<script type="text/javascript" src="<%= base %>/script/locale/en.js"></script>
+	<script type="text/javascript" src="<%= base %>/script/locale/<%= locale %>.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/mongovision.js"></script>
 </head>
 <body id="body">
