@@ -727,12 +727,12 @@ Ext.onReady(function() {
 				render: function() {
 					Ext.fly('header').show();
 					new Ext.Panel({
-						id: 'theme-switcher',
+						id: 'header',
 						renderTo: 'header-main',
 						border: false,
 						bodyCssClass: 'x-border-layout-ct', // Uses the neutral background color
 						padding: '0 20px 0 20px',
-						items: new Ext.Panel({
+						items: {
 							border: false,
 							bodyCssClass: 'x-border-layout-ct', // Uses the neutral background color
 							height: 50,
@@ -742,10 +742,10 @@ Ext.onReady(function() {
 								text: MongoVision.text.theme,
 							}, {
 								xtype: 'themeswitcher',
-								listWidth: 100,
-								width: 100,
+								listWidth: 150,
+								width: 150,
 								loadingText: MongoVision.text.loading,
-								layoutContainers: ['viewport', 'theme-switcher'],
+								layoutContainers: ['viewport', 'header'],
 								styleSheet: 'ext-theme',
 								themes: [
 									['style/ext/css/xtheme-blue.css', MongoVision.text['theme.blue']],
@@ -753,7 +753,7 @@ Ext.onReady(function() {
 									['style/ext/css/xtheme-access.css', MongoVision.text['theme.accessible']]
 								]
 							}]
-						})
+						}
 					});
 				}
 			}
