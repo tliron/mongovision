@@ -713,6 +713,8 @@ Ext.onReady(function() {
 	// Our ViewPort: a DatabasesPanel in the east, a TabPanel containing CollectionPanels in the
 	// center, an EditorPanel in the south, and a header in the north
 	
+	Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+	
 	var viewport = new Ext.Viewport({
 		id: 'viewport',
 		layout: 'border',
@@ -782,7 +784,6 @@ Ext.onReady(function() {
 				id: 'mongovision-editor',
 				xtype: 'mongovisioneditor',
 				height: 200
-				//stateful: false
 			}]
 		}]
 	});

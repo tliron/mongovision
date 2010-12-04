@@ -47,13 +47,15 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 			fields: ['url', 'label'],
 			data: config.themes
 		});
+
+		var currentTheme = Ext.state.Manager.get('theme');
 		
 		config = Ext.apply({
 			mode: 'local',
 			store: store,
 			valueField: 'url',
 			displayField: 'label',
-			value: store.getAt(0).get('url'),
+			value: currentTheme || store.getAt(0).get('url'),
 			triggerAction: 'all',
 			editable: false,
 			forceSelection: true
@@ -66,6 +68,10 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 		}, config.listeners);
 		
 		Ext.ux.ThemeSwitcher.superclass.constructor.call(this, config);
+		
+		if (currentTheme) {
+			this.doSwitch(currentTheme);
+		}
 	},
 	
 	doSwitch: function(url) {
@@ -73,6 +79,7 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 		this.mask.show();
 
 		Ext.util.CSS.swapStyleSheet(this.styleSheet, url);
+		Ext.state.Manager.set('theme', url);
 		
 		if (this.layoutContainers) {
 			// Wait a few seconds after swapping the style sheet, so that
