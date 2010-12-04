@@ -23,9 +23,10 @@ Ext.namespace('Ext.ux');
 
 Ext.ux.TextFieldPopup = Ext.extend(Object, {
 	constructor: function(config) {
-		config = config || {};
-		this.width = config.width || 600;
-		this.height = config.height || 400;
+		Ext.apply(this, config, {
+			width: 600,
+			height: 400
+		});
 	},
 	
 	init: function(textfield) {

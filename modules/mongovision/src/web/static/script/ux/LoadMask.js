@@ -22,14 +22,14 @@ Ext.namespace('Ext.ux');
 
 Ext.ux.LoadMask = Ext.extend(Object, {
 	constructor: function(config) {
-		this.config = config;
+		Ext.apply(this, config);
 	},
 
 	init: function(cmp) {
 		cmp.on('render', function(cmp) {
-			var loadmask = new Ext.LoadMask(cmp.el, this.config);
+			var loadmask = new Ext.LoadMask(cmp.el, this);
 			
-			if (this.config.treeLoader) {
+			if (this.treeLoader) {
 				// See: http://www.sencha.com/forum/showthread.php?86323-Tree-LoadMask-not-centering-properly
 				
 			    loadmask.onBeforeLoad = loadmask.onBeforeLoad.createInterceptor(function(loader) {
@@ -40,14 +40,14 @@ Ext.ux.LoadMask = Ext.extend(Object, {
 				});
 
 				loadmask.destroy = function() {
-					this.config.treeLoader.un('beforeload', loadmask.onBeforeLoad);
-					this.config.treeLoader.un('load', loadmask.onLoad);
-					this.config.treeLoader.un('exception', loadmask.onLoad);
+					this.treeLoader.un('beforeload', loadmask.onBeforeLoad);
+					this.treeLoader.un('load', loadmask.onLoad);
+					this.treeLoader.un('exception', loadmask.onLoad);
 				}.createDelegate(this);
 
-				this.config.treeLoader.on('beforeload', loadmask.onBeforeLoad, loadmask, {delay: 1});
-				this.config.treeLoader.on('load', loadmask.onLoad, loadmask);
-				this.config.treeLoader.on('exception', loadmask.onLoad, loadmask);
+				this.treeLoader.on('beforeload', loadmask.onBeforeLoad, loadmask, {delay: 1});
+				this.treeLoader.on('load', loadmask.onLoad, loadmask);
+				this.treeLoader.on('exception', loadmask.onLoad, loadmask);
 			}
 		}.createDelegate(this));
 	}

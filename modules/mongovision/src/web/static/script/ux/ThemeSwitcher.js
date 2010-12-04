@@ -12,18 +12,23 @@
 //
 // Ext.ux.ThemeSwitcher
 //
-// A ComboBox that allows switching between a set of CSS stylesheets. A LoadMask is used
-// while loading. Use the 'loadingText' config option for the LoadMask text.
+// A ComboBox that allows switching between a set of CSS stylesheets.
 //
-// The optional 'layoutContainers' config option specifies one or an array of container
+// If the 'statefulThemeId' config option is not null, the theme selection is stored in the
+// state.Manager and switched to automatically when the component is created.
+//
+// A LoadMask is used while loading. Use the 'loadingText' config option for the LoadMask text.
+//
+// The optional 'layoutContainers' config option specifies one of or an array of container
 // component IDs that will have their layout redone after the switch. When this is used, an
 // extra delay added to allow the browser time to re-render after switching. Change this delay
 // time with the 'delay' config option. The default is 2000 ms.
 //
 // The 'themes' config option is an array of themes, where each theme is an array in
-// form of [url, label].
+// form of ['theme', 'label']. The 'themeBase' config option is prefixed to each 'theme' in
+// order to create the stylesheet URL.
 //
-// The 'styleSheet' config option is the ID of the <link> element
+// The 'styleSheets' config option is one of or an array ID of the <link> elements
 // in the page header. An example of such an element:
 //
 // <head>
@@ -35,8 +40,6 @@ Ext.namespace('Ext.ux');
 
 Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 	constructor: function(config) {
-		this.layoutContainers = config.layoutContainers;
-		this.delay = config.delay || 2000;
 		this.mask = new Ext.LoadMask(Ext.getBody(), {msg: config.loadingText});
 		
 		this.addEvents({
@@ -44,42 +47,52 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 		});
 
 		var store = new Ext.data.ArrayStore({
-			fields: ['url', 'label'],
+			fields: ['theme', 'label'],
 			data: config.themes
 		});
 
-		var currentTheme = Ext.state.Manager.get('theme');
+		// A theme may have been stored in the state
+		var currentTheme = config.statefulThemeId ? Ext.state.Manager.get(config.statefulThemeId) : null;
+		var firstTheme = store.getAt(0).get('theme');
 		
 		config = Ext.apply({
 			mode: 'local',
 			store: store,
-			valueField: 'url',
+			valueField: 'theme',
 			displayField: 'label',
-			value: currentTheme || store.getAt(0).get('url'),
+			value: currentTheme || firstTheme,
 			triggerAction: 'all',
 			editable: false,
-			forceSelection: true
+			forceSelection: true,
+			delay: 2000
 		}, config);
 		
 		config.listeners = Ext.apply({
 			select: function(combo, record) {
-				this.doSwitch(record.get('url'));
+				this.doSwitch(record.get('theme'));
 			}.createDelegate(this)
 		}, config.listeners);
 		
 		Ext.ux.ThemeSwitcher.superclass.constructor.call(this, config);
 		
-		if (currentTheme) {
+		if (currentTheme && (currentTheme != firstTheme)) {
 			this.doSwitch(currentTheme);
 		}
 	},
 	
-	doSwitch: function(url) {
+	doSwitch: function(theme) {
 		// Show the LoadMask while switching
 		this.mask.show();
 
-		Ext.util.CSS.swapStyleSheet(this.styleSheet, url);
-		Ext.state.Manager.set('theme', url);
+		Ext.each(this.styleSheets, function(styleSheet) {
+			var url = styleSheet[1] + this;
+			Ext.util.CSS.swapStyleSheet(styleSheet[0], url);
+		}, theme);
+		
+		if (this.statefulThemeId) {
+			// Store the theme in the state
+			Ext.state.Manager.set(this.statefulThemeId, theme);
+		}
 		
 		if (this.layoutContainers) {
 			// Wait a few seconds after swapping the style sheet, so that
@@ -92,12 +105,12 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 				});
 
 				this.mask.hide();
-				this.fireEvent('switched', url);
-			}).defer(this.delay, this, [url]);
+				this.fireEvent('switched', theme);
+			}).defer(this.delay, this, [theme]);
 		}
 		else {
 			this.mask.hide();
-			this.fireEvent('switched', url);
+			this.fireEvent('switched', theme);
 		}
 	}
 });

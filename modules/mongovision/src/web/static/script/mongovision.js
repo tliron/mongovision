@@ -746,13 +746,17 @@ Ext.onReady(function() {
 								xtype: 'themeswitcher',
 								listWidth: 150,
 								width: 150,
+								statefulThemeId: 'theme',
 								loadingText: MongoVision.text.loading,
 								layoutContainers: ['viewport', 'header'],
-								styleSheet: 'ext-theme',
+								styleSheets: [
+									['ext-theme', 'style/ext/css/xtheme-'],
+									['mongovision-theme', 'style/mongovision-']
+								],
 								themes: [
-									['style/ext/css/xtheme-blue.css', MongoVision.text['theme.blue']],
-									['style/ext/css/xtheme-gray.css', MongoVision.text['theme.gray']],
-									['style/ext/css/xtheme-access.css', MongoVision.text['theme.accessible']]
+									['blue.css', MongoVision.text['theme.blue']],
+									['gray.css', MongoVision.text['theme.gray']],
+									['access.css', MongoVision.text['theme.accessible']]
 								]
 							}]
 						}
