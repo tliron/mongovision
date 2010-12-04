@@ -29,7 +29,7 @@ div.x-mongovision-document {
 /* Ext-JS Views */
 
 div.x-view-over {
-	background-color: #666666;
+	background-color: #7E5530;
 }
 
 div.x-view-selected {
@@ -42,3 +42,6 @@ div.x-tree-node-expanded-important img.x-tree-node-icon {
 	background-image: url('ext/images/access/tree/folder-open.gif') !important;
 }
 
+li.x-tree-node div.x-tree-node-over {
+	background-color: #7E5530;
+}

@@ -152,7 +152,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 		var tpl = new Ext.XTemplate(
 			'<tpl for=".">',
 			'<div class="x-mongovision-document x-unselectable<tpl if="!this.scope.wrap"> x-mongovision-nowrap</tpl>" id="', config.mongoVisionCollection, '/{id}">',
-			'{[Ext.ux.JSON.encode(values.document,true,false)]}',
+			'{[Ext.ux.HumanJSON.encode(values.document,true,false)]}',
 			'</div>',
 			'</tpl>',
 			'<div class="x-clear"></div>', {
@@ -185,7 +185,7 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 		});
 		
 		var cellRenderer = function(value) {
-			var html = value != null ? Ext.ux.JSON.encode(value, true, false) : '&nbsp;'
+			var html = value != null ? Ext.ux.HumanJSON.encode(value, true, false) : '&nbsp;'
 			if (this.wrap) {
 				html = '<div style="x-mongovision-wrap">' + html + '</div>';
 			}
@@ -518,7 +518,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 						if (this.record) {
 							var textarea = Ext.getCmp(config.id + '-textarea');
 							try {
-								// Ext.ux.JSON.encode encoded this without curly brackets for the root object, so we need to add them
+								// Ext.ux.HumanJSON.encode encoded this without curly brackets for the root object, so we need to add them
 								var value = Ext.decode('{' + textarea.getValue() + '}');
 								var document = this.record ? this.record.get('document') : null;
 								var create = !document || !value._id || (Ext.encode(value._id) != Ext.encode(document._id));
@@ -557,7 +557,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 							try {
 								// Re-encode
 								var value = Ext.decode('{' + textarea.getValue() + '}');
-								value = Ext.ux.JSON.encode(value, false, this.multiline);
+								value = Ext.ux.HumanJSON.encode(value, false, this.multiline);
 								textarea.setValue(value);
 							}
 							catch (x) {
@@ -676,7 +676,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 		Ext.getCmp(this.id + '-collection').setText(record == null ? '' : collectionPanel.initialConfig.title);
 		
 		var textarea = Ext.getCmp(this.id + '-textarea');
-		var value = record ? Ext.ux.JSON.encode(record.json.document, false, this.multiline) : '';
+		var value = record ? Ext.ux.HumanJSON.encode(record.json.document, false, this.multiline) : '';
 		var textarea = this.items.get(0);
 		if (textarea) {
 			// Reuse existing textarea

@@ -66,6 +66,10 @@ div.x-tree-node-expanded-important img.x-tree-node-icon {
 	background-image: url('ext/images/default/tree/folder-open.gif') !important;
 }
 
+li.x-tree-node div.x-tree-node-over {
+	background-color: #DDDDDD;
+}
+
 /* Ext-JS Grid */
 
 div.x-grid3-row {
