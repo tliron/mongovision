@@ -668,6 +668,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 		var cursor = store.indexOf(record) + collectionPanel.getBottomToolbar().cursor;
 		var total = store.getTotalCount();
 		
+		this.updateValidity(true);
 		Ext.getCmp(this.id + '-delete').setDisabled(record == null);
 		Ext.getCmp(this.id + '-validity').setDisabled(record == null);
 		Ext.getCmp(this.id + '-prev').setDisabled(cursor <= 0);
