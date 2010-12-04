@@ -25,11 +25,11 @@
 // time with the 'delay' config option. The default is 2000 ms.
 //
 // The 'themes' config option is an array of themes, where each theme is an array in
-// form of ['theme', 'label']. The 'themeBase' config option is prefixed to each 'theme' in
-// order to create the stylesheet URL.
+// form of ['theme', 'label'].
 //
-// The 'styleSheets' config option is one of or an array ID of the <link> elements
-// in the page header. An example of such an element:
+// The 'styleSheets' config option is one of or an array of stylesheets in the form of
+// ['linkId', 'baseURL']. The 'baseURL' is prefixed to each 'theme' in order to create the
+// stylesheet URL. The linkId points to a <link> element in the page header, such as:
 //
 // <head>
 //   <link rel="stylesheet" type="text/css" href="style/ext/css/xtheme-blue.css" id="ext-theme" />
