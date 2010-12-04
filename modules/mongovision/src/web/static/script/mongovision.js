@@ -714,17 +714,47 @@ Ext.onReady(function() {
 	// center, an EditorPanel in the south, and a header in the north
 	
 	var viewport = new Ext.Viewport({
+		id: 'viewport',
 		layout: 'border',
 		items: [{
 			region: 'north',
 			margins: '0 0 0 0',
 			border: false,
 			padding: '5 10 5 10',
-			bodyCssClass: 'x-border-layout-ct',
+			bodyCssClass: 'x-border-layout-ct', // Uses the neutral background color
 			contentEl: 'header',
 			listeners: {
 				render: function() {
 					Ext.fly('header').show();
+					new Ext.Panel({
+						id: 'theme-switcher',
+						renderTo: 'header-main',
+						border: false,
+						bodyCssClass: 'x-border-layout-ct', // Uses the neutral background color
+						padding: '0 20px 0 20px',
+						items: new Ext.Panel({
+							border: false,
+							bodyCssClass: 'x-border-layout-ct', // Uses the neutral background color
+							height: 50,
+							layout: 'vbox',
+							items: [{
+								xtype: 'label',
+								text: MongoVision.text.theme,
+							}, {
+								xtype: 'themeswitcher',
+								listWidth: 100,
+								width: 100,
+								loadingText: MongoVision.text.loading,
+								layoutContainers: ['viewport', 'theme-switcher'],
+								styleSheet: 'ext-theme',
+								themes: [
+									['style/ext/css/xtheme-blue.css', MongoVision.text['theme.blue']],
+									['style/ext/css/xtheme-gray.css', MongoVision.text['theme.gray']],
+									['style/ext/css/xtheme-access.css', MongoVision.text['theme.accessible']]
+								]
+							}]
+						})
+					});
 				}
 			}
 		}, {

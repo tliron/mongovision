@@ -20,6 +20,11 @@ div#header a:hover {
 	text-decoration: underline;
 }
 
+div#header td {
+	font-size: x-small;
+	white-space: nowrap;
+}
+
 /* MongoVision Components */
 
 div.x-mongovision-system-collection a span {

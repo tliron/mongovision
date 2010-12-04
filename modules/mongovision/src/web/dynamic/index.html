@@ -14,7 +14,7 @@ if (debug) {
 	<!-- Ext-JS Debug -->
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/reset-min.css" />
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/ext-all-notheme.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/xtheme-blue.css" />
+	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/xtheme-blue.css" id="ext-theme" />
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/debug.css" />
 	<script type="text/javascript" src="<%= base %>/script/ext/ext-base-debug.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/ext/ext-all-debug.js"></script>
@@ -22,7 +22,7 @@ if (debug) {
 	<!-- Ext-JS -->
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/reset-min.css" />
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/ext-all-notheme.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/xtheme-blue.css" />
+	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/xtheme-blue.css" id="ext-theme" />
 	<script type="text/javascript" src="<%= base %>/script/ext/ext-base.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/ext/ext-all.js"></script>
 <% } %>
@@ -32,6 +32,7 @@ if (debug) {
 	<script type="text/javascript" src="<%= base %>/script/ux/PerPage.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/ux/ReusableJsonStore.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/ux/TextFieldPopup.js"></script>
+	<script type="text/javascript" src="<%= base %>/script/ux/ThemeSwitcher.js"></script>
 
 	<!-- Gritter Ext-JS Extension (https://github.com/zir/ext-growl) -->
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ux/gritter/css/ext-growl.css" />
@@ -45,23 +46,23 @@ if (debug) {
 <body id="body">
 	<div id="header" style="visibility: hidden;">
 		<table width="100%"><tr>
-			<td width="50%" align="left">
+			<td width="1%" align="left">
 				<table height="100%"><tr>
 					<td style="padding-right: 10px;">
 						<img src="<%= base %>/media/mongovision-small.png" />
 					</td>
 					<td>
-						<h2>MongoVision</h2>
-						<span  style="font-size: x-small;">
+						<h2 style="font-size: 14px;">MongoVision</h2>
 						<a href="http://code.google.com/p/mongo-vision/">Community and Support Site</a><br />
 						Version <%= application.globals.get('mongovision.version') %>
-						</span>
 					</td>
 				</tr></table>		
 			</td>
-			<td width="50%" align="right">
+			<td width="98%" id="header-main" align="right">
+			</td>
+			<td width="1%" align="right">
 				<table height="100%"><tr>
-					<td style="font-size: x-small;">
+					<td>
 						Made with <a href="http://threecrickets.com/prudence/">Prudence</a><br />
 						By <a href="http://threecrickets.com/">Three Crickets</a>
 					</td>

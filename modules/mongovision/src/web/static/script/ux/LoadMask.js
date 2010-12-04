@@ -42,12 +42,12 @@ Ext.ux.LoadMask = Ext.extend(Object, {
 				loadmask.destroy = function() {
 					this.config.treeLoader.un('beforeload', loadmask.onBeforeLoad);
 					this.config.treeLoader.un('load', loadmask.onLoad);
-					this.config.treeLoader.un('loadexception', loadmask.onLoad);
+					this.config.treeLoader.un('exception', loadmask.onLoad);
 				}.createDelegate(this);
 
 				this.config.treeLoader.on('beforeload', loadmask.onBeforeLoad, loadmask, {delay: 1});
 				this.config.treeLoader.on('load', loadmask.onLoad, loadmask);
-				this.config.treeLoader.on('loadexception', loadmask.onLoad, loadmask);
+				this.config.treeLoader.on('exception', loadmask.onLoad, loadmask);
 			}
 		}.createDelegate(this));
 	}
