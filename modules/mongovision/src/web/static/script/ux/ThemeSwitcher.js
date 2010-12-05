@@ -18,6 +18,7 @@
 // state.Manager and switched to automatically when the component is created.
 //
 // A LoadMask is used while loading. Use the 'loadingText' config option for the LoadMask text.
+// Use {0} in the text as a place holder for the theme label.
 //
 // The optional 'layoutContainers' config option specifies one of or an array of container
 // component IDs that will have their layout redone after the switch. When this is used, an
@@ -40,8 +41,6 @@ Ext.namespace('Ext.ux');
 
 Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 	constructor: function(config) {
-		this.mask = new Ext.LoadMask(Ext.getBody(), {msg: config.loadingText});
-		
 		this.addEvents({
 			switched: true
 		});
@@ -64,7 +63,8 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 			triggerAction: 'all',
 			editable: false,
 			forceSelection: true,
-			delay: 2000
+			delay: 2000,
+			width: 150
 		}, config);
 		
 		config.listeners = Ext.apply({
@@ -82,6 +82,11 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 	
 	doSwitch: function(theme) {
 		// Show the LoadMask while switching
+		var record = this.store.getAt(this.store.findExact('theme', theme));
+		var label = record.get('label');
+		var loadingText = this.loadingText || 'Switching to {0} theme...';
+		loadingText = String.format(loadingText, label);
+		this.mask = new Ext.LoadMask(Ext.getBody(), {msg: loadingText});
 		this.mask.show();
 
 		Ext.each(this.styleSheets, function(styleSheet) {

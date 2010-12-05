@@ -740,15 +740,14 @@ Ext.onReady(function() {
 							bodyCssClass: 'x-border-layout-ct', // Uses the neutral background color
 							height: 50,
 							layout: 'vbox',
+							align: 'left',
 							items: [{
 								xtype: 'label',
-								text: MongoVision.text.theme,
+								text: MongoVision.text.theme
 							}, {
 								xtype: 'themeswitcher',
-								listWidth: 150,
-								width: 150,
 								statefulThemeId: 'theme',
-								loadingText: MongoVision.text.loading,
+								loadingText: MongoVision.text.switchingTheme,
 								layoutContainers: ['viewport', 'header'],
 								styleSheets: [
 									['ext-theme', 'style/ext/css/xtheme-'],

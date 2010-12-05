@@ -41,7 +41,6 @@ Ext.ux.PerPage = Ext.extend(Object, {
 			}),
 			mode : 'local',
 			value: toolbar.pageSize,
-			listWidth: 60,
 			width: 60,
 			triggerAction: 'all',
 			displayField: 'id',

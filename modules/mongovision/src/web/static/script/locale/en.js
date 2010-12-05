@@ -41,5 +41,6 @@ MongoVision.text = {
 	'action.destroy': 'Delete',
 	'theme.blue': 'Blue',
 	'theme.gray': 'Gray',
-	'theme.accessible': 'Accessible'
+	'theme.accessible': 'Accessible',
+	switchingTheme: 'Switching to {0} theme...'
 };
