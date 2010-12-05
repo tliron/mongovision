@@ -80,6 +80,25 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 		}
 	},
 	
+	fixProblematicComponents: function() {
+		Ext.ComponentMgr.all.each(function() {
+			if (this.isXType && this.isXType('combo')) {
+				
+				// These fields are undocumented; but we're destroying them in order to
+				// force the combobox's list to be regenerated
+				
+				Ext.destroy(
+					this.resizer,
+					this.view,
+					this.pageTb,
+					this.list
+				);
+				delete this.list;
+				this.initList();
+			}
+		});
+	},
+	
 	doSwitch: function(theme) {
 		// Show the LoadMask while switching
 		var record = this.store.getAt(this.store.findExact('theme', theme));
@@ -99,6 +118,12 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 			Ext.state.Manager.set(this.statefulThemeId, theme);
 		}
 		
+		var switched = function() {
+			this.fixProblematicComponents();
+			this.mask.hide();
+			this.fireEvent('switched', theme);
+		}.createDelegate(this);
+		
 		if (this.layoutContainers) {
 			// Wait a few seconds after swapping the style sheet, so that
 			// the browser can finish rendering, and only then redo the layout
@@ -109,14 +134,12 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 					var container = Ext.getCmp(this);
 					container.doLayout(false, true);
 				});
-
-				this.mask.hide();
-				this.fireEvent('switched', theme);
+				
+				switched();
 			}).defer(this.delay, this, [theme]);
 		}
 		else {
-			this.mask.hide();
-			this.fireEvent('switched', theme);
+			switched();
 		}
 	}
 });

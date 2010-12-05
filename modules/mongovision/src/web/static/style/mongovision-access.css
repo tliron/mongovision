@@ -26,7 +26,7 @@ div.x-mongovision-document {
 	padding-left: 5px;
 }
 
-/* Ext-JS Views */
+/* Ext JS Views */
 
 div.x-view-over {
 	background-color: #7E5530;
@@ -36,7 +36,7 @@ div.x-view-selected {
 	background-color: #E5872C;
 }
 
-/* Ext-JS Tree */
+/* Ext JS Tree */
 
 div.x-tree-node-expanded-important img.x-tree-node-icon {
 	background-image: url('ext/images/access/tree/folder-open.gif') !important;
@@ -44,4 +44,10 @@ div.x-tree-node-expanded-important img.x-tree-node-icon {
 
 li.x-tree-node div.x-tree-node-over {
 	background-color: #7E5530;
+}
+
+/* Ext JS Panel */
+
+div.x-tab-panel-body {
+	background-color: #232D38;
 }

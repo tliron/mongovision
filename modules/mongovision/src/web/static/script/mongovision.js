@@ -763,7 +763,8 @@ Ext.onReady(function() {
 								afterlayout: function() {
 									// This fixes a bug with the ComboBox calculating its size
 									// according to the previously selected theme
-									this.items.get(1).syncSize();
+									var themeSwitcher = this.items.get(1);
+									themeSwitcher.syncSize();
 								}
 							}
 						}
