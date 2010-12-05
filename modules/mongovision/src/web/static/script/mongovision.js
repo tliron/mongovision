@@ -758,7 +758,14 @@ Ext.onReady(function() {
 									['gray.css', MongoVision.text['theme.gray']],
 									['access.css', MongoVision.text['theme.accessible']]
 								]
-							}]
+							}],
+							listeners: {
+								afterlayout: function() {
+									// This fixes a bug with the ComboBox calculating its size
+									// according to the previously selected theme
+									this.items.get(1).syncSize();
+								}
+							}
 						}
 					});
 				}

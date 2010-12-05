@@ -106,7 +106,8 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 			
 			(function(url) {
 				Ext.each(this.layoutContainers, function() {
-					Ext.getCmp(this).doLayout(false, true);
+					var container = Ext.getCmp(this);
+					container.doLayout(false, true);
 				});
 
 				this.mask.hide();
