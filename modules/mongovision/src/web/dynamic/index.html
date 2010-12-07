@@ -9,25 +9,26 @@ debug = debug && debug.booleanValue()
 <head>
 	<title>MongoVision</title>
 	<link rel="shortcut icon" href="<%= base %>/media/mongovision.ico" />
-<%
-if (debug) {
-%>
-	<!-- Ext-JS Debug -->
+<% if (debug) { %>
+	<!-- Ext JS Debug -->
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/reset-min.css" />
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/ext-all-notheme.css" />
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/xtheme-blue.css" id="ext-theme" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/debug.css" />
 	<script type="text/javascript" src="<%= base %>/script/ext/ext-base-debug.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/ext/ext-all-debug.js"></script>
+	
+	<!-- Ext JS Debug Console -->
+	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/debug.css" />
+	<script type="text/javascript" src="<%= base %>/script/ext/debug.js"></script>
 <% } else { %>
-	<!-- Ext-JS -->
+	<!-- Ext JS -->
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/reset-min.css" />
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/ext-all-notheme.css" />
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/xtheme-blue.css" id="ext-theme" />
 	<script type="text/javascript" src="<%= base %>/script/ext/ext-base.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/ext/ext-all.js"></script>
 <% } %>
-	<!-- MongoVision's Ext-JS Extensions -->
+	<!-- MongoVision's Ext JS Extensions -->
 	<script type="text/javascript" src="<%= base %>/script/ux/HumanJSON.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/ux/LoadMask.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/ux/PerPage.js"></script>
@@ -35,7 +36,7 @@ if (debug) {
 	<script type="text/javascript" src="<%= base %>/script/ux/TextFieldPopup.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/ux/ThemeSwitcher.js"></script>
 
-	<!-- Gritter Ext-JS Extension (https://github.com/zir/ext-growl) -->
+	<!-- Gritter Ext JS Extension (https://github.com/zir/ext-growl) -->
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ux/gritter/css/ext-growl.css" />
 	<script type="text/javascript" src="<%= base %>/script/ux/ext-growl.js"></script>
 
@@ -44,6 +45,13 @@ if (debug) {
 	<link rel="stylesheet" type="text/css" href="<%= base %>/style/mongovision-blue.css" id="mongovision-theme" />
 	<script type="text/javascript" src="<%= base %>/script/locale/<%= locale %>.js"></script>
 	<script type="text/javascript" src="<%= base %>/script/mongovision.js"></script>
+<% if (debug) { %>
+	<script type="text/javascript">
+		Ext.onReady(function() {
+			Ext.log('MongoVision has been started in debug mode.');
+		});
+	</script>
+<% } %>
 </head>
 <body id="body">
 	<div id="header" style="visibility: hidden;">

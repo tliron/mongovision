@@ -774,6 +774,7 @@ Ext.onReady(function() {
 		}, {
 			xtype: 'mongovisiondatabases',
 			region: 'west',
+			collapsible: true,
 			margins: '0 0 20 20',
 			split: true,
 			width: 200,
