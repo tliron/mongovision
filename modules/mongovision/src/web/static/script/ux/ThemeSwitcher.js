@@ -100,11 +100,16 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 	},
 	
 	doSwitch: function(theme) {
-		// Show the LoadMask while switching
-		var record = this.store.getAt(this.store.findExact('theme', theme));
+		var record = this.store.findExact('theme', theme);
+		if (!record) {
+			return;
+		}
+		record = this.store.getAt(record);
 		var label = record.get('label');
 		var loadingText = this.loadingText || 'Switching to {0} theme...';
 		loadingText = String.format(loadingText, label);
+
+		// Show the LoadMask while switching
 		this.mask = new Ext.LoadMask(Ext.getBody(), {msg: loadingText});
 		this.mask.show();
 
