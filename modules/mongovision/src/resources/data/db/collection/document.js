@@ -9,7 +9,7 @@
 // at http://threecrickets.com/
 //
 
-document.execute('util/mongodb/')
+document.execute('util/mongo/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')

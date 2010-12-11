@@ -9,7 +9,7 @@
 // at http://threecrickets.com/
 //
 
-document.execute('util/mongodb/')
+document.execute('util/mongo/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -17,6 +17,7 @@ function handleInit(conversation) {
 }
 
 var tabularKeyPrefix = '_tabular_'
+var maxLimit = 100
 
 function handleGet(conversation) {
 	var database = conversation.locals.get('database')
@@ -53,6 +54,12 @@ function handleGet(conversation) {
 	}
 	if (limit) {
 		limit = parseInt(limit)
+		if (limit > maxLimit) {
+			limit = maxLimit
+		}
+	}
+	else {
+		limit = maxLimit
 	}
 	
 	var collection = new Mongo.Collection(collection, {db: database})
