@@ -45,16 +45,16 @@ Ext.ux.ReusableJsonStore = Ext.extend(Ext.data.JsonStore, {
 	},
 
 	reuse: function(store) {
-		// We're re-using the existing data and options
+		// We're re-using the existing data and baseParams
 		var records = this.reader.readRecords(store.reader.jsonData);
-		this.lastOptions = store.lastOptions;
+		this.baseParams = Ext.apply({}, store.baseParams);
 		
 		// This is an undocumented function used internally in load();
 		// Note our explicit addition of the params, even though they are
 		// already in lastOptions
 		this.loadRecords(records, {
 			add: false,
-			params: this.lastOptions.params
+			params: store.lastOptions.params
 		}, true);
 	}
 });
