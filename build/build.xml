@@ -8,12 +8,6 @@
 	<property name="content" value="${dist}/content" />
 
 	<target name="licenses" description="Fetch licences">
-		<copy todir="${content}/licenses/mongo-java-driver">
-			<fileset dir="${lib}/mongo-java-driver/license" />
-		</copy>
-		<copy todir="${content}/licenses/mongo-rhino">
-			<fileset dir="${lib}/mongo-rhino/license" />
-		</copy>
 		<copy todir="${content}/licenses/ext-js">
 			<fileset dir="${lib}/ext-js/license" />
 		</copy>
@@ -23,16 +17,6 @@
 	</target>
 
 	<target name="libraries" description="Fetch libraries">
-		<copy todir="${content}/libraries">
-			<fileset dir="${lib}/mongo-java-driver/lib" />
-			<fileset dir="${lib}/mongo-rhino/lib" includes="*.jar" />
-		</copy>
-		<copy todir="${content}/libraries">
-			<fileset dir="${lib}" includes="*.txt" />
-		</copy>
-		<copy todir="${content}/applications/mongovision/libraries/util">
-			<fileset dir="${lib}/mongo-rhino/lib" includes="*.js" />
-		</copy>
 		<copy todir="${content}/applications/mongovision/web/static/script/ext">
 			<fileset dir="${lib}/ext-js/lib" includes="*.js" />
 			<fileset dir="${lib}/ext-js/lib/adapter/ext" />
