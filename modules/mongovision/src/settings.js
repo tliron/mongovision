@@ -30,8 +30,6 @@ predefinedGlobals['mongovision.version'] = '1.0 alpha'
 predefinedGlobals['mongovision.extJS.debug'] = false
 predefinedGlobals['mongovision.locale'] = 'en'
 
-//predefinedGlobals['mongo.defaultServers'] = ['127.0.0.1']
-//predefinedGlobals['mongo.defaultDB'] = 'dbname'
-//predefinedGlobals['mongo.defaultIdsCollectionName'] = 'ids'
+predefinedGlobals['mongo.defaultServers'] = '127.0.0.1'
 
 //staticWebCompress = false
