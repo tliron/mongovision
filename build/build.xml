@@ -17,6 +17,9 @@
 	</target>
 
 	<target name="libraries" description="Fetch libraries">
+		<copy todir="${content}/licenses">
+			<fileset dir="${lib}" includes="*.txt" />
+		</copy>
 		<copy todir="${content}/applications/mongovision/web/static/script/ext">
 			<fileset dir="${lib}/ext-js/lib" includes="*.js" />
 			<fileset dir="${lib}/ext-js/lib/adapter/ext" />
