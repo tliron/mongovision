@@ -1,5 +1,5 @@
 //
-// Copyright 2010 Three Crickets LLC.
+// Copyright 2010-2011 Three Crickets LLC.
 //
 // The contents of this file are subject to the terms of the Apache License
 // version 2.0: http://www.opensource.org/licenses/apache2.0.php
@@ -611,7 +611,6 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 	
 	createTextArea: function(value) {
 		var textarea = new Ext.form.TextArea({
-			xtype: 'textarea',
 			id: this.id + '-textarea',
 			value: value,
 			autoCreate: {
@@ -619,6 +618,14 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 				spellcheck: 'false',
 				wrap: this.wrap ? 'hard' : 'off'
 			},
+			/*enableAlignments: false,
+			enableColors: false,
+			enableFont: false,
+			enableFontSize: false,
+			enableFormat: false,
+			enableLinks: false,
+			enableLists: false,
+			enableSourceEdit: false,*/
 			style: 'border: none;',
 			enableKeyEvents: true,
 			listeners: {
@@ -793,7 +800,6 @@ Ext.onReady(function() {
 				enableTabScroll: true
 			}, {
 				region: 'south',
-				split: true,
 				id: 'mongovision-editor',
 				xtype: 'mongovisioneditor',
 				height: 200
