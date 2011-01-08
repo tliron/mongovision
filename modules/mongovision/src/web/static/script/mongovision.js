@@ -792,6 +792,7 @@ Ext.onReady(function() {
 			layout: 'border',
 			border: false,
 			margins: '0 20 20 0',
+			split: true,
 			items: [{
 				region: 'center',
 				split: true,
@@ -800,6 +801,7 @@ Ext.onReady(function() {
 				enableTabScroll: true
 			}, {
 				region: 'south',
+				split: true,
 				id: 'mongovision-editor',
 				xtype: 'mongovisioneditor',
 				height: 200
