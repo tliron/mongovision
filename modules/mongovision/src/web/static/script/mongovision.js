@@ -503,7 +503,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 	record: null,
 	collectionPanel: null,
 	wrap: true,
-	multiline: false,
+	multiline: true,
 	
 	constructor: function(config) {
 		
