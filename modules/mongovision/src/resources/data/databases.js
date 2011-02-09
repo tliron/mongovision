@@ -36,11 +36,13 @@ function handleGet(conversation) {
 			
 			for (var c in collectionNames) {
 				var collectionName = collectionNames[c]
+				
 				var n = {
 					id: databaseName + '/' + collectionName,
 					text: collectionName,
 					leaf: true
 				}
+				
 				if (isSystem(collectionName)) {
 					n.cls = 'x-mongovision-system-collection'
 					systemChildren.push(n)
