@@ -17,7 +17,7 @@ function handleInit(conversation) {
 }
 
 function isSystem(collectionName) {
-	return collectionName.substr(0, 7) == 'system.'
+	return (collectionName.substr(0, 7) == 'system.') || (collectionName.substr(0, 4) == 'tmp.')
 }
 
 function handleGet(conversation) {
@@ -33,6 +33,7 @@ function handleGet(conversation) {
 			var children = []
 			var systemChildren = []
 			var collectionNames = database.collectionNames.toArray()
+			
 			for (var c in collectionNames) {
 				var collectionName = collectionNames[c]
 				var n = {
@@ -48,7 +49,9 @@ function handleGet(conversation) {
 					children.push(n)
 				}
 			}
+			
 			children = children.concat(systemChildren)
+			
 			n = {
 				id: databaseName,
 				text: databaseName,
@@ -56,11 +59,13 @@ function handleGet(conversation) {
 				singleClickExpand: true,
 				expanded: true
 			}
+			
 			if (children.length == 0) {
 				// Ext JS will annoyingly use a leaf icon for nodes without children.
 				// This class of ours will override it.
 				n.cls = 'x-tree-node-expanded-important'
 			}
+			
 			nodes.push(n)
 		}
 	}

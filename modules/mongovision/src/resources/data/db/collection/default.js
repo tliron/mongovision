@@ -80,9 +80,10 @@ function handleGet(conversation) {
 		var doc = cursor.next()
 		var id
 		try {
-			id = doc._id.toStringMongod()
+			id = String(doc._id)
 		}
 		catch(x) {
+			// Some system collections do not have an _id!
 			id = doc.name
 		}
 		documents.push({

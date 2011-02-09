@@ -1,9 +1,9 @@
 <%
 document.cacheDuration = 5000
 var base = conversation.pathToBase
-var locale = application.globals.get('mongovision.locale') || 'en'
+var locale = conversation.query.get('locale') || application.globals.get('mongovision.locale') || 'en'
 var debug = application.globals.get('mongovision.extJS.debug')
-debug = debug && debug.booleanValue()
+debug = (conversation.query.get('debug') == 'true') || (debug && debug.booleanValue())
 %>
 <html>
 <head>

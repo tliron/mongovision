@@ -22,7 +22,7 @@ function handlePost(conversation) {
 	var id = conversation.locals.get('id')
 
 	var text = conversation.entity.text
-	if (!text) {
+	if (null === text) {
 		return 400
 	}
 	var data = JSON.from(text, true)
