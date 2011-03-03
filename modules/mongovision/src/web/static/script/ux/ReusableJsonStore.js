@@ -21,27 +21,27 @@ Ext.namespace('Ext.ux');
 
 Ext.ux.ReusableJsonStore = Ext.extend(Ext.data.JsonStore, {
 	constructor: function(config) {
+		Ext.ux.ReusableJsonStore.superclass.constructor.call(this, config);
+
 		// Since we will be reusing the jsonData for reuse(), we need to make sure to keep
 		// it up to date to changes to the store (this is not usually the case for JsonReader
 		// which is ignorant of the store using it)
-		config.listeners = Ext.apply({
-			remove: function(store, record, index) {
-				store.reader.jsonData.documents.splice(index, 1);
-			},
-			update: function(store, record, operation) {
-				if (operation == Ext.data.Record.EDIT) {
-					for (var i = 0, length = store.reader.jsonData.documents.length; i < length; i++) {
-						var document = store.reader.jsonData.documents[i]; 
-						if (document.id == record.id) {
-							document.document = record.data.document;
-							break;
-						}
+
+		this.on('remove', function(store, record, index) {
+			store.reader.jsonData.documents.splice(index, 1);
+		});
+		
+		this.on('update', function(store, record, operation) {
+			if (operation == Ext.data.Record.EDIT) {
+				for (var i = 0, length = store.reader.jsonData.documents.length; i < length; i++) {
+					var document = store.reader.jsonData.documents[i]; 
+					if (document.id == record.id) {
+						document.document = record.data.document;
+						break;
 					}
 				}
 			}
-		}, config.listeners);
-
-		Ext.ux.ReusableJsonStore.superclass.constructor.call(this, config);
+		});
 	},
 
 	reuse: function(store) {

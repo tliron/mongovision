@@ -9,9 +9,9 @@
 // at http://threecrickets.com/
 //
 
-document.execute('defaults/application/routing/')
+document.execute('/defaults/application/routing/')
 
-router.capture('data/db/{database}/{collection}/', 'data/db/collection/')
-router.hide('data/db/collection/')
-router.capture('data/db/{database}/{collection}/{id}', 'data/db/collection/document/')
-router.hide('data/db/collection/document/')
+router.capture('/data/db/{database}/{collection}/', '/data/db/collection/')
+router.hide('/data/db/collection/')
+router.capture('/data/db/{database}/{collection}/{id}', '/data/db/collection/document/')
+router.hide('/data/db/collection/document/')

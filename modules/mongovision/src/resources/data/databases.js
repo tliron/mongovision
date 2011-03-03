@@ -9,7 +9,7 @@
 // at http://threecrickets.com/
 //
 
-document.execute('javascript/mongo/')
+document.execute('/mongo-db/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -26,10 +26,10 @@ function handleGet(conversation) {
 	var nodes = []
 	
 	if (node == 'root') {
-		var databaseNames = Mongo.defaultConnection.databaseNames.toArray()
+		var databaseNames = MongoDB.defaultConnection.databaseNames.toArray()
 		for (var d in databaseNames) {
 			var databaseName = databaseNames[d]
-			var database = Mongo.defaultConnection.getDB(databaseName)
+			var database = MongoDB.defaultConnection.getDB(databaseName)
 			var children = []
 			var systemChildren = []
 			var collectionNames = database.collectionNames.toArray()

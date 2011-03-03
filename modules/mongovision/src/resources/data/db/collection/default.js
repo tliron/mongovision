@@ -9,7 +9,7 @@
 // at http://threecrickets.com/
 //
 
-document.execute('javascript/mongo/')
+document.execute('/mongo-db/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -62,7 +62,7 @@ function handleGet(conversation) {
 		limit = maxLimit
 	}
 	
-	var collection = new Mongo.Collection(collection, {db: database})
+	var collection = new MongoDB.Collection(collection, {db: database})
 	
 	var documents = []
 	var cursor = collection.find(query)

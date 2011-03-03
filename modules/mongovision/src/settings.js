@@ -13,7 +13,7 @@
 // MongoVision Settings
 //
 
-document.execute('defaults/application/settings/')
+document.execute('/defaults/application/settings/')
 
 applicationName = 'MongoVision'
 applicationDescription = 'A MongoDB frontend'
@@ -30,7 +30,7 @@ predefinedGlobals = {
 	'mongovision.extJS.debug': false,
 	'mongovision.locale': 'en',
 
-	'mongo.defaultServers': '127.0.0.1'
+	'mongoDb.defaultServers': '127.0.0.1'
 }
 
 //staticWebCompress = false

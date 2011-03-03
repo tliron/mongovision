@@ -9,7 +9,7 @@
 // at http://threecrickets.com/
 //
 
-document.execute('javascript/mongo/')
+document.execute('/mongo-db/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -28,7 +28,7 @@ function handlePost(conversation) {
 	var data = JSON.from(text, true)
 	var doc = data.documents.document
 	
-	var collection = new Mongo.Collection(collection, {db: database})
+	var collection = new MongoDB.Collection(collection, {db: database})
 	collection.save(doc)
 
 	application.logger.fine('Updated document in ' + database + '.' + collection.collection.name + ': ' + id)
@@ -47,8 +47,8 @@ function handleDelete(conversation) {
 	var collection = conversation.locals.get('collection')
 	var id = conversation.locals.get('id')
 	
-	var collection = new Mongo.Collection(collection, {db: database})
-	collection.remove({_id: Mongo.id(id)})
+	var collection = new MongoDB.Collection(collection, {db: database})
+	collection.remove({_id: MongoDB.id(id)})
 
 	application.logger.fine('Removed document from ' + database + '.' + collection.collection.name + ': ' + id)
 	
