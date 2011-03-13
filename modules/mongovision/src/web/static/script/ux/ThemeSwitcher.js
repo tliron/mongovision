@@ -70,7 +70,7 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 		Ext.ux.ThemeSwitcher.superclass.constructor.call(this, config);
 
 		this.on('select', function(combo, record) {
-				this.doSwitch(record.get('theme'));
+			this.doSwitch(record.get('theme'));
 		})
 		
 		if (currentTheme && (currentTheme != firstTheme)) {
@@ -99,7 +99,7 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 	
 	doSwitch: function(theme) {
 		var record = this.store.findExact('theme', theme);
-		if (!record) {
+		if (record === null) {
 			return;
 		}
 		record = this.store.getAt(record);
