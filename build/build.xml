@@ -14,6 +14,12 @@
 		<copy todir="${content}/licenses/gritter">
 			<fileset dir="${lib}/gritter/license" />
 		</copy>
+		<copy todir="${content}/licenses/mongodb-java-driver">
+			<fileset dir="${lib}/mongodb-java-driver/license" />
+		</copy>
+		<copy todir="${content}/licenses/mongodb-rhino-driver">
+			<fileset dir="${lib}/mongodb-rhino-driver/license" />
+		</copy>
 	</target>
 
 	<target name="libraries" description="Fetch libraries">
@@ -32,6 +38,10 @@
 		</copy>
 		<copy todir="${content}/applications/mongovision/web/static/style/ux/gritter">
 			<fileset dir="${lib}/gritter/lib/resources" />
+		</copy>
+		<copy todir="${content}/libraries/">
+			<fileset dir="${lib}/mongodb-java-driver/lib" />
+			<fileset dir="${lib}/mongodb-rhino-driver/lib" />
 		</copy>
 	</target>
 	
