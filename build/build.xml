@@ -46,14 +46,14 @@
 		</copy>
 	</target>
 	
-	<target name="application" description="Fetch MongoVision application">
+	<target name="application" depends="libraries" description="Fetch MongoVision application">
 		<copy todir="${tmp}/applications/mongovision">
 			<fileset dir="${src}" />
 		</copy>
 		<zip destfile="${content}/mongovision.prudence.zip" basedir="${tmp}" includes="**/*" />
 	</target>
 
-	<target name="deploy" depends="application, libraries" description="Fetch deployment">
+	<target name="deploy" depends="application" description="Fetch deployment">
 		<copy todir="${content}">
 			<fileset dir="${deploy}" />
 		</copy>
