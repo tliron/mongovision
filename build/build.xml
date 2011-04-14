@@ -5,6 +5,7 @@
 	<property name="lib" value="../libraries" />
 	<property name="deploy" value="../modules/mongovision/deploy" />
 	<property name="dist" value="./distribution" />
+	<property name="tmp" value="./tmp" />
 	<property name="content" value="${dist}/content" />
 
 	<target name="licenses" description="Fetch licences">
@@ -26,17 +27,17 @@
 		<copy todir="${content}/licenses">
 			<fileset dir="${lib}" includes="*.txt" />
 		</copy>
-		<copy todir="${content}/applications/mongovision/web/static/script/ext">
+		<copy todir="${tmp}/applications/mongovision/web/static/script/ext">
 			<fileset dir="${lib}/ext-js/lib" includes="*.js" />
 			<fileset dir="${lib}/ext-js/lib/adapter/ext" />
 		</copy>
-		<copy todir="${content}/applications/mongovision/web/static/style/ext">
+		<copy todir="${tmp}/applications/mongovision/web/static/style/ext">
 			<fileset dir="${lib}/ext-js/lib/resources" />
 		</copy>
-		<copy todir="${content}/applications/mongovision/web/static/script/ux">
+		<copy todir="${tmp}/applications/mongovision/web/static/script/ux">
 			<fileset dir="${lib}/gritter/lib" includes="*.js" />
 		</copy>
-		<copy todir="${content}/applications/mongovision/web/static/style/ux/gritter">
+		<copy todir="${tmp}/applications/mongovision/web/static/style/ux/gritter">
 			<fileset dir="${lib}/gritter/lib/resources" />
 		</copy>
 		<copy todir="${content}/libraries/">
@@ -46,9 +47,10 @@
 	</target>
 	
 	<target name="application" description="Fetch MongoVision application">
-		<copy todir="${content}/applications/mongovision">
+		<copy todir="${tmp}/applications/mongovision">
 			<fileset dir="${src}" />
 		</copy>
+		<zip destfile="${content}/mongovision.prudence.zip" basedir="${tmp}" includes="**/*" />
 	</target>
 
 	<target name="deploy" depends="application, libraries" description="Fetch deployment">
@@ -58,13 +60,13 @@
 	</target>
 	
 	<target name="package" depends="licenses, deploy" description="Create MongoVision zip">
-		<zip destfile="${content}/mongovision.prudence.zip" basedir="${content}/applications" includes="**/*" />
 		<zip destfile="mongovision.zip" basedir="${content}" includes="**/*" />
 	</target>
 	
 	<target name="build" depends="package" description="Build distribution" />
 	
 	<target name="clean" description="Clean">
+		<delete dir="${tmp}" />
 		<delete dir="${dist}" />
 	</target>
 	
