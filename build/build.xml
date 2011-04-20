@@ -27,17 +27,17 @@
 		<copy todir="${content}/licenses">
 			<fileset dir="${lib}" includes="*.txt" />
 		</copy>
-		<copy todir="${tmp}/applications/mongovision/web/static/script/ext">
+		<copy todir="${tmp}/mongovision/web/static/script/ext">
 			<fileset dir="${lib}/ext-js/lib" includes="*.js" />
 			<fileset dir="${lib}/ext-js/lib/adapter/ext" />
 		</copy>
-		<copy todir="${tmp}/applications/mongovision/web/static/style/ext">
+		<copy todir="${tmp}/mongovision/web/static/style/ext">
 			<fileset dir="${lib}/ext-js/lib/resources" />
 		</copy>
-		<copy todir="${tmp}/applications/mongovision/web/static/script/ux">
+		<copy todir="${tmp}/mongovision/web/static/script/ux">
 			<fileset dir="${lib}/gritter/lib" includes="*.js" />
 		</copy>
-		<copy todir="${tmp}/applications/mongovision/web/static/style/ux/gritter">
+		<copy todir="${tmp}/mongovision/web/static/style/ux/gritter">
 			<fileset dir="${lib}/gritter/lib/resources" />
 		</copy>
 		<copy todir="${content}/libraries/">
@@ -47,7 +47,7 @@
 	</target>
 	
 	<target name="application" depends="libraries" description="Fetch MongoVision application">
-		<copy todir="${tmp}/applications/mongovision">
+		<copy todir="${tmp}/mongovision">
 			<fileset dir="${src}" />
 		</copy>
 		<zip destfile="${content}/mongovision.prudence.zip" basedir="${tmp}" includes="**/*" />
