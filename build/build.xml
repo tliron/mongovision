@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <project name="MongoVision" default="build">
+
+	<property file="mongovision.properties" />
 	
 	<property name="src" value="../modules/mongovision/src" />
 	<property name="lib" value="../libraries" />
@@ -52,6 +54,7 @@
 		<copy todir="${tmp}/mongovision">
 			<fileset dir="${src}" />
 		</copy>
+		<replace dir="${tmp}/mongovision" includes="settings.js" token="%REVISION%" value="${revision}" />
 		<zip destfile="${content}/mongovision.prudence.zip" basedir="${tmp}" includes="**/*" />
 	</target>
 
