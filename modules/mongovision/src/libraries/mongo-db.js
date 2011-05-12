@@ -3,8 +3,15 @@
 //
 // Copyright 2010-2011 Three Crickets LLC.
 //
-// The contents of this file are subject to the terms of the Apache License
-// version 2.0: http://www.opensource.org/licenses/apache2.0.php
+// The contents of this file are subject to the terms of one of the following
+// open source licenses. You can select the license that you prefer but you may
+// not use this file except in compliance with one of these licenses.
+//
+// The LGPL version 3.0:
+// http://www.opensource.org/licenses/lgpl-3.0.html
+//
+// The Apache License version 2.0:
+// http://www.opensource.org/licenses/apache2.0.php
 //
 // Alternatively, you can obtain a royalty free commercial license with less
 // limitations, transferable or non-transferable, directly from Three Crickets
@@ -23,7 +30,7 @@ importClass(com.mongodb.rhino.BSON, com.mongodb.rhino.JSON)
  * @see Visit the <a href="https://github.com/geir/mongo-java-driver">MongoDB Java driver</a> 
  * 
  * @author Tal Liron
- * @version 1.41
+ * @version 1.44
  */
 var MongoDB = MongoDB || function() {
     var Public = /** @lends MongoDB */ {
@@ -68,7 +75,7 @@ var MongoDB = MongoDB || function() {
 		 * @returns {Mongo} See the <a href="http://api.mongodb.org/java/2.5/index.html?com/mongodb/Mongo.html">Mongo connection documentation</a>
 		 */
 		connect: function(uris, options) {
-			if (uris instanceof Array) {
+			if (Object.prototype.toString.call(uris) == '[object Array]') {
 				var array = new java.util.ArrayList(uris.length)
 				for (var u in uris) {
 					array.add(new com.mongodb.ServerAddress(uris[u]))
@@ -435,7 +442,6 @@ var MongoDB = MongoDB || function() {
 			 */
 			this.toArray = function() {
 				var array = []
-				var index = 0
 				while (this.hasNext()) {
 					var doc = this.next()
 					array.push(doc)
