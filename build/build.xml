@@ -28,10 +28,12 @@
 			<fileset dir="${lib}" includes="*.txt" />
 		</copy>
 		<copy todir="${tmp}/mongovision/web/static/script/ext">
-			<fileset dir="${lib}/ext-js/lib" includes="*.js" />
-			<fileset dir="${lib}/ext-js/lib/adapter/ext" />
+			<fileset dir="${lib}/ext-js/lib/script" includes="*.js" />
 		</copy>
-		<copy todir="${tmp}/mongovision/web/static/style/ext">
+		<copy todir="${tmp}/mongovision/web/static/style/ext/style">
+			<fileset dir="${lib}/ext-js/lib/style" />
+		</copy>
+		<copy todir="${tmp}/mongovision/web/static/style/ext/resources">
 			<fileset dir="${lib}/ext-js/lib/resources" />
 		</copy>
 		<copy todir="${tmp}/mongovision/web/static/script/ux">
