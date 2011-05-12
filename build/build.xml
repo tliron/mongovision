@@ -55,7 +55,7 @@
 			<fileset dir="${src}" />
 		</copy>
 		<replace dir="${tmp}/mongovision" includes="settings.js" token="%REVISION%" value="${revision}" />
-		<zip destfile="${content}/mongovision.prudence.zip" basedir="${tmp}" includes="**/*" />
+		<zip destfile="${content}/mongovision.prudence.zip" basedir="${tmp}" includes="**/*" level="9" />
 	</target>
 
 	<target name="deploy" depends="application" description="Fetch deployment">
@@ -65,7 +65,7 @@
 	</target>
 	
 	<target name="package" depends="licenses, deploy" description="Create MongoVision zip">
-		<zip destfile="mongovision.zip" basedir="${content}" includes="**/*" />
+		<zip destfile="mongovision-R${revision}.zip" basedir="${content}" includes="**/*" level="9" />
 	</target>
 	
 	<target name="build" depends="package" description="Build distribution" />
