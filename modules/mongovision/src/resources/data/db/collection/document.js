@@ -9,7 +9,7 @@
 // at http://threecrickets.com/
 //
 
-document.execute('/mongo-db/')
+document.executeOnce('/mongo-db/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -19,25 +19,41 @@ function handleInit(conversation) {
 function handlePost(conversation) {
 	var database = conversation.locals.get('database')
 	var collection = conversation.locals.get('collection')
-	var id = conversation.locals.get('id')
+	var id = MongoDB.id(conversation.locals.get('id'))
 
+	if (null === id) {
+		return 400
+	}
 	var text = conversation.entity.text
 	if (null === text) {
 		return 400
 	}
 	var data = JSON.from(text, true)
-	var doc = data.documents.document
+	if (!data.document) {
+		return 400
+	}
+	
+	delete data.document._id
 	
 	var collection = new MongoDB.Collection(collection, {db: database})
-	collection.save(doc)
-
-	application.logger.fine('Updated document in ' + database + '.' + collection.collection.name + ': ' + id)
+	var doc = collection.findAndModify({_id: id}, {$set: data.document}, {returnNew: true})
 	
-	var result = {
-		success: true,
-		documents: data.documents,
-		message: 'Updated document ' + id + ' from ' + database + '.' + collection.collection.name
+	var result
+	if (doc) {
+		result = {
+			success: true,
+			documents: [doc],
+			message: 'Updated document ' + id + ' in ' + database + '.' + collection.collection.name
+		}
 	}
+	else {
+		result = {
+			success: false,
+			message: 'Could not update document ' + id + ' in ' + database + '.' + collection.collection.name
+		}
+	}
+	
+	application.logger.info(result.message)
 	
 	return JSON.to(result, conversation.query.get('human') == 'true')
 }
@@ -45,17 +61,40 @@ function handlePost(conversation) {
 function handleDelete(conversation) {
 	var database = conversation.locals.get('database')
 	var collection = conversation.locals.get('collection')
-	var id = conversation.locals.get('id')
-	
-	var collection = new MongoDB.Collection(collection, {db: database})
-	collection.remove({_id: MongoDB.id(id)})
-
-	application.logger.fine('Removed document from ' + database + '.' + collection.collection.name + ': ' + id)
-	
-	var result = {
-		success: true,
-		message: 'Deleted document ' + id + ' from ' + database + '.' + collection.collection.name
+	var id = MongoDB.id(conversation.locals.get('id'))
+	if (null === id) {
+		return 400
 	}
 	
+	var collection = new MongoDB.Collection(collection, {db: database})
+	var r
+	var result
+	try {
+		r = collection.remove({_id: id}, 1)
+	}
+	catch (x) {
+		result = {
+			success: false,
+			message: x.message
+		}
+	}
+	
+	if (!result) {
+		if (r && (r.n == 1)) {
+			result = {
+				success: true,
+				message: 'Deleted document ' + id + ' from ' + database + '.' + collection.collection.name
+			}
+		}
+		else {
+			result = {
+				success: false,
+				message: 'Could not delete document ' + id + ' from ' + database + '.' + collection.collection.name
+			}
+		}
+	}
+	
+	application.logger.info(result.message)
+
 	return JSON.to(result, conversation.query.get('human') == 'true')
 }

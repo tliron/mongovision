@@ -10,458 +10,465 @@
 //
 
 //
-// Ext JS Library 3.3.1 is Copyright(c) 2006-2010 Sencha Inc.
+// This file makes use of Ext JS 4.0.
+// Copyright (c) 2006-2011, Sencha Inc.
+// All rights reserved.
 // licensing@sencha.com
 // http://www.sencha.com/license
 //
 
+Ext.Loader.setConfig({disableCaching: false});
+
+Ext.require([
+	'Ext.state.Manager',
+	'Ext.state.CookieProvider',
+	'Ext.XTemplate',
+	'Ext.container.Viewport',
+	'Ext.layout.container.Border',
+	'Ext.data.TreeStore',
+	'Ext.tab.Panel',
+	'Ext.toolbar.Spacer',
+	'Ext.form.Label',
+	'Ext.grid.Panel',
+	'Ext.form.field.TextArea',
+	'Ext.window.MessageBox'
+]);
+
 Ext.namespace('MongoVision');
 
-//
-// MongoVision.DatabasesPanel
-//
-// A tree view listing the MongoDB databases and collections. Clicking a collection
-// will open a new or refresh the existing MongoVision.CollectionPanel in the panel
-// specified by 'mongoVisionCollections'. The 'mongoVisionEditor' config option is
-// passed to the collection panel.
-//
+/**
+ * MongoVision.DatabasesPanel
+ *
+ * A tree view listing the MongoDB databases and collections. Clicking a collection
+ * will open a new or refresh the existing MongoVision.CollectionPanel in the panel
+ * specified by 'mvCollections'. The 'mvEditor' config option is
+ * passed to the collection panel.
+ */
+Ext.define('MongoVision.DatabasesPanel', {
+	alias: 'widget.mv-databases',
+	extend: 'Ext.tree.Panel',
+	requires: 'Ext.data.proxy.Rest',
 
-MongoVision.DatabasesPanel = Ext.extend(Ext.tree.TreePanel, {
 	constructor: function(config) {
 	
-		var loader = new Ext.tree.TreeLoader({
-			url: 'data/databases/',
-			requestMethod: 'GET',
-			preloadChildren: true
+		this.store = Ext.create('Ext.data.TreeStore', {
+			storeId: 'mv-databases',
+			proxy: {
+				type: 'rest',
+				url: 'data/databases/',
+				noCache: false
+			},
+			autoLoad: true // maybe not?
 		});
 		
 		config = Ext.apply({
 			title: MongoVision.text.collections,
-			loader: loader,
+			store: this.store,
 			autoScroll: true,
 			useArrows: true,
-			trackMouseOver: true,
 			rootVisible: false,
-			root: {
-				id: 'root',
-				text: 'databases'
-			},
-			plugins: new Ext.ux.LoadMask({
-				msg: MongoVision.text.loading,
-				treeLoader: loader
-			}),
-			bbar: {
-				items: {
-					iconCls: 'x-tbar-loading',
-					handler: function() {
-						this.getLoader().load(this.getRootNode());
-					}.createDelegate(this)
+			viewConfig: {
+				getRowClass: function(model, index) {
+					return model.get('cls');
 				}
 			},
+			/*plugins: Ext.create('Ext.ux.LoadMask', {
+				msg: MongoVision.text.loading,
+				treeLoader: loader
+			}),*/
+			dockedItems: [{
+				xtype: 'toolbar',
+				dock: 'bottom',
+				items: {
+					iconCls: 'x-tbar-loading',
+					handler: Ext.bind(function() {
+						this.load();
+					}, this)
+				}
+			}],
 			listeners: {
-				click: function(node) {
-					if (node.isLeaf()) {
-						var mongoVisionCollections = Ext.getCmp(config.mongoVisionCollections);
-						var mongoVisionCollection = mongoVisionCollections.get(node.id);
-						if (mongoVisionCollection) {
-							mongoVisionCollection.reload();
+				itemclick: function(view, model, item, index) {
+					if (model.isLeaf()) {
+						var collections = Ext.getCmp(config.mvCollections);
+						var collection = Ext.getCmp(model.getId());
+						if (collection) {
+							collection.load();
 						}
 						else {
-							var mongoVisionCollection = new MongoVision.CollectionPanel({
-								mongoVisionCollection: node.id,
-								mongoVisionEditor: config.mongoVisionEditor
+							var collection = Ext.create('MongoVision.CollectionPanel', {
+								mvCollection: model.getId(),
+								mvEditor: config.mvEditor
 							});
-							mongoVisionCollections.add(mongoVisionCollection);
+							collections.add(collection);
 						}
-						mongoVisionCollections.activate(mongoVisionCollection);
+						collections.setActiveTab(collection);
 					}
 				}
 			}
 		}, config);
 		
-		MongoVision.DatabasesPanel.superclass.constructor.call(this, config);
+		this.callParent([config]);
 	}
 });
 
-Ext.reg('mongovisiondatabases', MongoVision.DatabasesPanel);
+/**
+ * MongoVision.CollectionPanel
+ *
+ * Displays a MongoDB collection, supporting two different views: a DataView showing raw JSON data,
+ * and a dynamically restructured GridPanel where the columns are based on the currently selected row in
+ * the DataView. Each view requires a different record structure, and thus a different store, which is
+ * why we created Ext.ux.ReusableJsonStore to allow us to use the same data for both stores.
+ *
+ * An extended PagingToolbar allows user-configured paging, MongoDB querying and sorting. The tabular view
+ * column sorting is kinda linked to the toolbar sort box. (Faked, really: the column sorting is
+ * specially handled on the server.)
+ *
+ * Selecting a row in either view opens it in a MongoVision.EditorPanel specified by 'mvEditor'.
+ */
+Ext.define('MongoVision.CollectionPanel', {
+	alias: 'widget.mv-collection',
+	extend: 'Ext.panel.Panel',
 
-//
-// MongoVision.CollectionPanel
-//
-// Displays a MongoDB collection, supporting two different views: a DataView showing raw JSON data,
-// and a dynamically restructured GridPanel where the columns are based on the currently selected row in
-// the DataView. Each view requires a different record structure, and thus a different store, which is
-// why we created Ext.ux.ReusableJsonStore to allow us to use the same data for both stores.
-//
-// An extended PagingToolbar allows user-configured paging, MongoDB querying and sorting. The tabular view
-// column sorting is kinda linked to the toolbar sort box. (Faked, really: the column sorting is
-// specially handled on the server.)
-//
-// Selecting a row in either view opens it in a MongoVision.EditorPanel specified by 'mongoVisionEditor'.
-//
-
-MongoVision.tabularKeyPrefix = '_tabular_';
-
-MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	wrap: true,
 	
 	constructor: function(config) {
 		
-		// The default Ext JS single-URL-based proxy is not quite RESTful
-		// enough for our tastes, so lets configure it (in particular, we prefer
-		// HTTP PUT for the CRUD create operation)
-		var proxy = new Ext.data.HttpProxy({
-			api: {
-				read: 'data/db/' + config.mongoVisionCollection + '/',
-				create: {
-					url: 'data/db/' + config.mongoVisionCollection,
-					method: 'PUT'
-				},
-				update: {
-					url: 'data/db/' + config.mongoVisionCollection,
-					method: 'POST'
-				},
-				destroy: 'data/db/' + config.mongoVisionCollection
-			}
-		});
-		
-		var writer = new Ext.data.JsonWriter({
-			encode: false
-		});
-		
 		var pageSize = 20;
 		
-		var dataviewStore = new Ext.ux.ReusableJsonStore({
-			restful: true,
-			remoteSort: true,
-			proxy: proxy,
-			writer: writer,
-			totalProperty: 'total',
-			successProperty: 'success',
-			messageProperty: 'message',
-			idProperty: 'id',
-			root: 'documents',
+		this.store = Ext.create('Ext.data.Store', {
+			storeId: config.mvCollection,
+			proxy: {
+				type: 'rest',
+				url: 'data/db/' + config.mvCollection + '/',
+				noCache: false,
+				sortParam: undefined,
+				actionMethods: {
+					create : 'PUT',
+					read   : 'GET',
+					update : 'POST',
+					destroy: 'DELETE'
+				},
+				reader: {
+					type: 'json',
+					root: 'documents'
+				},
+				listeners: {
+					exception: function(proxy, response, operation) {
+						Ext.gritter.add({
+							title: MongoVision.text['action.' + operation.action] || operation.action,
+							text: (operation.error ? operation.error.statusText : null) || MongoVision.text.exception
+						}); 
+						
+						// Ext JS 4.0 does not handle this exception!
+						switch (operation.action) {
+							case 'create':
+								Ext.each(operation.records, function(record) {
+									record.store.remove(record);
+								});
+								break;
+								
+							case 'destroy':
+								Ext.each(operation.records, function(record) {
+									if (record.removeStore) {
+										record.removeStore.insert(record.removeIndex, record);
+									}
+								});
+								break;
+						}
+					}
+				}
+			},
 			fields: [{
 				name: 'id'
 			}, {
 				// The entire MongoDB document will be in this field
 				name: 'document'
 			}],
+			pageSize: pageSize,
+			autoSync: true,
 			autoLoad: {
 				params: {
 					start: 0,
 					limit: pageSize
 				}
+			},
+			listeners: {
+				update: function(store, model, operation) {
+					Ext.gritter.add({
+						title: MongoVision.text['action.' + operation] || operation,
+						text: MongoVision.text.success // wish there was a way to get the message from the server response!
+					});
+				},
+				remove: function(store, model, index) {
+					model.removeStore = store;
+					model.removeIndex = index;
+				}
 			}
 		});
 		
-		var tpl = new Ext.XTemplate(
+		var tpl = Ext.create('Ext.XTemplate',
 			'<tpl for=".">',
-			'<div class="x-mongovision-document x-unselectable<tpl if="!this.scope.wrap"> x-mongovision-nowrap</tpl>" id="', config.mongoVisionCollection, '/{id}">',
-			'{[Ext.ux.HumanJSON.encode(values.document,true,false)]}',
-			'</div>',
+				'<div class="x-mongovision-document x-unselectable<tpl if="!this.scope.wrap"> x-mongovision-nowrap</tpl>" id="', config.mvCollection, '/{id}">',
+					'{[Ext.ux.HumanJSON.encode(values.document,true,false)]}',
+				'</div>',
 			'</tpl>',
-			'<div class="x-clear"></div>', {
-			compiled: true,
-			scope: this
-		});
+			'<div class="x-clear"></div>',
+			{
+				compiled: true,
+				scope: this
+			}
+		);
 		
-		var dataview = new Ext.DataView({
-			store: dataviewStore,
+		this.selectionChanged = Ext.bind(function(view, selections) {
+			// Show selected row in editor
+			if (selections && selections.length && !Ext.getCmp(this.initialConfig.mvCollection + '-keepRefreshing').pressed) {
+				var record = selections[0];
+				var mvEditor = Ext.getCmp(this.mvEditor);
+				mvEditor.setRecord(record, this);
+			}
+		}, this);
+		
+		this.dataView = Ext.create('Ext.view.View', {
+			id: config.mvCollection + '/dataView',
+			store: this.store,
 			tpl: tpl,
-			autoWidth: true,
-			overClass: 'x-view-over',
+			autoScroll: true,
+			overItemCls: 'x-mongovision-over',
 			itemSelector: 'div.x-mongovision-document',
 			singleSelect: true,
-			emptyText: '<div class="x-grid-empty">' + MongoVision.text.noDocuments + '</div>',
-			// DataView does support a 'loadingText' config, but a LoadMask is nicer
-			// (and more consistent with the GridPanel, which supports LoadMask)
-			plugins: new Ext.ux.LoadMask({
-				msg: MongoVision.text.loading,
-				store: dataviewStore
-			}),
+			emptyText: '<div class="x-mongovision-empty">' + MongoVision.text.noDocuments + '</div>',
 			listeners: {
-				selectionchange: function(dataview) {
-					// Show selected row in editor
-					var record = dataview.getSelectedRecords()[0];
-					var mongoVisionEditor = Ext.getCmp(this.mongoVisionEditor);
-					mongoVisionEditor.setRecord(record, this);
-				}.createDelegate(this)
-			}
-		});
-		
-		var cellRenderer = function(value) {
-			var html = value != null ? Ext.ux.HumanJSON.encode(value, true, false) : '&nbsp;'
-			if (this.wrap) {
-				html = '<div style="x-mongovision-wrap">' + html + '</div>';
-			}
-			return html
-		}.createDelegate(this);
-
-		var tabular = new Ext.grid.GridPanel({
-			store: dataviewStore,
-			colModel: new Ext.grid.ColumnModel({
-				columns: [{
-					dataIndex: 'document',
-					header: 'document',
-					renderer: cellRenderer
-				}],
-				defaultSortable: true
-			}),
-			border: false,
-			viewConfig: {
-				forceFit: true,
-				emptyText: MongoVision.text.noDocuments,
-				rowOverCls: 'x-view-over'
-			},
-			selModel: new Ext.grid.RowSelectionModel({
-				singleSelect: true,
-				listeners: {
-					rowselect: function(selmodel, index, record) {
-						// Show selected row in editor
-						var mongoVisionEditor = Ext.getCmp(this.mongoVisionEditor);
-						mongoVisionEditor.setRecord(record, this);
-					}.createDelegate(this)					
-				}
-			}),
-			loadMask: {
-				msg: MongoVision.text.loading
-			},
-			listeners: {
-				sortchange: function(gridPanel, sortInfo) {
-					// We'll update the "sort" box to reflect what the current sort is
-					// (this is faked: the sorted column is handled specially by the server)
-					var field = sortInfo.field.substr(MongoVision.tabularKeyPrefix.length);
-					Ext.getCmp(this.initialConfig.mongoVisionCollection + '/sort').setValue(field + ':' + (sortInfo.direction == 'ASC' ? '1' : '-1'));
-				}.createDelegate(this)
+				selectionchange: this.selectionChanged
 			}
 		});
 		
 		this.keepRefreshingTask = {
 			run: function() {
-				this.reload();
+				this.load();
 			},
 			interval: 5000,
 			scope: this
 		};
 		
-		var updateTabular = function() {
-			// Try to use currently selected record in dataview; default to first record in store
-			var selected = dataview.getSelectedRecords()
-			var record = selected.length ? selected[0] : dataview.getStore().getAt(0);
-			if (!record) {
-				return;
-			}
-			var document = record.data.document;
-			
-			var fields = [{
-				name: id
-			}, {
-				name: 'document'
-			}];
-			var columns = [];
-			
-			for (var key in document) {
-				fields.push({
-					// This is the tricky part: since we are creating a fake record structure,
-					// we are prefixing our fake fields with a special prefix, and then using
-					// the convert function to fetch their value from 'document', which is the
-					// only real field value returned by the server
-					name: MongoVision.tabularKeyPrefix + key,
-					key: key,
-					convert: function(value, record) {
-						return record.document[this.key]
-					}
-				});
-				columns.push({
-					dataIndex: MongoVision.tabularKeyPrefix + key,
-					header: key,
-					renderer: cellRenderer
-				});
-			}
-			
-			var tabularStore = new Ext.ux.ReusableJsonStore({
-				restful: true,
-				remoteSort: true,
-				proxy: proxy,
-				writer: writer,
-				totalProperty: 'total',
-				successProperty: 'success',
-				messageProperty: 'message',
-				idProperty: 'id',
-				root: 'documents',
-				fields: fields
-			});
-			
-			this.getBottomToolbar().bindStore(tabularStore);
-			tabularStore.reuse(this.getStore());
-			
-			tabular.reconfigure(tabularStore, new Ext.grid.ColumnModel({
-				columns: columns,
-				defaultSortable: true
-			}));
-		}.createDelegate(this);
-		
 		config = Ext.apply({
-			title: config.mongoVisionCollection,
-			id: config.mongoVisionCollection,
+			title: config.mvCollection,
+			id: config.mvCollection,
 			closable: true,
 			autoScroll: true,
 			layout: 'card',
 			activeItem: 0,
-			items: [
-				dataview,
-				tabular
-			],
-			bbar: {
-				xtype: 'paging',
-				plugins: new Ext.ux.PerPage({
+			items: [this.dataView],
+			dockedItems: [{
+				xtype: 'pagingtoolbar',
+				dock: 'bottom',
+				itemId: 'bottom',
+				plugins: Ext.create('Ext.ux.PerPage', {
 					pageSizeOptions: [10, 20, 40, 60],
 					label: MongoVision.text.perPage
 				}),
-				pageSize: pageSize,
-				store: dataviewStore,
+				store: this.store,
 				displayInfo: true,
 				displayMsg: MongoVision.text.documentsDisplayed,
 				emptyMsg: MongoVision.text.noDocuments,
 				items: [{
+					id: config.mvCollection + '-keepRefreshing',
 					enableToggle: true,
 					text: MongoVision.text.keepRefreshing,
-					toggleHandler: function(button, pressed) {
+					toggleHandler: Ext.bind(function(button, pressed) {
 						if (pressed) {
-							Ext.TaskMgr.start(this.keepRefreshingTask);
+							Ext.TaskManager.start(this.keepRefreshingTask);
 						}
 						else {
-							Ext.TaskMgr.stop(this.keepRefreshingTask);
+							Ext.TaskManager.stop(this.keepRefreshingTask);
 						}
-					}.createDelegate(this)
+					}, this)
 				}, '-', {
-					id: config.mongoVisionCollection + '-wrap',
+					text: MongoVision.text.create,
+					handler: Ext.bind(function() {
+							var mvEditor = Ext.getCmp(this.mvEditor);
+							mvEditor.createRecord(this);
+					}, this)
+				}, '-', {
+					id: config.mvCollection + '-wrap',
 					pressed: this.wrap,
 					enableToggle: true,
 					text: MongoVision.text.wrap,
-					toggleHandler: function(button, pressed) {
+					toggleHandler: Ext.bind(function(button, pressed) {
 						this.wrap = pressed;
 						var view = this.getView();
-						if (view === tabular) {
-							this.getView().getView().refresh();
+						if (view === this.dataView) {
+							view.refresh();
 						}
 						else {
-							this.getView().refresh();
+							view.getView().refresh();
 						}
-					}.createDelegate(this)
-				}, ' ', {
+					}, this)
+				}, {
 					enableToggle: true,
 					text: MongoVision.text.tabular,
-					toggleHandler: function(button, pressed) {
+					toggleHandler: Ext.bind(function(button, pressed) {
 						// Switch view (feature of CardLayout)
-						this.getLayout().setActiveItem(pressed ? 1 : 0);
 						if (pressed) {
-							// This will update the tabular view according to our currently selected row
-							updateTabular();
+							var grid = this.createGridView();
+							if (grid) {
+								this.getLayout().setActiveItem(grid);
+							}
 						}
 						else {
-							this.getBottomToolbar().bindStore(dataviewStore);
-							dataviewStore.reuse(tabular.getStore());
+							this.getLayout().setActiveItem(this.dataView);
 						}
-					}.createDelegate(this)
+					}, this)
 				}, '-', {
 					xtype: 'tbtext',
 					text: MongoVision.text.sort
 				}, {
-					xtype: 'tbspacer',
-					width: 5
-				}, {
 					xtype: 'textfield',
-					plugins: new Ext.ux.TextFieldPopup(),
-					fieldLabel: MongoVision.text.sort,
-					id: config.mongoVisionCollection + '/sort',
+					plugins: Ext.create('Ext.ux.TextFieldPopup'),
+					title: MongoVision.text.sort,
+					id: config.mvCollection + '/sort',
 					width: 150,
 					listeners: {
-						specialkey: function(textfield, event) {
+						specialkey: Ext.bind(function(textfield, event) {
 							if (event.getKey() == event.ENTER) {
 								this.load();
 							}
-						}.createDelegate(this)
+						}, this),
+						popup: Ext.bind(function() {
+							this.load();
+						}, this)
 					}
 				}, '-', {
 					xtype: 'tbtext',
 					text: MongoVision.text.query
 				}, {
-					xtype: 'tbspacer',
-					width: 5
-				}, {
 					xtype: 'textfield',
-					plugins: new Ext.ux.TextFieldPopup(),
-					id: config.mongoVisionCollection + '/query',
-					fieldLabel: MongoVision.text.query,
+					plugins: Ext.create('Ext.ux.TextFieldPopup'),
+					id: config.mvCollection + '/query',
+					title: MongoVision.text.query,
 					width: 150,
 					listeners: {
-						specialkey: function(textfield, event) {
+						specialkey: Ext.bind(function(textfield, event) {
 							if (event.getKey() == event.ENTER) {
 								this.load();
 							}
-						}.createDelegate(this)
+						}, this),
+						popup: Ext.bind(function() {
+							this.load();
+						}, this)
 					}
 				}]
-			},
+			}],
 			listeners: {
 				destroy: function() {
-					Ext.TaskMgr.stop(this.keepRefreshingTask);					
+					Ext.TaskManager.stop(this.keepRefreshingTask);					
 				}
 			}
 		}, config);
 		
-		MongoVision.CollectionPanel.superclass.constructor.call(this, config);
+		this.callParent([config]);
+	},
+	
+	createGridView: function() {
+		var grid = Ext.getCmp(this.mvCollection + '/gridView');
+
+		// Try to use currently selected record in dataView; default to first record in store
+		var selected = this.dataView.getSelectionModel().getSelection();
+		var record = selected.length ? selected[0] : this.store.getAt(0);
+		if (!record) {
+			return grid;
+		}
+		if (record.getId() == this.gridDocumentId) {
+			return grid;
+		}
+		
+		this.gridDocumentId = record.getId();
+		var document = record.data.document;
+		
+		// Columns
+		var columns = []
+		for (var key in document) {
+			columns.push({
+				dataIndex: 'document',
+				header: key,
+				renderer: Ext.bind(function(value) {
+					value = value[this.key];
+					var html = value != null ? Ext.ux.HumanJSON.encode(value, true, false) : '&nbsp;'
+					if (this.me.wrap) {
+						html = '<div class="x-mongovision-wrap">' + html + '</div>';
+					}
+					return html
+				}, {me: this, key: key})
+			});
+		}
+		
+		// Remove old grid
+		if (grid) {
+			grid.destroy();
+		}
+		
+		// New grid
+		grid = Ext.create('Ext.grid.Panel', {
+			id: this.mvCollection + '/gridView',
+			store: this.store,
+			columns: columns,
+			border: false,
+			forceFit: true,
+			columnLines: true,
+			viewConfig: {
+				emptyText: '<div class="x-mongovision-empty">' + MongoVision.text.noDocuments + '</div>',
+			},
+			listeners: {
+				selectionchange: this.selectionChanged,
+				sortchange: Ext.bind(function(header, column, direction) {
+					// We'll update the "sort" box to reflect what the current sort is
+					// (this is faked: the sorted column is handled specially by the server)
+					var field = column.initialConfig.header;
+					Ext.getCmp(this.initialConfig.mvCollection + '/sort').setValue(field + ':' + (direction == 'ASC' ? '1' : '-1'));
+					this.load();
+				}, this)
+			}
+		});
+		
+		this.add(grid);
+		return grid;
 	},
 	
 	getView: function() {
-		return this.getLayout().activeItem;
-	},
-	
-	getStore: function() {
-		return this.getView().getStore();
+		return this.getLayout().getActiveItem();
 	},
 	
 	load: function() {
-		var store = this.getStore();
-		store.setBaseParam('sort', Ext.getCmp(this.initialConfig.mongoVisionCollection + '/sort').getValue());
-		store.setBaseParam('query', Ext.getCmp(this.initialConfig.mongoVisionCollection + '/query').getValue());
-		store.load({
-			params: store.baseParams
-		});
-	},
-		
-	reload: function() {
-		this.getStore().reload();		
+		var params = this.store.getProxy().extraParams;
+		params.sort = Ext.getCmp(this.initialConfig.mvCollection + '/sort').getValue();
+		if (!params.sort) {
+			delete params.sort;
+		}
+		params.query = Ext.getCmp(this.initialConfig.mvCollection + '/query').getValue();
+		if (!params.query) {
+			delete params.query;
+		}
+		this.store.load();
 	},
 	
 	select: function(index) {
 		var view = this.getView();
-		if (view.getXType() == 'dataview') {
-			view.select(index);
-		}
-		else {
-			view.getSelectionModel().selectRow(index);
-		}
+		view.getSelectionModel().select(index);
 	},
 	
 	selectPrevious: function(record) {
-		var store = this.getStore();
-		var index = store.indexOf(record);
+		var index = this.store.indexOf(record);
 		index--;
 		if (index < 0) {
 			// Move to previous page, if available
-			var toolbar = this.getBottomToolbar();
-			if (toolbar.cursor > 0) {
-				store.on('load', function(store) {
+			if (this.store.currentPage > 1) {
+				this.store.on('load', Ext.bind(function() {
 					// Select last record on page
-					var index = store.getCount() - 1;
+					var index = this.store.getCount() - 1;
 					this.select(index);
-				}.createDelegate(this, [store]), {
+				}, this), {
 					single: true
 				});
-				toolbar.movePrevious();
+				this.getDockedComponent('bottom').movePrevious();
 			}
 		}
 		else {
@@ -471,21 +478,19 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	
 	selectNext: function(record) {
 		var view = this.getView();
-		var store = view.getStore();
-		var index = store.indexOf(record);
+		var index = this.store.indexOf(record);
 		index++;
-		if (index == store.getCount())
-		{
+		if (index == this.store.getCount()) {
 			// Move to next page, if available
-			var toolbar = this.getBottomToolbar();
-			if (toolbar.cursor < (store.getTotalCount() - toolbar.pageSize)) {
-				store.on('load', function(store) {
+			var pages = Math.ceil(this.store.getTotalCount() / this.store.pageSize);
+			if (this.store.currentPage < pages) {
+				this.store.on('load', Ext.bind(function() {
 					// Select first record on page
 					this.select(0);
-				}.createDelegate(this, [store]), {
+				}, this), {
 					single: true
 				});
-				toolbar.moveNext();
+				this.getDockedComponent('bottom').moveNext();
 			}
 		}
 		else {
@@ -494,18 +499,18 @@ MongoVision.CollectionPanel = Ext.extend(Ext.Panel, {
 	}
 });
 
-Ext.reg('mongovisioncollection', MongoVision.CollectionPanel);
+/**
+ * MongoVision.EditorPanel
+ *
+ * Contains a TextArea for editing a MongoDB document. The bottom toolbar has buttons for
+ * saving and deleting the document, as well as an indicator for the current JSON validity
+ * of the content. The Save button will only be enabled if the document is both valid and
+ * also decodes into a value different from that of the current record. Smart!
+ */
+Ext.define('MongoVision.EditorPanel', {
+	alias: 'widget.mv-editor',
+	extend: 'Ext.panel.Panel',
 
-//
-// MongoVision.EditorPanel
-//
-// Contains a TextArea for editing a MongoDB document. The bottom toolbar has buttons for
-// saving and deleting the document, as well as an indicator for the current JSON validity
-// of the content. The Save button will only be enabled if the document is both valid and
-// also decodes into a value different from that of the current record. Smart!
-//
-
-MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 	record: null,
 	collectionPanel: null,
 	wrap: true,
@@ -515,34 +520,41 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 		
 		config = Ext.apply({
 			layout: 'fit',
-			bbar: {
+			dockedItems: [{
+				xtype: 'toolbar',
+				dock: 'bottom',
 				items: [{
 					id: config.id + '-save',
 					text: MongoVision.text.save,
 					disabled: true,
-					handler: function() {
+					handler: Ext.bind(function() {
 						if (this.record) {
 							var textarea = Ext.getCmp(config.id + '-textarea');
-							try {
-								// Ext.ux.HumanJSON.encode encoded this without curly brackets for the root object, so we need to add them
-								var value = Ext.decode('{' + textarea.getValue() + '}');
+							// Ext.ux.HumanJSON.encode encoded this without curly brackets for the root object, so we need to add them
+							var value = Ext.decode('{' + textarea.getValue() + '}', true);
+							if (value !== null) {
 								var document = this.record ? this.record.get('document') : null;
-								var create = !document || !value._id || (Ext.encode(value._id) != Ext.encode(document._id));
-								// TODO: handle create
 								this.record.set('document', value);
+
+								if (this.record.phantom) {
+									// Create!
+									this.collectionPanel.store.add(this.record);
+									this.collectionPanel.store.sort();
+								}
+
 								Ext.getCmp(this.id + '-save').setDisabled(true);
 							}
-							catch (x) {
+							else {
 								// We should never get here! The Save button should be disabled if invalid
 								this.updateValidity(false);
 							}
 						}
-					}.createDelegate(this)
+					}, this)
 				}, {
 					id: config.id + '-delete',
 					text: MongoVision.text['delete'],
 					disabled: true,
-					handler: function() {
+					handler: Ext.bind(function() {
 						if (this.record) {
 							Ext.MessageBox.confirm(MongoVision.text['delete'], MongoVision.text.deleteMessage, function(id) {
 								if (id == 'yes') {
@@ -550,32 +562,32 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 								}
 							}, this);
 						}
-					}.createDelegate(this)
+					}, this)
 				}, '-', {
 					id: config.id + '-multiline',
 					pressed: this.multiline,
 					enableToggle: true,
 					text: MongoVision.text.multiline,
-					toggleHandler: function(button, pressed) {
+					toggleHandler: Ext.bind(function(button, pressed) {
 						this.multiline = pressed;
 						var textarea = Ext.getCmp(this.id + '-textarea');
 						if (textarea) {
-							try {
-								// Re-encode
-								var value = Ext.decode('{' + textarea.getValue() + '}');
+							// Re-encode
+							var value = Ext.decode('{' + textarea.getValue() + '}', true);
+							if (value !== null) {
 								value = Ext.ux.HumanJSON.encode(value, false, this.multiline);
 								textarea.setValue(value);
 							}
-							catch (x) {
+							else {
 								this.updateValidity(false);
 							}
 						}
-					}.createDelegate(this)
+					}, this)
 				}, ' ', {
 					pressed: this.wrap,
 					enableToggle: true,
 					text: MongoVision.text.wrap,
-					toggleHandler: function(button, pressed) {
+					toggleHandler: Ext.bind(function(button, pressed) {
 						this.wrap = pressed;
 						var textarea = Ext.getCmp(this.id + '-textarea');
 						if (textarea) {
@@ -585,7 +597,7 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 							// so for best portability we'll be sure to recreate it each time we need to change the wrap value
 							this.createTextArea(value);
 						}
-					}.createDelegate(this)
+					}, this)
 				}, '-', {
 					id: config.id + '-validity',
 					disabled: true,
@@ -598,60 +610,47 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 					id: config.id + '-prev',
 					disabled: true,
 					iconCls: 'x-tbar-page-prev',
-					handler: function() {
+					handler: Ext.bind(function() {
 						this.collectionPanel.selectPrevious(this.record);
-					}.createDelegate(this)
+					}, this)
 				}, {
 					id: config.id + '-next',
 					disabled: true,
 					iconCls: 'x-tbar-page-next',
-					handler: function() {
+					handler: Ext.bind(function() {
 						this.collectionPanel.selectNext(this.record);
-					}.createDelegate(this)
+					}, this)
 				}]
-			}
+			}]
 		}, config);
 		
-		MongoVision.EditorPanel.superclass.constructor.call(this, config);
+		this.callParent([config]);
 	},
 	
 	createTextArea: function(value) {
-		var textarea = new Ext.form.TextArea({
+		var textarea = Ext.create('Ext.form.field.TextArea', {
 			id: this.id + '-textarea',
 			value: value,
-			autoCreate: {
-				tag: 'textarea',
-				spellcheck: 'false',
-				wrap: this.wrap ? 'hard' : 'off'
-			},
-			/*enableAlignments: false,
-			enableColors: false,
-			enableFont: false,
-			enableFontSize: false,
-			enableFormat: false,
-			enableLinks: false,
-			enableLists: false,
-			enableSourceEdit: false,*/
-			style: 'border: none;',
 			enableKeyEvents: true,
+			fieldSubTpl: this.wrap ? MongoVision.noSpellCheckTextAreaTpl : MongoVision.noWrapTextAreaTpl,
 			listeners: {
 				keypress: {
-					// Note we are buffering this by half a second, so that the validity check would not happen if the
-					// user is frantically typing :)
-					fn: function(textarea, event) {
+					fn: Ext.bind(function(textarea, event) {
 						if (this.record) {
 							var textarea = Ext.getCmp(this.id + '-textarea');
-							try {
-								var value = Ext.decode('{' + textarea.getValue() + '}')
+							var value = Ext.decode('{' + textarea.getValue() + '}', true);
+							if (value !== null) {
 								var document = this.record.get('document');
 								Ext.getCmp(this.id + '-save').setDisabled(Ext.encode(value) == Ext.encode(document));
 								this.updateValidity(true);
 							}
-							catch (x) {
+							else {
 								this.updateValidity(false);
 							}
 						}
-					}.createDelegate(this),
+					}, this),
+					// Note we are buffering this by half a second, so that the validity check would not happen if the
+					// user is frantically typing :)
 					buffer: 500
 				}
 			}
@@ -659,17 +658,18 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 		this.removeAll();
 		this.add(textarea);
 		this.doLayout();
+		return textarea;
 	},
 	
 	updateValidity: function(valid) {
 		if (valid) {
 			Ext.getCmp(this.id + '-multiline').setDisabled(false);
-			Ext.getCmp(this.id + '-validity').removeClass('x-mongovision-invalid').setText(MongoVision.text.validJSON);
+			Ext.getCmp(this.id + '-validity').addCls('x-toolbar-text').removeCls('x-mongovision-invalid').setText(MongoVision.text.validJSON);
 		}
 		else {
 			Ext.getCmp(this.id + '-save').setDisabled(true);
 			Ext.getCmp(this.id + '-multiline').setDisabled(true);
-			Ext.getCmp(this.id + '-validity').addClass('x-mongovision-invalid').setText(MongoVision.text.invalidJSON);
+			Ext.getCmp(this.id + '-validity').removeCls('x-toolbar-text').addCls('x-mongovision-invalid').setText(MongoVision.text.invalidJSON);
 		}
 	},
 	
@@ -677,59 +677,80 @@ MongoVision.EditorPanel = Ext.extend(Ext.Panel, {
 		this.record = record;
 		this.collectionPanel = collectionPanel;
 		
-		var store = collectionPanel.getStore();
-		var cursor = store.indexOf(record) + collectionPanel.getBottomToolbar().cursor;
-		var total = store.getTotalCount();
-		
+		var store = collectionPanel.store;
+		var cursor = store.indexOf(record);
+		var pages = Math.ceil(store.getTotalCount() / store.pageSize);
+	
 		this.updateValidity(true);
 		Ext.getCmp(this.id + '-delete').setDisabled(record == null);
 		Ext.getCmp(this.id + '-validity').setDisabled(record == null);
-		Ext.getCmp(this.id + '-prev').setDisabled(cursor <= 0);
-		Ext.getCmp(this.id + '-next').setDisabled(cursor >= total - 1);
+		Ext.getCmp(this.id + '-prev').setDisabled((cursor == 0) && (store.currentPage == 1));
+		Ext.getCmp(this.id + '-next').setDisabled((cursor == store.getCount() -1) && (store.currentPage == pages));
 		Ext.getCmp(this.id + '-collection').setText(record == null ? '' : collectionPanel.initialConfig.title);
 		
 		var textarea = Ext.getCmp(this.id + '-textarea');
-		var value = record ? Ext.ux.HumanJSON.encode(record.json.document, false, this.multiline) : '';
+		var value = record ? Ext.ux.HumanJSON.encode(record.get('document'), false, this.multiline) : '';
 		var textarea = this.items.get(0);
 		if (textarea) {
 			// Reuse existing textarea
 			textarea.setValue(value);
 		}
 		else {
-			this.createTextArea(value);
+			textarea = this.createTextArea(value);
 		}
+		
+		textarea.focus();
+	},
+	
+	createRecord: function(collectionPanel) {
+		var model = collectionPanel.store.getProxy().getModel();
+		var record = Ext.ModelManager.create({document: {}}, model);
+		this.setRecord(record, collectionPanel);
 	}
 });
-
-Ext.reg('mongovisioneditor', MongoVision.EditorPanel);
 
 //
 // Initialization
 //
 
-// DataProxy notifications
-
-Ext.data.DataProxy.on('write', function(proxy, action, data, response) {
-	new Ext.gritter.add({
-		title: MongoVision.text['action.' + action],
-		text: response.message
-	}); 
-});
-
-Ext.data.DataProxy.on('exception', function(proxy, type, action) {
-	new Ext.gritter.add({
-		title: MongoVision.text['action.' + action],
-		text: MongoVision.text.exception
-	}); 
-});
-
 Ext.onReady(function() {
 	// Our ViewPort: a DatabasesPanel in the east, a TabPanel containing CollectionPanels in the
 	// center, an EditorPanel in the south, and a header in the north
 	
-	Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
-	
-	var viewport = new Ext.Viewport({
+	Ext.state.Manager.setProvider(Ext.create('Ext.state.CookieProvider'));
+
+	// See: http://www.sencha.com/forum/showthread.php?131656-TextArea-with-wrap-off
+	MongoVision.noWrapTextAreaTpl = Ext.create('Ext.XTemplate',
+	    '<textarea id="{id}" ',
+	        '<tpl if="name">name="{name}" </tpl>',
+	        '<tpl if="rows">rows="{rows}" </tpl>',
+	        '<tpl if="cols">cols="{cols}" </tpl>',
+	        '<tpl if="tabIdx">tabIndex="{tabIdx}" </tpl>',
+	        'class="{fieldCls} {typeCls}" style="border: none;" ',
+	        'autocomplete="off" spellcheck="false" wrap="off">',
+	    '</textarea>',
+	    {
+	        compiled: true,
+	        disableFormats: true
+	    }
+	);
+
+	MongoVision.noSpellCheckTextAreaTpl = Ext.create('Ext.XTemplate',
+	    '<textarea id="{id}" ',
+	        '<tpl if="name">name="{name}" </tpl>',
+	        '<tpl if="rows">rows="{rows}" </tpl>',
+	        '<tpl if="cols">cols="{cols}" </tpl>',
+	        '<tpl if="tabIdx">tabIndex="{tabIdx}" </tpl>',
+	        'class="{fieldCls} {typeCls}" style="border: none;" ',
+	        'autocomplete="off" spellcheck="false">',
+	    '</textarea>',
+	    {
+	        compiled: true,
+	        disableFormats: true
+	    }
+	);
+
+	Ext.create('Ext.container.Viewport', {
 		id: 'viewport',
 		layout: 'border',
 		items: [{
@@ -737,20 +758,19 @@ Ext.onReady(function() {
 			margins: '0 0 0 0',
 			border: false,
 			padding: '5 10 5 10',
-			bodyCssClass: 'x-border-layout-ct', // Uses the neutral background color
+			bodyCls: 'x-border-layout-ct', // Uses the neutral background color
 			contentEl: 'header',
 			listeners: {
 				render: function() {
-					Ext.fly('header').show();
-					new Ext.Panel({
+					Ext.create('Ext.panel.Panel', {
 						id: 'header',
 						renderTo: 'header-main',
 						border: false,
-						bodyCssClass: 'x-border-layout-ct', // Uses the neutral background color
+						bodyCls: 'x-border-layout-ct', // Uses the neutral background color
 						padding: '0 20px 0 20px',
 						items: {
 							border: false,
-							bodyCssClass: 'x-border-layout-ct', // Uses the neutral background color
+							bodyCls: 'x-border-layout-ct', // Uses the neutral background color
 							height: 50,
 							layout: 'vbox',
 							align: 'left',
@@ -763,36 +783,27 @@ Ext.onReady(function() {
 								loadingText: MongoVision.text.switchingTheme,
 								layoutContainers: ['viewport', 'header'],
 								styleSheets: [
-									['ext-theme', 'style/ext/css/xtheme-'],
-									['mongovision-theme', 'style/mongovision-']
+									{id: 'ext-theme', prefix: 'style/ext/style/css/ext-all'},
+									{id: 'mv-theme', prefix: 'style/mongovision'}
 								],
 								themes: [
-									['blue.css', MongoVision.text['theme.blue']],
-									['gray.css', MongoVision.text['theme.gray']],
-									['access.css', MongoVision.text['theme.accessible']]
+									{id: 'access', postfix: '-access.css', label: MongoVision.text['theme.accessible']},
+									{id: 'blue', postfix: '.css', label: MongoVision.text['theme.blue']}
 								]
-							}],
-							listeners: {
-								afterlayout: function() {
-									// This fixes a bug with the ComboBox calculating its size
-									// according to the previously selected theme
-									var themeSwitcher = this.items.get(1);
-									themeSwitcher.syncSize();
-								}
-							}
+							}]
 						}
 					});
 				}
 			}
 		}, {
-			xtype: 'mongovisiondatabases',
+			xtype: 'mv-databases',
 			region: 'west',
 			collapsible: true,
 			margins: '0 0 20 20',
 			split: true,
 			width: 200,
-			mongoVisionCollections: 'mongovision-collections',
-			mongoVisionEditor: 'mongovision-editor'
+			mvCollections: 'mv-collections',
+			mvEditor: 'mv-editor'
 		}, {
 			region: 'center',
 			layout: 'border',
@@ -803,13 +814,12 @@ Ext.onReady(function() {
 				region: 'center',
 				split: true,
 				xtype: 'tabpanel',
-				id: 'mongovision-collections',
-				enableTabScroll: true
+				id: 'mv-collections'
 			}, {
 				region: 'south',
 				split: true,
-				id: 'mongovision-editor',
-				xtype: 'mongovisioneditor',
+				id: 'mv-editor',
+				xtype: 'mv-editor',
 				height: 200
 			}]
 		}]

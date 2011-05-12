@@ -17,7 +17,7 @@ div#header a {
 	color: white;
 }
 
-/* MongoVision Components */
+/* Collection Panel */
 
 div.x-mongovision-document {
 	font: 14px arial, tahoma, helvetica, sans-serif;
@@ -26,28 +26,27 @@ div.x-mongovision-document {
 	padding-left: 5px;
 }
 
-/* Ext JS Views */
-
-div.x-view-over {
+div.x-mongovision-over {
 	background-color: #7E5530;
 }
 
-div.x-view-selected {
+/* Ext JS Overrides */
+
+div.x-item-selected {
 	background-color: #E5872C;
 }
 
-/* Ext JS Tree */
-
-div.x-tree-node-expanded-important img.x-tree-node-icon {
-	background-image: url('ext/images/access/tree/folder-open.gif') !important;
-}
-
-li.x-tree-node div.x-tree-node-over {
+tr.x-grid-row-over div {
 	background-color: #7E5530;
 }
 
+
+
+
+
+
 /* Ext JS Panel */
 
-div.x-tab-panel-body {
+_div.x-tab-panel-body {
 	background-color: #232D38;
 }

@@ -9,72 +9,92 @@
 // at http://threecrickets.com/
 //
 
-//
-// Ext.ux.ThemeSwitcher
-//
-// A ComboBox that allows switching between a set of CSS stylesheets.
-//
-// If the 'statefulThemeId' config option is not null, the theme selection is stored in the
-// state.Manager and switched to automatically when the component is created.
-//
-// A LoadMask is used while loading. Use the 'loadingText' config option for the LoadMask text.
-// Use {0} in the text as a place holder for the theme label.
-//
-// The optional 'layoutContainers' config option specifies one of or an array of container
-// component IDs that will have their layout redone after the switch. When this is used, an
-// extra delay added to allow the browser time to re-render after switching. Change this delay
-// time with the 'delay' config option. The default is 2000 ms.
-//
-// The 'themes' config option is an array of themes, where each theme is an array in
-// form of ['theme', 'label'].
-//
-// The 'styleSheets' config option is one of or an array of stylesheets in the form of
-// ['linkId', 'baseURL']. The 'baseURL' is prefixed to each 'theme' in order to create the
-// stylesheet URL. The linkId points to a <link> element in the page header, such as:
-//
-// <head>
-//   <link rel="stylesheet" type="text/css" href="style/ext/css/xtheme-blue.css" id="ext-theme" />
-// </head>
-//
+/**
+ * Ext.ux.ThemeSwitcher
+ *
+ * A ComboBox that allows switching between a set of CSS stylesheets.
+ *
+ * If the 'statefulThemeId' config option is not null, the theme selection is stored in the
+ * state.Manager and switched to automatically when the component is created.
+ *
+ * A LoadMask is used while loading. Use the 'loadingText' config option for the LoadMask text.
+ * Use {0} in the text as a place holder for the theme label.
+ *
+ * The optional 'layoutContainers' config option specifies one of or an array of container
+ * component IDs that will have their layout redone after the switch. When this is used, an
+ * extra delay added to allow the browser time to re-render after switching. Change this delay
+ * time with the 'delay' config option. The default is 2000 ms.
+ *
+ * The 'themes' config option is an array of themes, where each theme is an array in
+ * form of ['theme', 'label'].
+ *
+ * The 'styleSheets' config option is one of or an array of stylesheets in the form of
+ * ['linkId', 'baseURL']. The 'baseURL' is prefixed to each 'theme' in order to create the
+ * stylesheet URL. The linkId points to a <link> element in the page header, such as:
+ *
+ * <head>
+ *   <link rel="stylesheet" type="text/css" href="style/ext/css/xtheme-blue.css" id="ext-theme" />
+ * </head>
+ */
 
-Ext.namespace('Ext.ux');
+Ext.define('Ext.ux.ThemeSwitcher', {
+	alias: 'widget.themeswitcher',
+	extend: 'Ext.form.field.ComboBox',
 
-Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 	constructor: function(config) {
+		function getCurrentTheme() {
+			for (var s = 0, length = config.styleSheets.length; s < length; s++) {
+				var styleSheet = config.styleSheets[s];
+				var current = Ext.get(styleSheet.id);
+				if (current) {
+					current = current.getAttribute('href');
+					for (var t = 0, length2 = config.themes.length; t < length2; t++) {
+						var theme = config.themes[t];
+						if (current == (styleSheet.prefix + theme.postfix)) {
+							return theme.id;
+						}
+					}
+				}
+			}
+			return null;
+		}
+		
 		this.addEvents({
 			switched: true
 		});
 
-		var store = new Ext.data.ArrayStore({
-			fields: ['theme', 'label'],
+		var store = Ext.create('Ext.data.Store', {
+			fields: ['id', 'url', 'label'],
 			data: config.themes
 		});
-
-		// A theme may have been stored in the state
-		var currentTheme = config.statefulThemeId ? Ext.state.Manager.get(config.statefulThemeId) : null;
-		var firstTheme = store.getAt(0).get('theme');
+		
+		var currentTheme = getCurrentTheme();
 		
 		config = Ext.apply({
 			mode: 'local',
 			store: store,
-			valueField: 'theme',
+			valueField: 'id',
 			displayField: 'label',
-			value: currentTheme || firstTheme,
-			triggerAction: 'all',
+			value: currentTheme || config.themes[0].id,
 			editable: false,
 			forceSelection: true,
 			delay: 2000,
 			width: 150
 		}, config);
 		
-		Ext.ux.ThemeSwitcher.superclass.constructor.call(this, config);
+		this.callParent([config]);
 
-		this.on('select', function(combo, record) {
-			this.doSwitch(record.get('theme'));
+		this.on('select', function(combo, selections) {
+			var record = selections[0];
+			this.doSwitch(record.get('id'));
 		})
 		
-		if (currentTheme && (currentTheme != firstTheme)) {
-			this.doSwitch(currentTheme);
+		// A theme may have been stored in the state
+		if (config.statefulThemeId) {
+			var storedTheme = Ext.state.Manager.get(config.statefulThemeId);
+			if (storedTheme && currentTheme && (storedTheme != currentTheme)) {
+				this.doSwitch(storedTheme);
+			}
 		}
 	},
 	
@@ -97,54 +117,75 @@ Ext.ux.ThemeSwitcher = Ext.extend(Ext.form.ComboBox, {
 		});
 	},
 	
-	doSwitch: function(theme) {
-		var record = this.store.findExact('theme', theme);
+	doSwitch: function(id) {
+		var record = this.store.findRecord('id', id);
 		if (record === null) {
+			if (this.statefulThemeId) {
+				// Remote the theme from the state
+				Ext.state.Manager.clear(this.statefulThemeId);
+			}
 			return;
 		}
-		record = this.store.getAt(record);
-		var label = record.get('label');
-		var loadingText = this.loadingText || 'Switching to {0} theme...';
-		loadingText = String.format(loadingText, label);
 
-		// Show the LoadMask while switching
-		this.mask = new Ext.LoadMask(Ext.getBody(), {msg: loadingText});
-		this.mask.show();
-
-		Ext.each(this.styleSheets, function(styleSheet) {
-			var url = styleSheet[1] + this;
-			Ext.util.CSS.swapStyleSheet(styleSheet[0], url);
-		}, theme);
-		
 		if (this.statefulThemeId) {
 			// Store the theme in the state
-			Ext.state.Manager.set(this.statefulThemeId, theme);
+			Ext.state.Manager.set(this.statefulThemeId, id);
 		}
-		
-		var switched = function() {
-			this.fixProblematicComponents();
-			this.mask.hide();
-			this.fireEvent('switched', theme);
-		}.createDelegate(this);
-		
-		if (this.layoutContainers) {
+
+		if (this.live) {
+			var loadingText = this.loadingText || 'Switching to {0} theme...';
+			loadingText = Ext.String.format(loadingText, record.get('label'));
+	
+			// Show the LoadMask while switching
+			this.mask = Ext.create('Ext.LoadMask', Ext.getBody(), {msg: loadingText});
+			this.mask.show();
+	
+			Ext.each(this.styleSheets, function(styleSheet) {
+				var url = styleSheet.prefix + this;
+				Ext.util.CSS.swapStyleSheet(styleSheet.id, url);
+			}, record.get('postfix'));
+			
 			// Wait a few seconds after swapping the style sheet, so that
 			// the browser can finish rendering, and only then redo the layout
 			// to account for size changes after rendering
 			
-			(function(url) {
+			Ext.defer(function(id) {
 				Ext.each(this.layoutContainers, function() {
 					var container = Ext.getCmp(this);
-					container.doLayout(false, true);
+					if (container) {
+						container.doLayout();
+					}
 				});
 				
-				switched();
-			}).defer(this.delay, this, [theme]);
+				this.fixProblematicComponents();
+				this.mask.hide();
+				this.fireEvent('switched', id);
+			}, this.delay, this, [id]);
 		}
 		else {
-			switched();
+			// See: http://stackoverflow.com/questions/486896/adding-a-parameter-to-the-url-with-javascript
+			function insertParam(key, value) {
+				key = escape(key);
+				value = escape(value);
+			    var kvp = document.location.search.substr(1).split('&');
+			    var i = kvp.length;
+			    var x;
+			    while (i--) {
+			        x = kvp[i].split('=');
+			        if (x[0] == key) {
+		                x[1] = value;
+		                kvp[i] = x.join('=');
+		                break;
+			        }
+			    }
+
+			    if (i < 0) {
+			    	kvp[kvp.length] = [key,value].join('=');
+			    }
+			    document.location.search = kvp.join('&'); 
+			}
+			
+			insertParam('theme', id);
 		}
 	}
 });
-
-Ext.reg('themeswitcher', Ext.ux.ThemeSwitcher);

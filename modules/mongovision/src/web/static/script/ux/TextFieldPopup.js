@@ -9,19 +9,19 @@
 // at http://threecrickets.com/
 //
 
-//
-// Ext.ux.TextFieldPopup
-//
-// A TextField plugin that allows the user to double click the textfield in order to open a
-// window with a TextArea with more room to edit the content. The title of the window is taken
-// from the TextField's 'fieldLabel' config.
-//
-// Support configs: 'width' and 'height' (both optional).
-//
+/**
+ * Ext.ux.TextFieldPopup
+ *
+ * A TextField plugin that allows the user to double click the textfield in order to open a
+ * window with a TextArea with more room to edit the content. The title of the window is taken
+ * from the TextField's 'fieldLabel' config.
+ *
+ * After the popup closes, a 'popup' event is fired on the textfield.
+ *
+ * Support configs: 'width' and 'height' (both optional).
+ */
 
-Ext.namespace('Ext.ux');
-
-Ext.ux.TextFieldPopup = Ext.extend(Object, {
+Ext.define('Ext.ux.TextFieldPopup', {
 	constructor: function(config) {
 		Ext.apply(this, config, {
 			width: 600,
@@ -30,9 +30,9 @@ Ext.ux.TextFieldPopup = Ext.extend(Object, {
 	},
 	
 	init: function(textfield) {
-		var popup = function(textfield) {
-			new Ext.Window({
-				title: textfield.initialConfig.fieldLabel,
+		var popup = Ext.bind(function(textfield) {
+			Ext.create('Ext.Window', {
+				title: textfield.initialConfig.title,
 				width: this.width,
 				height: this.height,
 				layout: 'border',
@@ -46,16 +46,18 @@ Ext.ux.TextFieldPopup = Ext.extend(Object, {
 					}
 				},
 				listeners: {
-					close: function(window) {
+					beforedestroy: Ext.bind(function(window) {
 						this.setValue(window.items.get(0).getValue());
 						this.focus();
-					}.createDelegate(textfield)
+						this.fireEvent('popup');
+					}, textfield)
 				}
 			}).show();
-		}.createDelegate(this, [textfield]);
+		}, this, [textfield]);
 		
+		textfield.addEvents({'popup': true});
 		textfield.on('render', function(textfield) {
-			textfield.el.on('dblclick', popup);
+			textfield.getEl().on('dblclick', popup);
 		});
 	}
 });

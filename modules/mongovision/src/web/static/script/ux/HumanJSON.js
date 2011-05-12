@@ -9,16 +9,16 @@
 // at http://threecrickets.com/
 //
 
-//
-// Ext.ux.HumanJSON
-//
-// A JSON encoder that supports optional multiline indenting, HTML vs. plain text,
-// and removing curly brackets from the root object. The point is to produce
-// human-readable JSON, not necessarily the most compact JSON.
-//
-// We've been inspired by the code in Ext.util.JSON, though have diverged
-// significantly. We also use some code from Douglas Crockford's json2.js.
-//
+/**
+ * Ext.ux.HumanJSON
+ *
+ * A JSON encoder that supports optional multiline indenting, HTML vs. plain text,
+ * and removing curly brackets from the root object. The point is to produce
+ * human-readable JSON, not necessarily the most compact JSON.
+ *
+ * We've been inspired by the code in Ext.util.JSON, though have diverged
+ * significantly. We also use some code from Douglas Crockford's json2.js.
+*/
 
 Ext.namespace('Ext.ux.HumanJSON');
 
@@ -84,7 +84,7 @@ Ext.ux.HumanJSON.encode = function(value, html, multiline) {
 			json += String(value);
 		}
 		else if (Ext.isArray(value)) {
-			json += '[';
+			json += html ? '<span class="json-symbol">[</span>' : '[';
 			var length = value.length;
 			if (length > 0) {
 				if (multiline) {
@@ -98,11 +98,11 @@ Ext.ux.HumanJSON.encode = function(value, html, multiline) {
 					json += (html ? '<br/>' : '\n') + indentation;
 				}
 			}
-			json += ']';
+			json += html ? '<span class="json-symbol">]</span>' : ']';
 		}
 		else {
 			if (depth > -1) {
-				json += '{';
+				json += html ? '<span class="json-symbol">{</span>' : '{';
 			}
 			var keys = [];
 			for (var key in value) {
@@ -117,18 +117,23 @@ Ext.ux.HumanJSON.encode = function(value, html, multiline) {
 					if (multiline && (depth > -1)) {
 						json += indentation + space();
 					}
-					json += keys[i] + ': ' + toJSON(value[keys[i]], html, multiline, false, depth + 1) + (multiline ? (html ? ',<br/>' : ',\n') : ', ');
+					json +=
+						(html ? '<span class="json-key">' + keys[i] + ':</span> ' : keys[i] + ': ') +
+						toJSON(value[keys[i]], html, multiline, false, depth + 1) +
+						(multiline ? (html ? '<span class="json-symbol">,</span><br/>' : ',\n') : (html ? '<span class="json-symbol">,</span> ' : ', '));
 				}
 				if (multiline && (depth > -1)) {
 					json += indentation + space();
 				}
-				json += keys[i] + ': ' + toJSON(value[keys[i]], html, multiline, false, depth + 1);
+				json += 
+					(html ? '<span class="json-key">' + keys[i] + ':</span> ' : keys[i] + ': ') +
+					toJSON(value[keys[i]], html, multiline, false, depth + 1);
 				if (multiline && (depth > -1)) {
 					json += (html ? '<br/>' : '\n') + indentation;
 				}
 			}
 			if (depth > -1) {
-				json += '}';
+				json += html ? '<span class="json-symbol">}</span>' : '}';
 			}
 		}
 	

@@ -9,54 +9,49 @@
 // at http://threecrickets.com/
 //
 
-//
-// Ext.ux.PerPage
-//
-// A PagingToolbar plugin allowing the user to change the page size with a
-// combobox.
-//
-// Config options: 'pageSizeOptions' is an array of the options, 'label' is the
-// text to show after the combobox.
-//
+/**
+ * Ext.ux.PerPage
+ *
+ * A PagingToolbar plugin allowing the user to change the page size with a
+ * combobox.
+ *
+ * Config options: 'pageSizeOptions' is an array of the options, 'label' is the
+ * text to show after the combobox.
+ */
 
-Ext.namespace('Ext.ux');
-
-Ext.ux.PerPage = Ext.extend(Object, {
+Ext.define('Ext.ux.PerPage', {
 	constructor: function(config) {
 		this.data = [];
 		for (var o = 0, length = config.pageSizeOptions.length; o < length; o++) {
-			this.data.push([String(config.pageSizeOptions[o])]);
+			this.data.push({id: String(config.pageSizeOptions[o])});
 		}
 		this.label = config.label;
 	},
 	
 	init: function(toolbar) {
-		toolbar.add('->', {
+		toolbar.add({
 			// ComboBox to allow user to change page size; this seems overly complicated,
 			// but that's just because the Ext JS ComboBox is such a flexible widget ;)
 			xtype: 'combo',
-			store: new Ext.data.ArrayStore({
+			store: Ext.create('Ext.data.Store', {
 				fields: ['id'],
 				data: this.data
 			}),
-			mode : 'local',
-			value: toolbar.pageSize,
+			queryMode : 'local',
+			value: String(toolbar.store.pageSize),
 			width: 60,
-			triggerAction: 'all',
 			displayField: 'id',
 			valueField: 'id',
 			editable: false,
 			forceSelection: true,
 			listeners: {
-				select: function(combo, record) {
-					this.pageSize = parseInt(record.get('id'));
+				select: Ext.bind(function(combo, selections) {
+					this.store.pageSize = parseInt(selections[0].get('id'));
+					this.store.load();
 					// Undocumented function
-					this.doLoad(this.cursor);
-				}.createDelegate(toolbar)
+					//this.doLoad(this.cursor);
+				}, toolbar)
 			}
-		}, {
-			xtype: 'tbspacer',
-			width: 5
 		}, {
 			xtype: 'tbtext',
 			text: this.label

@@ -9,7 +9,7 @@
 // at http://threecrickets.com/
 //
 
-document.execute('/mongo-db/')
+document.executeOnce('/mongo-db/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -92,14 +92,64 @@ function handleGet(conversation) {
 		})
 	}
 	
-	var data = {
+	var result = {
 		success: true,
-		message: 'Loaded data',
+		message: 'Fetched documents',
 		total: count,
 		documents: documents
 	}
 	
 	//java.lang.Thread.sleep(3000)
 	
-	return JSON.to(data, conversation.query.get('human') == 'true')
+	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
+	return JSON.to(result, conversation.query.get('human') == 'true')
+}
+
+function handlePut(conversation) {
+	var database = conversation.locals.get('database')
+	var collection = conversation.locals.get('collection')
+
+	var text = conversation.entity.text
+	if (null === text) {
+		return 400
+	}
+	var data = JSON.from(text, true)
+	if (!data.document) {
+		return 400
+	}
+
+	var collection = new MongoDB.Collection(collection, {db: database})
+	data.document._id = MongoDB.newId()
+	var r
+	var result
+	try {
+		r = collection.insert(data.document, 1)
+	} catch (x) {
+		result = {
+			success: false,
+			message: x.message
+		}
+	}
+	
+	if (!result) {
+		if (r && r.ok) {
+			var id = String(data.document._id)
+			data.document._id = id
+			result = {
+				success: true,
+				message: 'Inserted document to ' + database + '.' + collection.collection.name,
+				documents: [{id: id, document: data.document}]
+			}
+		}
+		else {
+			result = {
+				success: false,
+				message: 'Could not insert document to ' + database + '.' + collection.collection.name
+			}
+		}
+	}
+
+	application.logger.info(result.message)
+
+	return JSON.to(result, conversation.query.get('human') == 'true')
 }

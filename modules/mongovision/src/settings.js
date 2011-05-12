@@ -25,12 +25,8 @@ applicationContactEmail = 'info@threecrickets.com'
 showDebugOnError = true
 //minimumTimeBetweenValidityChecks = 0
 
-predefinedGlobals = {
-	'mongovision.version': '1.0 alpha',
-	'mongovision.extJS.debug': false,
-	'mongovision.locale': 'en',
-
-	'mongoDb.defaultServers': '127.0.0.1'
-}
+predefinedGlobals['mongovision.version'] = '1.0 R123'
+predefinedGlobals['mongovision.extJS.debug'] = false
+predefinedGlobals['mongovision.locale'] = 'en'
 
 //staticWebCompress = false

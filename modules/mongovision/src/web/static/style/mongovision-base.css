@@ -1,0 +1,125 @@
+/*
+Copyright 2010 Three Crickets LLC.
+
+The contents of this file are subject to the terms of the Apache License
+version 2.0: http://www.opensource.org/licenses/apache2.0.php
+ 
+Alternatively, you can obtain a royalty free commercial license with less
+limitations, transferable or non-transferable, directly from Three Crickets
+at http://threecrickets.com/
+*/
+
+/* Header */
+
+div#header a {
+	text-decoration: none;
+	font-weight: bold;
+	color: black;
+}
+div#header a:hover {
+	text-decoration: underline;
+}
+
+div#header td {
+	font-size: x-small;
+	white-space: nowrap;
+}
+
+/* Collections Panel */
+
+/* System collections appear in a different, less obvious color */
+tr.x-mongovision-system-collection div {
+	color: #999999;
+}
+
+/* Collection Panel */
+
+/* Documents */
+div.x-mongovision-document {
+	font: 11px/13px arial, tahoma, helvetica, sans-serif;
+	line-height: 180%;
+	border-bottom: 1px #CCCCCC solid;
+	padding-left: 5px;
+}
+
+/* Added for wrapped documents */
+div.x-mongovision-wrap {
+	white-space: normal !important;
+}
+
+/* Added for non-wrapped documents */
+div.x-mongovision-nowrap {
+	white-space: nowrap;
+}
+
+/* Mouse over */
+div.x-mongovision-over {
+	background-color: #DDDDDD;
+}
+
+/* For the "no documents" message */
+div.x-mongovision-empty {
+	padding: 10px 10px 10px 10px;
+}
+
+/* Editor Panel */
+
+/* The validity text in the editor panel's toolbar */
+div.x-mongovision-invalid {
+	color: red;
+}
+
+/* JSON */
+
+span.json-symbol {
+	color: #999999;
+}
+
+span.json-key {
+	font-weight: bold;
+	_font-style: italic;
+}
+
+/* Ext JS Overrides */
+
+/* Not colored by default (affects collection panel) */
+div.x-item-selected {
+	background-color: #D0DEF0;
+}
+
+/* By default Ext JS does color the mouse-over, but we think it adds clarity to all our grids and trees */
+tr.x-grid-row-over div {
+	background-color: #DDDDDD;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+div.x-grid3-row {
+	border-bottom: 1px #CCCCCC solid;
+}
+
+td.x-grid3-cell {
+    padding-right:0;
+	border-right: 1px #CCCCCC solid;
+}
+
+div.x-grid3-row-selected {
+	border-top-color: #DFE8F6 !important;
+}
+
+div.x-grid3-hd-inner {
+	font-weight: bold;
+}

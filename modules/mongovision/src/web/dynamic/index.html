@@ -1,65 +1,77 @@
 <%
 document.cacheDuration = 5000
-var base = conversation.pathToBase
+
 var locale = conversation.query.get('locale') || application.globals.get('mongovision.locale') || 'en'
-var debug = application.globals.get('mongovision.extJS.debug')
-debug = (conversation.query.get('debug') == 'true') || (debug && debug.booleanValue())
+
+var theme = conversation.getCookie('ext-theme')
+if (theme) {
+	theme = decodeURIComponent(theme.value)
+	if (theme.substring(0, 2) == 's:') { // Ext JS StateManager uses this to specify string type 
+		theme = theme.substring(2)
+	}
+	else {
+		theme = null
+	}
+}
+
+theme = conversation.query.get('theme') || theme || application.globals.get('mongovision.theme') || 'access'
+
+var debug = conversation.query.get('debug') || application.globals.get('mongovision.extJS.debug') || 'true'
+if (debug.booleanValue) {
+	debug = debug.booleanValue()
+}
+else if (typeof debug == 'string') {
+	debug = debug == 'true'
+}
+if (debug) {
+	// Debug CSS only has Blue theme
+	theme = 'blue'
+}
 %>
 <html>
 <head>
 	<title>MongoVision</title>
-	<link rel="shortcut icon" href="<%= base %>/media/mongovision.ico" />
+	<link rel="shortcut icon" href="media/mongovision.ico" />
 <% if (debug) { %>
 	<!-- Ext JS Debug -->
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/reset-min.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/ext-all-notheme.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/xtheme-blue.css" id="ext-theme" />
-	<script type="text/javascript" src="<%= base %>/script/ext/ext-base-debug.js"></script>
-	<script type="text/javascript" src="<%= base %>/script/ext/ext-all-debug.js"></script>
-	
-	<!-- Ext JS Debug Console -->
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/debug.css" />
-	<script type="text/javascript" src="<%= base %>/script/ext/debug.js"></script>
+	<link rel="stylesheet" type="text/css" href="style/ext/style/css/ext-all-debug.css" id="ext-theme" />
+	<script type="text/javascript" src="script/ext/ext-debug.js"></script>
 <% } else { %>
 	<!-- Ext JS -->
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/reset-min.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/ext-all-notheme.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ext/css/xtheme-blue.css" id="ext-theme" />
-	<script type="text/javascript" src="<%= base %>/script/ext/ext-base.js"></script>
-	<script type="text/javascript" src="<%= base %>/script/ext/ext-all.js"></script>
+	<link rel="stylesheet" type="text/css" href="style/ext/style/css/ext-all<%= theme == 'blue' ? '' : '-' + theme %>.css" id="ext-theme" />
+	<script type="text/javascript" src="script/ext/ext-all.js"></script>
 <% } %>
 	<!-- MongoVision's Ext JS Extensions -->
-	<script type="text/javascript" src="<%= base %>/script/ux/HumanJSON.js"></script>
-	<script type="text/javascript" src="<%= base %>/script/ux/LoadMask.js"></script>
-	<script type="text/javascript" src="<%= base %>/script/ux/PerPage.js"></script>
-	<script type="text/javascript" src="<%= base %>/script/ux/ReusableJsonStore.js"></script>
-	<script type="text/javascript" src="<%= base %>/script/ux/TextFieldPopup.js"></script>
-	<script type="text/javascript" src="<%= base %>/script/ux/ThemeSwitcher.js"></script>
+	<script type="text/javascript" src="script/ux/HumanJSON.js"></script>
+	<script type="text/javascript" src="script/ux/LoadMask.js"></script>
+	<script type="text/javascript" src="script/ux/PerPage.js"></script>
+	<script type="text/javascript" src="script/ux/TextFieldPopup.js"></script>
+	<script type="text/javascript" src="script/ux/ThemeSwitcher.js"></script>
 
 	<!-- Gritter Ext JS Extension (https://github.com/zir/ext-growl) -->
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/ux/gritter/css/ext-growl.css" />
-	<script type="text/javascript" src="<%= base %>/script/ux/ext-growl.js"></script>
+	<link rel="stylesheet" type="text/css" href="style/ux/gritter/css/ext-growl.css" />
+	<script type="text/javascript" src="script/ux/ext-growl.js"></script>
 
 	<!-- MongoVision -->
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/mongovision.css" />
-	<link rel="stylesheet" type="text/css" href="<%= base %>/style/mongovision-blue.css" id="mongovision-theme" />
-	<script type="text/javascript" src="<%= base %>/script/locale/<%= locale %>.js"></script>
-	<script type="text/javascript" src="<%= base %>/script/mongovision.js"></script>
+	<link rel="stylesheet" type="text/css" href="style/mongovision-base.css" />
+	<link rel="stylesheet" type="text/css" href="style/mongovision-<%= theme %>.css" id="mongovision-theme" />
+	<script type="text/javascript" src="script/locale/<%= locale %>.js"></script>
+	<script type="text/javascript" src="script/mongovision.js"></script>
 <% if (debug) { %>
 	<script type="text/javascript">
 		Ext.onReady(function() {
-			Ext.log('MongoVision has been started in debug mode.');
+			//Ext.log('MongoVision has been started in debug mode.');
 		});
 	</script>
 <% } %>
 </head>
 <body id="body">
-	<div id="header" style="visibility: hidden;">
+	<div id="header" class="x-hidden">
 		<table width="100%"><tr>
 			<td width="1%" align="left">
 				<table height="100%"><tr>
 					<td style="padding-right: 10px;">
-						<img src="<%= base %>/media/mongovision-small.png" />
+						<img src="media/mongovision-small.png" />
 					</td>
 					<td>
 						<h2 style="font-size: 14px;">MongoVision</h2>
@@ -77,7 +89,7 @@ debug = (conversation.query.get('debug') == 'true') || (debug && debug.booleanVa
 						By <a href="http://threecrickets.com/">Three Crickets</a>
 					</td>
 					<td style="padding-left: 10px;">
-						<a href="http://threecrickets.com/prudence/"><img src="<%= base %>/media/prudence-small.png" /></a>
+						<a href="http://threecrickets.com/prudence/"><img src="media/prudence-small.png" /></a>
 					</td>
 				</tr></table>		
 			</td>

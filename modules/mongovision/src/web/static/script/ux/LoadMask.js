@@ -9,25 +9,23 @@
 // at http://threecrickets.com/
 //
 
-//
-// Ext.ux.LoadMask
-//
-// A simple plugin that can add a LoadMask to any component's element.
-//
-// The config is sent to the LoadMask. A special 'treeLoader' config is supported
-// to allow listening on a TreeLoader.
-//
+/**
+ * Ext.ux.LoadMask
+ *
+ * A simple plugin that can add a LoadMask to any component's element.
+ *
+ * The config is sent to the LoadMask. A special 'treeLoader' config is supported
+ * to allow listening on a TreeLoader.
+ */
 
-Ext.namespace('Ext.ux');
-
-Ext.ux.LoadMask = Ext.extend(Object, {
+Ext.define('Ext.ux.LoadMask', {
 	constructor: function(config) {
 		Ext.apply(this, config);
 	},
 
 	init: function(cmp) {
 		cmp.on('render', function(cmp) {
-			var loadmask = new Ext.LoadMask(cmp.el, this);
+			var loadmask = Ext.create('Ext.LoadMask', cmp.el, this);
 			
 			if (this.treeLoader) {
 				// See: http://www.sencha.com/forum/showthread.php?86323-Tree-LoadMask-not-centering-properly

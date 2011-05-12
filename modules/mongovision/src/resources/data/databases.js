@@ -9,7 +9,7 @@
 // at http://threecrickets.com/
 //
 
-document.execute('/mongo-db/')
+document.executeOnce('/mongo-db/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -58,7 +58,6 @@ function handleGet(conversation) {
 				id: databaseName,
 				text: databaseName,
 				children: children,
-				singleClickExpand: true,
 				expanded: true
 			}
 			
@@ -72,5 +71,6 @@ function handleGet(conversation) {
 		}
 	}
 	
+	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
 	return JSON.to(nodes, conversation.query.get('human') == 'true')
 }
