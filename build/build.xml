@@ -6,48 +6,67 @@
 	<property name="src" value="../modules/mongovision/src" />
 	<property name="lib" value="../libraries" />
 	<property name="deploy" value="../modules/mongovision/deploy" />
-	<property name="dist" value="./distribution" />
+	<property name="dist-debug" value="./debug" />
+	<property name="dist-standard" value="./standard" />
+	<property name="dist-minimal" value="./minimal" />
 	<property name="tmp" value="./tmp" />
-	<property name="content" value="${dist}/content" />
+
+	<macrodef name="fetch-licenses">
+		<attribute name="dist" />
+		<sequential>
+			<copy todir="@{dist}/licenses/ext-js">
+				<fileset dir="${lib}/ext-js/license" />
+			</copy>
+			<copy todir="@{dist}/licenses/gritter">
+				<fileset dir="${lib}/gritter/license" />
+			</copy>
+			<copy todir="@{dist}/licenses/mongodb-java-driver">
+				<fileset dir="${lib}/mongodb-java-driver/license" />
+			</copy>
+			<copy todir="@{dist}/licenses/mongodb-rhino-driver">
+				<fileset dir="${lib}/mongodb-rhino-driver/license" />
+			</copy>
+		</sequential>
+	</macrodef>
 
 	<target name="licenses" description="Fetch licences">
-		<copy todir="${content}/licenses/ext-js">
-			<fileset dir="${lib}/ext-js/license" />
-		</copy>
-		<copy todir="${content}/licenses/gritter">
-			<fileset dir="${lib}/gritter/license" />
-		</copy>
-		<copy todir="${content}/licenses/mongodb-java-driver">
-			<fileset dir="${lib}/mongodb-java-driver/license" />
-		</copy>
-		<copy todir="${content}/licenses/mongodb-rhino-driver">
-			<fileset dir="${lib}/mongodb-rhino-driver/license" />
-		</copy>
+		<fetch-licenses dist="${dist-debug}" />
+		<fetch-licenses dist="${dist-standard}" />
+		<fetch-licenses dist="${dist-minimal}" />
 	</target>
 
+	<macrodef name="fetch-libraries">
+		<attribute name="dist" />
+		<sequential>
+			<copy todir="@{dist}/licenses">
+				<fileset dir="${lib}" includes="*.txt" />
+			</copy>
+			<copy todir="${tmp}/mongovision/web/static/script/ext">
+				<fileset dir="${lib}/ext-js/lib/script" includes="**/*.js" />
+			</copy>
+			<copy todir="${tmp}/mongovision/web/static/style/ext/style">
+				<fileset dir="${lib}/ext-js/lib/style" />
+			</copy>
+			<copy todir="${tmp}/mongovision/web/static/style/ext/resources">
+				<fileset dir="${lib}/ext-js/lib/resources" />
+			</copy>
+			<copy todir="${tmp}/mongovision/web/static/script/ux">
+				<fileset dir="${lib}/gritter/lib" includes="*.js" />
+			</copy>
+			<copy todir="${tmp}/mongovision/web/static/style/ux/gritter">
+				<fileset dir="${lib}/gritter/lib/resources" />
+			</copy>
+			<copy todir="@{dist}/libraries/">
+				<fileset dir="${lib}/mongodb-java-driver/lib" />
+				<fileset dir="${lib}/mongodb-rhino-driver/lib" />
+			</copy>
+		</sequential>
+	</macrodef>
+
 	<target name="libraries" description="Fetch libraries">
-		<copy todir="${content}/licenses">
-			<fileset dir="${lib}" includes="*.txt" />
-		</copy>
-		<copy todir="${tmp}/mongovision/web/static/script/ext">
-			<fileset dir="${lib}/ext-js/lib/script" includes="*.js" />
-		</copy>
-		<copy todir="${tmp}/mongovision/web/static/style/ext/style">
-			<fileset dir="${lib}/ext-js/lib/style" />
-		</copy>
-		<copy todir="${tmp}/mongovision/web/static/style/ext/resources">
-			<fileset dir="${lib}/ext-js/lib/resources" />
-		</copy>
-		<copy todir="${tmp}/mongovision/web/static/script/ux">
-			<fileset dir="${lib}/gritter/lib" includes="*.js" />
-		</copy>
-		<copy todir="${tmp}/mongovision/web/static/style/ux/gritter">
-			<fileset dir="${lib}/gritter/lib/resources" />
-		</copy>
-		<copy todir="${content}/libraries/">
-			<fileset dir="${lib}/mongodb-java-driver/lib" />
-			<fileset dir="${lib}/mongodb-rhino-driver/lib" />
-		</copy>
+		<fetch-libraries dist="${dist-debug}" />
+		<fetch-libraries dist="${dist-standard}" />
+		<fetch-libraries dist="${dist-minimal}" />
 	</target>
 	
 	<target name="application" depends="libraries" description="Fetch MongoVision application">
@@ -55,24 +74,43 @@
 			<fileset dir="${src}" />
 		</copy>
 		<replace dir="${tmp}/mongovision" includes="settings.js" token="%REVISION%" value="${revision}" />
-		<zip destfile="${content}/mongovision.prudence.zip" basedir="${tmp}" includes="**/*" level="9" />
+		<zip destfile="${dist-debug}/mongovision-debug.prudence.zip" basedir="${tmp}" includes="**/*" level="9" />
+		<zip destfile="${dist-standard}/mongovision-standard.prudence.zip" basedir="${tmp}" level="9" >
+			<exclude name="mongovision/web/static/script/ext/src/**" />
+			<exclude name="mongovision/web/static/script/ext/ext-debug.js" />
+			<exclude name="mongovision/web/static/style/ext/style/css/ext-all-debug.css" />
+		</zip>
+		<zip destfile="${dist-minimal}/mongovision-minimal.prudence.zip" basedir="${tmp}" level="9" >
+			<exclude name="mongovision/web/static/script/ext/**" />
+			<exclude name="mongovision/web/static/style/ext/**" />
+		</zip>
 	</target>
 
 	<target name="deploy" depends="application" description="Fetch deployment">
-		<copy todir="${content}">
+		<copy todir="${dist-debug}">
+			<fileset dir="${deploy}" />
+		</copy>
+		<copy todir="${dist-standard}">
+			<fileset dir="${deploy}" />
+		</copy>
+		<copy todir="${dist-minimal}">
 			<fileset dir="${deploy}" />
 		</copy>
 	</target>
 	
 	<target name="package" depends="licenses, deploy" description="Create MongoVision zip">
-		<zip destfile="mongovision-R${revision}.zip" basedir="${content}" includes="**/*" level="9" />
+		<zip destfile="mongovision-debug-R${revision}.zip" basedir="${dist-debug}" includes="**/*" level="9" />
+		<zip destfile="mongovision-standard-R${revision}.zip" basedir="${dist-standard}" includes="**/*" level="9" />
+		<zip destfile="mongovision-minimal-R${revision}.zip" basedir="${dist-minimal}" includes="**/*" level="9" />
 	</target>
 	
 	<target name="build" depends="package" description="Build distribution" />
 	
 	<target name="clean" description="Clean">
 		<delete dir="${tmp}" />
-		<delete dir="${dist}" />
+		<delete dir="${dist-debug}" />
+		<delete dir="${dist-standard}" />
+		<delete dir="${dist-minimal}" />
 	</target>
 	
 	<target name="rebuild" depends="clean, build" description="Clean and build distribution" />
