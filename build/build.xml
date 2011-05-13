@@ -11,6 +11,19 @@
 	<property name="dist-minimal" value="./minimal" />
 	<property name="tmp" value="./tmp" />
 
+	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml">
+		<classpath>
+			<fileset dir="${lib}/svnant/lib" includes="*.jar" />
+		</classpath>
+	</typedef>
+
+	<target name="revision" unless="revision.max">
+		<svn svnkit="true" javahl="false">
+			<wcVersion path=".." />
+		</svn>
+		<echo>Revision ${revision.max}.</echo>
+	</target>
+
 	<macrodef name="fetch-licenses">
 		<attribute name="dist" />
 		<sequential>
@@ -69,11 +82,11 @@
 		<fetch-libraries dist="${dist-minimal}" />
 	</target>
 	
-	<target name="application" depends="libraries" description="Fetch MongoVision application">
+	<target name="application" depends="libraries, revision" description="Fetch MongoVision application">
 		<copy todir="${tmp}/mongovision">
 			<fileset dir="${src}" />
 		</copy>
-		<replace dir="${tmp}/mongovision" includes="settings.js" token="%REVISION%" value="${revision}" />
+		<replace dir="${tmp}/mongovision" includes="settings.js" token="%REVISION%" value="${revision.max}" />
 		<zip destfile="${dist-debug}/mongovision-debug.prudence.zip" basedir="${tmp}" includes="**/*" level="9" />
 		<zip destfile="${dist-standard}/mongovision-standard.prudence.zip" basedir="${tmp}" level="9" >
 			<exclude name="mongovision/web/static/script/ext/src/**" />
@@ -99,9 +112,9 @@
 	</target>
 	
 	<target name="package" depends="licenses, deploy" description="Create MongoVision zip">
-		<zip destfile="mongovision-debug-R${revision}.zip" basedir="${dist-debug}" includes="**/*" level="9" />
-		<zip destfile="mongovision-standard-R${revision}.zip" basedir="${dist-standard}" includes="**/*" level="9" />
-		<zip destfile="mongovision-minimal-R${revision}.zip" basedir="${dist-minimal}" includes="**/*" level="9" />
+		<zip destfile="mongovision-debug-R${revision.max}.zip" basedir="${dist-debug}" includes="**/*" level="9" />
+		<zip destfile="mongovision-standard-R${revision.max}.zip" basedir="${dist-standard}" includes="**/*" level="9" />
+		<zip destfile="mongovision-minimal-R${revision.max}.zip" basedir="${dist-minimal}" includes="**/*" level="9" />
 	</target>
 	
 	<target name="build" depends="package" description="Build distribution" />
