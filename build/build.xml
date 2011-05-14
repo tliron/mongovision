@@ -84,7 +84,7 @@
 	
 	<target name="application" depends="libraries, revision" description="Fetch MongoVision application">
 		<copy todir="${tmp}/mongovision">
-			<fileset dir="${src}" />
+			<fileset dir="${src}" excludes="**/.svn/" />
 		</copy>
 		<replace dir="${tmp}/mongovision" includes="settings.js" token="%REVISION%" value="${revision.max}" />
 		<zip destfile="${dist-debug}/mongovision-debug.prudence.zip" basedir="${tmp}" includes="**/*" level="9" />
