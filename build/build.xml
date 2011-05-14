@@ -28,16 +28,16 @@
 		<attribute name="dist" />
 		<sequential>
 			<copy todir="@{dist}/licenses/ext-js">
-				<fileset dir="${lib}/ext-js/license" />
+				<fileset dir="${lib}/ext-js/license" excludes="**/.svn/" />
 			</copy>
 			<copy todir="@{dist}/licenses/gritter">
-				<fileset dir="${lib}/gritter/license" />
+				<fileset dir="${lib}/gritter/license" excludes="**/.svn/" />
 			</copy>
 			<copy todir="@{dist}/licenses/mongodb-java-driver">
-				<fileset dir="${lib}/mongodb-java-driver/license" />
+				<fileset dir="${lib}/mongodb-java-driver/license" excludes="**/.svn/" />
 			</copy>
 			<copy todir="@{dist}/licenses/mongodb-rhino-driver">
-				<fileset dir="${lib}/mongodb-rhino-driver/license" />
+				<fileset dir="${lib}/mongodb-rhino-driver/license" excludes="**/.svn/" />
 			</copy>
 		</sequential>
 	</macrodef>
@@ -58,20 +58,20 @@
 				<fileset dir="${lib}/ext-js/lib/script" includes="**/*.js" />
 			</copy>
 			<copy todir="${tmp}/mongovision/web/static/style/ext/style">
-				<fileset dir="${lib}/ext-js/lib/style" />
+				<fileset dir="${lib}/ext-js/lib/style" excludes="**/.svn/" />
 			</copy>
 			<copy todir="${tmp}/mongovision/web/static/style/ext/resources">
-				<fileset dir="${lib}/ext-js/lib/resources" />
+				<fileset dir="${lib}/ext-js/lib/resources" excludes="**/.svn/" />
 			</copy>
 			<copy todir="${tmp}/mongovision/web/static/script/ux">
 				<fileset dir="${lib}/gritter/lib" includes="*.js" />
 			</copy>
 			<copy todir="${tmp}/mongovision/web/static/style/ux/gritter">
-				<fileset dir="${lib}/gritter/lib/resources" />
+				<fileset dir="${lib}/gritter/lib/resources" excludes="**/.svn/" />
 			</copy>
 			<copy todir="@{dist}/libraries/">
-				<fileset dir="${lib}/mongodb-java-driver/lib" />
-				<fileset dir="${lib}/mongodb-rhino-driver/lib" />
+				<fileset dir="${lib}/mongodb-java-driver/lib" excludes="**/.svn/" />
+				<fileset dir="${lib}/mongodb-rhino-driver/lib" excludes="**/.svn/" />
 			</copy>
 		</sequential>
 	</macrodef>
@@ -101,13 +101,13 @@
 
 	<target name="deploy" depends="application" description="Fetch deployment">
 		<copy todir="${dist-debug}">
-			<fileset dir="${deploy}" />
+			<fileset dir="${deploy}" excludes="**/.svn/" />
 		</copy>
 		<copy todir="${dist-standard}">
-			<fileset dir="${deploy}" />
+			<fileset dir="${deploy}" excludes="**/.svn/" />
 		</copy>
 		<copy todir="${dist-minimal}">
-			<fileset dir="${deploy}" />
+			<fileset dir="${deploy}" excludes="**/.svn/" />
 		</copy>
 	</target>
 	
