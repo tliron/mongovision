@@ -27,6 +27,15 @@ function handleGet(conversation) {
 	
 	if (node == 'root') {
 		var connection = application.globals.get('mongoDbConnection')
+		if (null === connection) {
+			try {
+				connection = MongoDB.connect('127.0.0.1')
+				application.globals.put('mongoDbConnection', connect) 
+			}
+			catch (x) {
+			}
+		}
+		
 		if (null !== connection) {
 			try {
 				var databaseNames = connection.databaseNames.toArray()
