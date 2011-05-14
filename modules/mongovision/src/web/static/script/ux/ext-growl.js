@@ -236,7 +236,7 @@
                 // it means effect stopped by `stopFx()' considered 'completed'
                 e.ghost('t', {
                     endOpacity: 0,
-                    //easing: 'easeNone', // Doesn't work in Ext JS 4.0
+                    //easing: 'easeNone',
                     duration: fade_out_speed,
                     callback: function() {
                         // if the effect was stopped by `mouseenter` event (by calling `stopFx()`),

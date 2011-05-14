@@ -26,48 +26,56 @@ function handleGet(conversation) {
 	var nodes = []
 	
 	if (node == 'root') {
-		var databaseNames = MongoDB.defaultConnection.databaseNames.toArray()
-		for (var d in databaseNames) {
-			var databaseName = databaseNames[d]
-			var database = MongoDB.defaultConnection.getDB(databaseName)
-			var children = []
-			var systemChildren = []
-			var collectionNames = database.collectionNames.toArray()
-			
-			for (var c in collectionNames) {
-				var collectionName = collectionNames[c]
-				
-				var n = {
-					id: databaseName + '/' + collectionName,
-					text: collectionName,
-					leaf: true
-				}
-				
-				if (isSystem(collectionName)) {
-					n.cls = 'x-mongovision-system-collection'
-					systemChildren.push(n)
-				}
-				else {
-					children.push(n)
+		var connection = application.globals.get('mongoDbConnection')
+		if (null !== connection) {
+			try {
+				var databaseNames = connection.databaseNames.toArray()
+				for (var d in databaseNames) {
+					var databaseName = databaseNames[d]
+					var database = connection.getDB(databaseName)
+					var children = []
+					var systemChildren = []
+					var collectionNames = database.collectionNames.toArray()
+					
+					for (var c in collectionNames) {
+						var collectionName = collectionNames[c]
+						
+						var n = {
+							id: databaseName + '/' + collectionName,
+							text: collectionName,
+							leaf: true
+						}
+						
+						if (isSystem(collectionName)) {
+							n.cls = 'x-mongovision-system-collection'
+							systemChildren.push(n)
+						}
+						else {
+							children.push(n)
+						}
+					}
+					
+					children = children.concat(systemChildren)
+					
+					n = {
+						id: databaseName,
+						text: databaseName,
+						children: children,
+						expanded: true
+					}
+					
+					if (children.length == 0) {
+						// Ext JS will annoyingly use a leaf icon for nodes without children.
+						// This class of ours will override it.
+						n.cls = 'x-tree-node-expanded-important'
+					}
+					
+					nodes.push(n)
 				}
 			}
-			
-			children = children.concat(systemChildren)
-			
-			n = {
-				id: databaseName,
-				text: databaseName,
-				children: children,
-				expanded: true
+			catch (x) {
+				application.logger.warning(x.message)
 			}
-			
-			if (children.length == 0) {
-				// Ext JS will annoyingly use a leaf icon for nodes without children.
-				// This class of ours will override it.
-				n.cls = 'x-tree-node-expanded-important'
-			}
-			
-			nodes.push(n)
 		}
 	}
 	

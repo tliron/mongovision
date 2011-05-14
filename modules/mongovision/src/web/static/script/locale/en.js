@@ -19,6 +19,8 @@ Ext.namespace('MongoVision');
 
 MongoVision.text = {
 	collections: 'Collections',
+	connect: 'Connect',
+	connectPrompt: 'Enter MongoDB host address:',
 	noDocuments: 'No documents to display',
 	documentsDisplayed: 'Documents {0} to {1} of {2}',
 	keepRefreshing: 'Keep Refreshing',

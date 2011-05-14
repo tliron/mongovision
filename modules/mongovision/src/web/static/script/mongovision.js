@@ -79,12 +79,41 @@ Ext.define('MongoVision.DatabasesPanel', {
 			dockedItems: [{
 				xtype: 'toolbar',
 				dock: 'bottom',
-				items: {
+				items: [{
 					iconCls: 'x-tbar-loading',
 					handler: Ext.bind(function() {
-						this.load();
+						this.store.load();
 					}, this)
-				}
+				}, {
+					text: MongoVision.text.connect,
+					handler: Ext.bind(function() {
+						Ext.Msg.prompt(MongoVision.text.connect, MongoVision.text.connectPrompt, Ext.bind(function(button, text) {
+							if (button == 'ok') {
+								Ext.Ajax.request({
+									url: 'connection/',
+									method: 'PUT',
+									jsonData: {
+										uris: text
+									},
+									success: Ext.bind(function(response) {
+										var data = Ext.decode(response.responseText)
+										Ext.gritter.add({
+											title: MongoVision.text.connect,
+											text: data.master
+										}); 
+										this.store.load();
+									}, this),
+									failure: function(response) {
+										Ext.gritter.add({
+											title: MongoVision.text.connect,
+											text: MongoVision.text.exception
+										}); 
+									}
+								});
+							}
+						}, this), null, false, '');
+					}, this)
+				}]
 			}],
 			listeners: {
 				itemclick: function(view, model, item, index) {

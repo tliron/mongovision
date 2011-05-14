@@ -30,7 +30,7 @@ importClass(com.mongodb.rhino.BSON, com.mongodb.rhino.JSON)
  * @see Visit the <a href="https://github.com/geir/mongo-java-driver">MongoDB Java driver</a> 
  * 
  * @author Tal Liron
- * @version 1.44
+ * @version 1.45
  */
 var MongoDB = MongoDB || function() {
     var Public = /** @lends MongoDB */ {
@@ -194,6 +194,8 @@ var MongoDB = MongoDB || function() {
 		 * @class
 		 */
 		Error: {
+			/** @constant */
+			Gone: -2,
 			/** @constant */
 			NotFound: -5,
 			/** @constant */

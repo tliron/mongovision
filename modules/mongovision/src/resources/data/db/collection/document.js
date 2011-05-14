@@ -35,26 +35,43 @@ function handlePost(conversation) {
 	
 	delete data.document._id
 	
-	var collection = new MongoDB.Collection(collection, {db: database})
-	var doc = collection.findAndModify({_id: id}, {$set: data.document}, {returnNew: true})
-	
+	var collection = new MongoDB.Collection(collection, {db: database, connection: application.globals.get('mongoDbConnection')})
+	var doc
 	var result
-	if (doc) {
-		result = {
-			success: true,
-			documents: [doc],
-			message: 'Updated document ' + id + ' in ' + database + '.' + collection.collection.name
-		}
+	try {
+		doc = collection.findAndModify({_id: id}, {$set: data.document}, {returnNew: true})
 	}
-	else {
+	catch (x) {
 		result = {
 			success: false,
-			message: 'Could not update document ' + id + ' in ' + database + '.' + collection.collection.name
+			message: x.message
 		}
 	}
 	
-	application.logger.info(result.message)
+	if (!result) {
+		if (doc) {
+			result = {
+				success: true,
+				documents: [doc],
+				message: 'Updated document ' + id + ' in ' + database + '.' + collection.collection.name
+			}
+		}
+		else {
+			result = {
+				success: false,
+				message: 'Could not update document ' + id + ' in ' + database + '.' + collection.collection.name
+			}
+		}
+	}
 	
+	if (result.success) {
+		application.logger.info(result.message)
+	}
+	else {
+		application.logger.warning(result.message)
+	}
+	
+	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
 	return JSON.to(result, conversation.query.get('human') == 'true')
 }
 
@@ -66,7 +83,7 @@ function handleDelete(conversation) {
 		return 400
 	}
 	
-	var collection = new MongoDB.Collection(collection, {db: database})
+	var collection = new MongoDB.Collection(collection, {db: database, connection: application.globals.get('mongoDbConnection')})
 	var r
 	var result
 	try {
@@ -94,7 +111,13 @@ function handleDelete(conversation) {
 		}
 	}
 	
-	application.logger.info(result.message)
+	if (result.success) {
+		application.logger.info(result.message)
+	}
+	else {
+		application.logger.warning(result.message)
+	}
 
+	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
 	return JSON.to(result, conversation.query.get('human') == 'true')
 }

@@ -62,43 +62,63 @@ function handleGet(conversation) {
 		limit = maxLimit
 	}
 	
-	var collection = new MongoDB.Collection(collection, {db: database})
+	var collection = new MongoDB.Collection(collection, {db: database, connection: application.globals.get('mongoDbConnection')})
 	
 	var documents = []
-	var cursor = collection.find(query)
-	var count = cursor.count()
-	if (sort) {
-		cursor.sort(sort)
-	}
-	if (start) {
-		cursor.skip(start)
-	}
-	if (limit) {
-		cursor.limit(limit)
-	}
-	while (cursor.hasNext()) {
-		var doc = cursor.next()
-		var id
-		try {
-			id = String(doc._id)
+	var result
+	try {
+		var cursor = collection.find(query)
+		var count = cursor.count()
+		
+		if (sort) {
+			cursor.sort(sort)
 		}
-		catch(x) {
-			// Some system collections do not have an _id!
-			id = doc.name
+		if (start) {
+			cursor.skip(start)
 		}
-		documents.push({
-			id: id,
-			document: doc
-		})
+		if (limit) {
+			cursor.limit(limit)
+		}
+		
+		while (cursor.hasNext()) {
+			var doc = cursor.next()
+			var id
+			try {
+				id = String(doc._id)
+			}
+			catch(x) {
+				// Some system collections do not have an _id!
+				id = doc.name
+			}
+			documents.push({
+				id: id,
+				document: doc
+			})
+		}
+		
+		result = {
+			success: true,
+			message: 'Fetched documents',
+			total: count,
+			documents: documents
+		}
+	}
+	catch (x) {
+		application.logger.warning(JSON.to(x))
+		
+		result = {
+			success: false,
+			message: x.message
+		}
 	}
 	
-	var result = {
-		success: true,
-		message: 'Fetched documents',
-		total: count,
-		documents: documents
+	if (result.success) {
+		application.logger.info(result.message)
 	}
-	
+	else {
+		application.logger.warning(result.message)
+	}
+
 	//java.lang.Thread.sleep(3000)
 	
 	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
@@ -118,7 +138,7 @@ function handlePut(conversation) {
 		return 400
 	}
 
-	var collection = new MongoDB.Collection(collection, {db: database})
+	var collection = new MongoDB.Collection(collection, {db: database, connection: application.globals.get('mongoDbConnection')})
 	data.document._id = MongoDB.newId()
 	var r
 	var result
@@ -149,7 +169,13 @@ function handlePut(conversation) {
 		}
 	}
 
-	application.logger.info(result.message)
+	if (result.success) {
+		application.logger.info(result.message)
+	}
+	else {
+		application.logger.warning(result.message)
+	}
 
+	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
 	return JSON.to(result, conversation.query.get('human') == 'true')
 }
