@@ -30,24 +30,41 @@ importClass(com.mongodb.rhino.BSON, com.mongodb.rhino.JSON)
  * @see Visit the <a href="https://github.com/geir/mongo-java-driver">MongoDB Java driver</a> 
  * 
  * @author Tal Liron
- * @version 1.45
+ * @version 1.48
  */
 var MongoDB = MongoDB || function() {
     var Public = /** @lends MongoDB */ {
-	
     	/**
+    	 * The logger.
+    	 */
+    	logger: application.getSubLogger('mongodb'),
+    	
+    	/**
+    	 * Defaults to the 'mongoDb.defaultConnection' application global or shared application global.
+    	 * If those do not exist, uses the 'mongoDb.defaultServers' application global or shared application
+    	 * global to call {@link MongoDB.connect}. If that does not exist either, then tries to connect
+    	 * to localhost using the default port.
+    	 *  
     	 * @field
-		 * @returns {Mongo} See the <a href="http://api.mongodb.org/java/2.5/index.html?com/mongodb/Mongo.html">Mongo connection documentation</a>
+		 * @returns {com.mongodb.Mongo} See the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/Mongo.html">Mongo connection documentation</a>
     	 * @see MongoDB.connect
     	 */
 		defaultConnection: null,
 
     	/**
+    	 * Defaults to the 'mongo.defaultDb' application global or shared application global.
+    	 * 
     	 * @field
-    	 * @returns {String|DB}
+    	 * @returns {String|com.mongodb.DB}
     	 * @see MongoDB.connect
     	 */
 		defaultDb: null,
+		
+		/**
+		 * @field
+		 * @returns {Boolean}
+		 */
+		defaultSwallow: null,
 		
 		/**
 		 * Creates a MongoDB connection instance, which internally handles thread pooling
@@ -72,7 +89,7 @@ var MongoDB = MongoDB || function() {
 		 *        of threads allowed to block before an exception is thrown
 		 * @param {Number} [options.w] Default {@link MongoDB.WriteConcern} value
 		 * @param {Number} [options.wtimeout] Default {@link MongoDB.WriteConcern} value
-		 * @returns {Mongo} See the <a href="http://api.mongodb.org/java/2.5/index.html?com/mongodb/Mongo.html">Mongo connection documentation</a>
+		 * @returns {com.mongodb.Mongo} See the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/Mongo.html">Mongo connection documentation</a>
 		 */
 		connect: function(uris, options) {
 			if (Object.prototype.toString.call(uris) == '[object Array]') {
@@ -110,8 +127,8 @@ var MongoDB = MongoDB || function() {
 		/**
 		 * Creates a new, universally unique MongoDB object ID.
 		 * 
-		 * @returns {ObjectId} A a new ObjectId. 
-		 *          See the <a href="http://api.mongodb.org/java/2.5/index.html?org/bson/types/ObjectId.html">ObjectId documentation</a>
+		 * @returns {org.bson.types.ObjectId} A a new ObjectId;
+		 *          See the <a href="http://api.mongodb.org/java/2.5.3/index.html?org/bson/types/ObjectId.html">ObjectId documentation</a>
 		 */
 		newId: function() {
 			return org.bson.types.ObjectId.get()
@@ -120,16 +137,16 @@ var MongoDB = MongoDB || function() {
 		/**
 		 * Converts a string representing a MongoDB object ID into an ObjectId instance.
 		 * 
-		 * @param id The ID
-		 * @returns {ObjectId} An ObjectId or null if invalid. 
-		 *          See the <a href="http://api.mongodb.org/java/2.5/index.html?org/bson/types/ObjectId.html">ObjectId documentation</a>
+		 * @param {String} id The object ID string
+		 * @returns {org.bson.types.ObjectId} An ObjectId or null if invalid;
+		 *          See the <a href="http://api.mongodb.org/java/2.5.3/index.html?org/bson/types/ObjectId.html">ObjectId documentation</a>
 		 */
 		id: function(id) {
 			try {
-				return ((null !== id) && (undefined !== id)) ? new org.bson.types.ObjectId(String(id)) : null
+				return exists(id) ? new org.bson.types.ObjectId(String(id)) : null
 			}
 			catch (x) {
-				// Not a properly formed id
+				// Not a properly formed id string
 				return null
 			}
 		},
@@ -141,7 +158,7 @@ var MongoDB = MongoDB || function() {
 		 *        Numeric values are converted to 'w';
 		 *        boolean values are converted to 'fsync';
 		 *        otherwise provide a dict in the form of {w:number, fsync:boolean, timeout:number} 
-		 * @returns {WriteConcern} See the <a href="http://api.mongodb.org/java/2.5/index.html?com/mongodb/WriteConcern.html">WriteConcern documentation</a>
+		 * @returns {com.mongodb.WriteConcern} See the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/WriteConcern.html">WriteConcern documentation</a>
 		 */
 		writeConcern: function(writeConcern) {
 			var type = typeof writeConcern
@@ -170,22 +187,52 @@ var MongoDB = MongoDB || function() {
 		 * </ul>
 		 * 
 		 * @param result The JVM result
-		 * @see Visit the <a href="http://api.mongodb.org/java/2.5/index.html?com/mongodb/CommandResult.html">CommandResult documentation</a>;
-		 * @see Visit the <a href="http://api.mongodb.org/java/2.5/index.html?com/mongodb/WriteResult.html">WriteResult documentation</a>
+		 * @see Visit the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/CommandResult.html">CommandResult documentation</a>;
+		 * @see Visit the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/WriteResult.html">WriteResult documentation</a>
 		 */
 		result: function(result) {
-			if (null !== result) {
-				return BSON.from(result.cachedLastError)
-			}
-			return null
+			return exists(result) ? BSON.from(result.cachedLastError) : null
 		},
 		
 		/**
+		 * Converts the JVM exception to a JavaScript-friendly version.
+		 * 
+		 * @param {com.mongodb.MongoException} exception The MongoDB exception
+		 * @param {Boolean} [swallow=false] If true, do not return exceptions
 		 * @returns {Object} In the form of {code:number, message:'message'}
 		 * @see MongoDB.Error
 		 */
-		exception: function(exception) {
+		exception: function(exception, connection, swallow) {
+			if (exception instanceof com.mongodb.MongoException.Network) {
+				if (Public.getLastStatus(connection)) {
+					Public.setLastStatus(connection, false)
+					Public.logger.severe('Down! ' + connection)
+				}
+			}
+
+			if (swallow) {
+				if (!(exception instanceof com.mongodb.MongoException.Network)) {
+					Public.logger.log(java.util.logging.Level.INFO, 'Swallowed exception', exception)
+				}
+				return null
+			}
+
 			return {code: exception.code, message: exception.message}
+		},
+		
+		getLastStatus: function(connection) {
+			var status = application.globals.get('mongoDb.status.' + connection.hashCode())
+			if (exists(status)) {
+				return status.booleanValue()
+			}
+			return true
+		},
+		
+		setLastStatus: function(connection, status) {
+			if (status && !Public.getLastStatus(connection)) {
+				Public.logger.info('Up! ' + connection)
+			}
+			application.globals.put('mongoDb.status.' + connection.hashCode(), status)
 		},
 		
 		/**
@@ -210,10 +257,12 @@ var MongoDB = MongoDB || function() {
 		 * The results of a {@link #mapReduce} command.
 		 * 
 		 * @class
-		 * @param cursor The JVM map-reduce result
-		 * @see Visit the <a href="http://api.mongodb.org/java/2.5/index.html?com/mongodb/MapReduceOutput.html">MapReduceOutput documentation</a>
+		 * @param {com.mongodb.MapReduceOutput} result The JVM map-reduce result
+		 * @param {com.mongodb.Mongo} connection The MongoDB connection
+		 * @param {Boolean} [swallow=MongoDB.defaultSwallow] If true, do not throw exceptions
+		 * @see Visit the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/MapReduceOutput.html">MapReduceOutput documentation</a>
 		 */
-		MapReduceResult: function(result) {
+		MapReduceResult: function(result, connection, swallow) {
 
 			/**
 			 * For non-inline mapReduce, returns the collection.
@@ -221,15 +270,38 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Collection}
 			 */
 			this.getOutputCollection = function() {
-				var collection = this.result.outputCollection
-				return null !== collection ? new MongoDB.Collection(null, {collection: collection}) : null
+				try {
+					var collection = this.result.outputCollection
+					Public.setLastStatus(this.connection, true)
+					return exists(collection) ? new MongoDB.Collection(null, {collection: collection}) : null
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
 			}
 
 			/**
 			 * For non-inline mapReduce, drops the collection.
+			 * 
+			 * @returns {MongoDB.MapReduceResult}
 			 */
 			this.drop = function() {
-				this.result.drop()
+				try {
+					this.result.drop()
+					Public.setLastStatus(this.connection, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 
 			/**
@@ -238,15 +310,36 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Cursor}
 			 */
 			this.getCursor = function() {
-				var cursor = this.result.results()
-				return null !== cursor ? new MongoDB.Cursor(cursor) : null
+				try {
+					var cursor = this.result.results()
+					Public.setLastStatus(this.connection, true)
+					return exists(cursor) ? new MongoDB.Cursor(cursor, this.swallow) : null
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
 			}
 			
 			/**
 			 * For inline mapReduce, returns the results.
 			 */
 			this.getInline = function() {
-				return BSON.from(this.result.results())
+				try {
+					var doc = this.result.results()
+					Public.setLastStatus(this.connection, true)
+					return BSON.from(doc)
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
 			}
 			
 			// //////////////////////////////////////////////////////////////////////////
@@ -257,6 +350,8 @@ var MongoDB = MongoDB || function() {
 			//
 
 			this.result = result
+			this.connection = connection
+			this.swallow = exists(swallow) ? swallow : Public.defaultSwallow
 		},
 		
 		/**
@@ -266,7 +361,7 @@ var MongoDB = MongoDB || function() {
 		 * @see MongoDB.Cursor#addOption;
 		 * @see MongoDB.Cursor#setOptions;
 		 * @see MongoDB.Cursor#getOptions;
-		 * @see Visit the <a href="http://api.mongodb.org/java/2.5/index.html?com/mongodb/Bytes.html">Bytes documentation (see QUERYOPTION_)</a>
+		 * @see Visit the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/Bytes.html">Bytes documentation (see QUERYOPTION_)</a>
 		 */
 		CursorOption: {
 			/** @constant */
@@ -288,16 +383,28 @@ var MongoDB = MongoDB || function() {
 		 * with calls to {@link #next}.
 		 * 
 		 * @class
-		 * @param cursor The JVM cursor
+		 * @param {com.mongodb.DBCursor} cursor The JVM cursor
+		 * @param {Boolean} [swallow=MongoDB.defaultSwallow] If true, do not throw exceptions
 		 */
-		Cursor: function(cursor) {
+		Cursor: function(cursor, swallow) {
 			
 			/**
 			 * @returns {Boolean} True if there are more documents to iterate
 			 * @see #next
 			 */
 			this.hasNext = function() {
-				return this.cursor.hasNext()
+				try {
+					var hasNext = this.cursor.hasNext()
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return hasNext
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return false
+				}
 			}
 			
 			/**
@@ -307,7 +414,18 @@ var MongoDB = MongoDB || function() {
 			 * @see #hasNext
 			 */
 			this.next = function() {
-				return BSON.from(this.cursor.next())
+				try {
+					var doc = this.cursor.next()
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return BSON.from(doc)
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
 			}
 			
 			/**
@@ -316,7 +434,18 @@ var MongoDB = MongoDB || function() {
 			 * @returns The current document
 			 */
 			this.curr = function() {
-				return BSON.from(this.cursor.curr())
+				try {
+					var doc = this.cursor.curr()
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return BSON.from(doc)
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
 			}
 			
 			/**
@@ -326,8 +455,18 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Cursor} This cursor
 			 */
 			this.skip = function(n) {
-				this.cursor.skip(n)
-				return this
+				try {
+					this.cursor.skip(n)
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 			
 			/**
@@ -337,8 +476,18 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Cursor} This cursor
 			 */
 			this.limit = function(n) {
-				this.cursor.limit(n)
-				return this
+				try {
+					this.cursor.limit(n)
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 			
 			/**
@@ -348,8 +497,18 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Cursor} This cursor
 			 */
 			this.sort = function(orderBy) {
-				this.cursor.sort(BSON.to(orderBy))
-				return this
+				try {
+					this.cursor.sort(BSON.to(orderBy))
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 			
 			/**
@@ -358,7 +517,18 @@ var MongoDB = MongoDB || function() {
 			 * @returns {Number} The number of documents
 			 */
 			this.count = function() {
-				return this.cursor.count()
+				try {
+					var count = this.cursor.count()
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return count
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return -1
+				}
 			}
 			
 			/**
@@ -367,14 +537,38 @@ var MongoDB = MongoDB || function() {
 			 * @returns {Number} The number of documents iterated 
 			 */
 			this.numSeen = function() {
-				return this.cursor.numSeen()
+				try {
+					var count = this.cursor.numSeen()
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return count
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return -1
+				}
 			}
 
 			/**
 			 * Closes the cursor.
+			 * 
+			 * @returns {MongoDB.Cursor} This cursor
 			 */
 			this.close = function() {
-				this.cursor.close()
+				try {
+					this.cursor.close()
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 			
 			/**
@@ -383,7 +577,18 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Cursor}
 			 */
 			this.copy = function() {
-				return new Public.Cursor(this.cursor.copy())
+				try {
+					var copy = this.cursor.copy()
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return new Public.Cursor(copy)
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
 			}
 			
 			/**
@@ -392,11 +597,34 @@ var MongoDB = MongoDB || function() {
 			 * @returns The cursor's explanation
 			 */
 			this.explain = function() {
-				return BSON.from(this.cursor.explain())
+				try {
+					var doc = this.cursor.explain()
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return BSON.from(doc)
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
 			}
 
+			/**
+			 * @returns The keys wanted
+			 */
 			this.keysWanted = function() {
-				return BSON.from(this.cursor.keysWanted)
+				try {
+					return BSON.from(this.cursor.keysWanted)
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
 			}
 			
 			/**
@@ -405,8 +633,18 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Cursor} This cursor
 			 */
 			this.snapshot = function() {
-				this.cursor.snapshot()
-				return this
+				try {
+					this.cursor.snapshot()
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 
 			/**
@@ -416,13 +654,23 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Cursor} This cursor
 			 */
 			this.hint = function(hint) {
-				if (typeof hint == 'string') {
-					this.cursor.hint(hint)
+				try {
+					if (typeof hint == 'string') {
+						this.cursor.hint(hint)
+					}
+					else {
+						this.cursor.hint(BSON.to(hint))
+					}
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return this
 				}
-				else {
-					this.cursor.hint(BSON.to(hint))
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
 				}
-				return this
 			}
 			
 			/**
@@ -433,8 +681,18 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Cursor} This cursor
 			 */
 			this.addSpecial = function(name, o) {
-				this.cursor.addSpecial(name, o)
-				return this
+				try {
+					this.cursor.addSpecial(name, o)
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 			
 			/**
@@ -460,8 +718,18 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Cursor} This cursor
 			 */
 			this.resetOptions = function() {
-				this.cursor.resetOptions()
-				return this
+				try {
+					this.cursor.resetOptions()
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 			
 			/**
@@ -471,15 +739,25 @@ var MongoDB = MongoDB || function() {
 			 * @see MongoDB.CursorOption
 			 */
 			this.getOptions = function() {
-				var options = []
-				var bits = this.cursor.options
-				for (var o in Public.CursorOption) {
-					var option = Public.CursorOption[o]
-					if (bits & option) {
-						options.push(o)
+				try {
+					var options = []
+					var bits = this.cursor.options
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					for (var o in Public.CursorOption) {
+						var option = Public.CursorOption[o]
+						if (bits & option) {
+							options.push(o)
+						}
 					}
+					return options
 				}
-				return options
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 			
 			/**
@@ -503,8 +781,18 @@ var MongoDB = MongoDB || function() {
 						}
 					}
 				}
-				this.cursor.setOptions(bits)
-				return this
+				try {
+					this.cursor.setOptions(bits)
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 			
 			/**
@@ -525,8 +813,18 @@ var MongoDB = MongoDB || function() {
 						bits = option
 					}
 				}
-				this.cursor.addOption(bits)
-				return this
+				try {
+					this.cursor.addOption(bits)
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 			
 			// Batch
@@ -538,15 +836,36 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Cursor} This cursor
 			 */
 			this.batchSize = function(size) {
-				this.cursor.batchSize(size)
-				return this
+				try {
+					this.cursor.batchSize(size)
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
 			}
 			
 			/**
 			 * @returns {Number} The number of documents available in this batch
 			 */
 			this.numGetMores = function() {
-				return this.cursor.numGetMores()
+				try {
+					var count = this.cursor.numGetMores()
+					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
+					return count
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
+					if (x) {
+						throw x
+					}
+					return -1
+				}
 			}
 			
 			//
@@ -554,6 +873,7 @@ var MongoDB = MongoDB || function() {
 			//
 			
 			this.cursor = cursor
+			this.swallow = exists(swallow) ? swallow : Public.defaultSwallow
 		},
 		
 		/**
@@ -565,16 +885,12 @@ var MongoDB = MongoDB || function() {
 		 * 
 		 * @param {String} name The collection name
 		 * @param [config]
-		 * @param {String|DB} [config.db]
-		 *        The name of the MongoDB or an instance of the database object. If not supplied,
-		 *        uses the 'mongo.defaultDb' application global.
-		 * @param {String|Mongo} [config.connection]
-		 *        A MongoDB connection instance created by {@link MongoDB.connect}. If not
-		 *        supplied, uses the default connection instance as defined by the
-		 *        'mongo.defaultServers' application global. If 'mongo.defaultServers'
-		 *        is also not supplied, localhost will be used at the default port.
-		 * @param {String} [config.uniqueId]
-		 *        If supplied, ensureIndex will automatically be called on the key. 
+		 * @param {String|com.mongodb.DB} [config.db=MongoDB.defaultDb] The MongoDB database to use
+		 * @param {String|com.mongodb.Mongo} [config.connection=MongoDb.defaultConnect] A MongoDB connection
+		 *        instance (see {@link MongoDB.connect})
+		 * @param {String} [config.uniqueId] If supplied, {@link #ensureIndex} will automatically be called on the
+		 *        key
+		 * @param {Boolean} [config.swallow=MongoDB.defaultSwallow] If true, do not throw exceptions
 		 */
 		Collection: function(name, config) {
 
@@ -587,11 +903,17 @@ var MongoDB = MongoDB || function() {
 			this.ensureIndex = function(index, options) {
 				try {
 					this.collection.ensureIndex(BSON.to(index), BSON.to(options))
+					// Might not actually make a connection if index already exists:
+					// Public.setLastStatus(this.connection, true)
+					return this
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
-					throw MongoDB.exception(x.javaException)
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
 				}
-				return this
 			}
 			
 			/**
@@ -602,16 +924,28 @@ var MongoDB = MongoDB || function() {
 			 * @returns {MongoDB.Cursor}
 			 */
 			this.find = function(query, fields) {
-				if (query) {
-					if (undefined !== fields) {
-						return new MongoDB.Cursor(this.collection.find(BSON.to(query), BSON.to(fields)))
+				try {
+					var cursor
+					if (query) {
+						if (undefined !== fields) {
+							cursor = this.collection.find(BSON.to(query), BSON.to(fields))
+						}
+						else {
+							cursor = this.collection.find(BSON.to(query))
+						}
 					}
 					else {
-						return new MongoDB.Cursor(this.collection.find(BSON.to(query)))
+						cursor = this.collection.find()
 					}
+					Public.setLastStatus(this.connection, true)
+					return new MongoDB.Cursor(cursor, this.swallow)
 				}
-				else {
-					return new MongoDB.Cursor(this.collection.find())
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
 				}
 			}
 			
@@ -623,11 +957,23 @@ var MongoDB = MongoDB || function() {
 			 * @returns The document or null if not found
 			 */
 			this.findOne = function(query, fields) {
-				if (undefined !== fields) {
-					return BSON.from(this.collection.findOne(BSON.to(query), BSON.to(fields)))
+				try {
+					var doc
+					if (undefined !== fields) {
+						doc = this.collection.findOne(BSON.to(query), BSON.to(fields))
+					}
+					else {
+						doc = this.collection.findOne(BSON.to(query))
+					}
+					Public.setLastStatus(this.connection, true)
+					return BSON.from(doc)
 				}
-				else {
-					return BSON.from(this.collection.findOne(BSON.to(query)))
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
 				}
 			}
 			
@@ -638,11 +984,23 @@ var MongoDB = MongoDB || function() {
 			 * @returns {Number}
 			 */
 			this.count = function(query) {
-				if (query) {
-					return this.collection.getCount(BSON.to(query))
+				try {
+					var count
+					if (query) {
+						count = this.collection.getCount(BSON.to(query))
+					}
+					else {
+						count = this.collection.getCount()
+					}
+					Public.setLastStatus(this.connection, true)
+					return count
 				}
-				else {
-					return this.collection.getCount()
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return -1
 				}
 			}
 			
@@ -657,15 +1015,25 @@ var MongoDB = MongoDB || function() {
 			 */
 			this.save = function(doc, writeConcern) {
 				try {
+					var result
 					if (undefined !== writeConcern) {
-						return MongoDB.result(this.collection.save(BSON.to(doc), MongoDB.writeConcern(writeConcern)))
+						result = this.collection.save(BSON.to(doc), MongoDB.writeConcern(writeConcern))
 					}
 					else {
-						return MongoDB.result(this.collection.save(BSON.to(doc)))
+						result = this.collection.save(BSON.to(doc))
 					}
+					Public.setLastStatus(this.connection, true)
+					return exists(result) ? MongoDB.result(result) : null
 				}
-				catch (x if x.javaException instanceof com.mongodb.MongoException.DuplicateKey) {
-					throw MongoDB.exception(x.javaException)
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					if (x.javaException instanceof com.mongodb.MongoException.DuplicateKey) {
+						// TODO?
+					}
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
 				}
 			}
 			
@@ -679,20 +1047,26 @@ var MongoDB = MongoDB || function() {
 			 */
 			this.insert = function(doc, writeConcern) {
 				try {
+					var result
 					if (undefined !== writeConcern) {
-						return MongoDB.result(this.collection.insert(BSON.to(doc), MongoDB.writeConcern(writeConcern)))
+						result = this.collection.insert(BSON.to(doc), MongoDB.writeConcern(writeConcern))
 					}
 					else {
-						return MongoDB.result(this.collection.insert(BSON.to(doc)))
+						result = this.collection.insert(BSON.to(doc))
 					}
+					Public.setLastStatus(this.connection, true)
+					return exists(result) ? MongoDB.result(result) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					if (x.javaException instanceof com.mongodb.MongoException.DuplicateKey) {
 						// TODO?
 					}
-					throw MongoDB.exception(x.javaException)
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
 				}
-				return this
 			}
 
 			/**
@@ -707,15 +1081,22 @@ var MongoDB = MongoDB || function() {
 			 */
 			this.update = function(query, update, multi, writeConcern) {
 				try {
+					var result
 					if (undefined !== writeConcern) {
-						return MongoDB.result(this.collection.update(BSON.to(query), BSON.to(update), false, multi == true, MongoDB.writeConcern(writeConcern)))
+						result = this.collection.update(BSON.to(query), BSON.to(update), false, multi == true, MongoDB.writeConcern(writeConcern))
 					}
 					else {
-						return MongoDB.result(this.collection.update(BSON.to(query), BSON.to(update), false, multi == true))
+						result = this.collection.update(BSON.to(query), BSON.to(update), false, multi == true)
 					}
+					Public.setLastStatus(this.connection, true)
+					return exists(result) ? MongoDB.result(result) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
-					throw MongoDB.exception(x.javaException)
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
 				}
 			}
 			
@@ -730,15 +1111,22 @@ var MongoDB = MongoDB || function() {
 			 */
 			this.upsert = function(query, update, multi, writeConcern) {
 				try {
+					var result
 					if (undefined !== writeConcern) {
-						return MongoDB.result(this.collection.update(BSON.to(query), BSON.to(update), true, multi == true, MongoDB.writeConcern(writeConcern)))
+						result = this.collection.update(BSON.to(query), BSON.to(update), true, multi == true, MongoDB.writeConcern(writeConcern))
 					}
 					else {
-						return MongoDB.result(this.collection.update(BSON.to(query), BSON.to(update), true, multi == true))
+						result = this.collection.update(BSON.to(query), BSON.to(update), true, multi == true)
 					}
+					Public.setLastStatus(this.connection, true)
+					return exists(result) ? MongoDB.result(result) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
-					throw MongoDB.exception(x.javaException)
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
 				}
 			}
 			
@@ -752,15 +1140,22 @@ var MongoDB = MongoDB || function() {
 			 */
 			this.remove = function(query, writeConcern) {
 				try {
+					var result
 					if (undefined !== writeConcern) {
-						return MongoDB.result(this.collection.remove(BSON.to(query), MongoDB.writeConcern(writeConcern)))
+						result = this.collection.remove(BSON.to(query), MongoDB.writeConcern(writeConcern))
 					}
 					else {
-						return MongoDB.result(this.collection.remove(BSON.to(query)))
+						result = this.collection.remove(BSON.to(query))
 					}
+					Public.setLastStatus(this.connection, true)
+					return exists(result) ? MongoDB.result(result) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
-					throw MongoDB.exception(x.javaException)
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
 				}
 			}
 			
@@ -814,19 +1209,22 @@ var MongoDB = MongoDB || function() {
 				
 				var result
 				try {
-					if (null === outputType) {
+					if (!exists(outputType)) {
 						result = this.collection.mapReduce(String(mapFn), String(reduceFn), out, BSON.to(query))
 					}
 					else {
 						result = this.collection.mapReduce(String(mapFn), String(reduceFn), out, outputType, BSON.to(query))
 					}
+					Public.setLastStatus(this.connection, true)
+					return exists(result) ? new MongoDB.MapReduceResult(result, this.connection, this.swallow) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
-					throw MongoDB.exception(x.javaException)
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
 				}
-				
-				
-				return result ? new MongoDB.MapReduceResult(result) : null
 			}
 			
 			/**
@@ -843,19 +1241,26 @@ var MongoDB = MongoDB || function() {
 			 */
 			this.findAndModify = function(query, update, options) {
 				try {
+					var doc
 					if (undefined !== options) {
-						return BSON.from(this.collection.findAndModify(BSON.to(query), options.fields ? BSON.to(options.fields) : null, options.sort ? BSON.to(options.sort) : null, false, BSON.to(update), options.returnNew || false, options.upsert || false))
+						doc = this.collection.findAndModify(BSON.to(query), options.fields ? BSON.to(options.fields) : null, options.sort ? BSON.to(options.sort) : null, false, BSON.to(update), options.returnNew || false, options.upsert || false)
 					}
 					else {
-						return BSON.from(this.collection.findAndModify(BSON.to(query), BSON.to(update)))
+						doc = this.collection.findAndModify(BSON.to(query), BSON.to(update))
 					}
+					Public.setLastStatus(this.connection, true)
+					return BSON.from(doc)
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					if (x.javaException.code == MongoDB.Error.NotFound) {
-						// "No matching object found"
+						// TODO?
 						return null
 					}
-					throw MongoDB.exception(x.javaException)
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
 				}
 			}
 			
@@ -868,14 +1273,20 @@ var MongoDB = MongoDB || function() {
 			 */
 			this.findAndRemove = function(query) {
 				try {
-					return BSON.from(this.collection.findAndRemove(BSON.to(query)))
+					var doc = this.collection.findAndRemove(BSON.to(query))
+					Public.setLastStatus(this.connection, true)
+					return BSON.from(doc)
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					if (x.javaException.code == MongoDB.Error.NotFound) {
-						// "No matching object found"
+						// TODO?
 						return null
 					}
-					throw MongoDB.exception(x.javaException)
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
 				}
 			}
 			
@@ -886,6 +1297,7 @@ var MongoDB = MongoDB || function() {
 			config = config || {}
 			this.connection = exists(config.connection) ? config.connection : Public.defaultConnection
 			this.db = exists(config.db) ? config.db : Public.defaultDb
+			this.swallow = exists(config.swallow) ? config.swallow : Public.defaultSwallow
 
 			if (isString(this.db)) {
 				this.db = this.connection.getDB(this.db)
@@ -925,14 +1337,14 @@ var MongoDB = MongoDB || function() {
 	
 	// Initialize default connection from globals or shared globals
 	Public.defaultConnection = application.globals.get('mongoDb.defaultConnection')
-	if (Public.defaultConnection === null) {
+	if (!exists(Public.defaultConnection)) {
 		if (exists(application.sharedGlobals)) {
 			Public.defaultConnection = application.sharedGlobals.get('mongoDb.defaultConnection')
 		}
 		
-		if (Public.defaultConnection === null) {
+		if (!exists(Public.defaultConnection)) {
 			var defaultServers = application.globals.get('mongoDb.defaultServers')
-			if (defaultServers !== null) {
+			if (exists(defaultServers)) {
 				Public.defaultConnection = application.getGlobal('mongoDb.defaultConnection', Public.connect(defaultServers, {autoConnectRetry: true}))
 			}
 		}
@@ -941,11 +1353,26 @@ var MongoDB = MongoDB || function() {
 	if (Public.defaultConnection !== null) {
 		// Initialize default DB from globals
 		Public.defaultDb = application.globals.get('mongoDb.defaultDb')
-		if (Public.defaultDb !== null) {
+		if (exists(Public.defaultDb)) {
 			if (isString(Public.defaultDb)) {
 				Public.defaultDb = application.getGlobal('mongoDb.defaultDb', Public.defaultConnection.getDB(Public.defaultDb))
 			}
 		}
+	}
+	
+	// Initialize default swallow mode
+	Public.defaultSwallow = application.globals.get('mongoDb.defaultSwallow')
+	if (!exists(Public.defaultSwallow)) {
+		if (exists(application.sharedGlobals)) {
+			Public.defaultSwallow = application.sharedGlobals.get('mongoDb.defaultSwallow')
+		}
+	}
+	
+	if (exists(Public.defaultSwallow)) {
+		Public.defaultSwallow = Public.defaultSwallow.booleanValue()
+	}
+	else {
+		Public.defaultSwallow = false
 	}
 	
 	return Public
