@@ -14,7 +14,7 @@
 //
 
 document.execute('/defaults/application/settings/')
-document.executeOnce('/savory/foundation/mongo-db/')
+document.executeOnce('/mongo-db/')
 
 applicationName = 'MongoVision'
 applicationDescription = 'A MongoDB frontend'
@@ -30,9 +30,20 @@ predefinedGlobals['mongovision.version'] = '1.0 R%REVISION%'
 predefinedGlobals['mongovision.extJS.debug'] = false
 predefinedGlobals['mongovision.locale'] = 'en'
 
-predefinedGlobals['mongovision.connection'] = predefinedSharedGlobals['mongoDb.defaultConnection']
-if (null === predefinedGlobals['mongoDbConnection']) {
-	if (predefinedSharedGlobals['mongoDb.defaultServers']) {
+try {
+	if (null !== predefinedSharedGlobals['mongoDb.defaultConnection']) {
+		var addresses = []
+		for (var i = predefinedSharedGlobals['mongoDb.defaultConnection'].allAddress.iterator(); i.hasNext(); ) {
+			addresses.push(String(i.next()))
+		}
+		predefinedGlobals['mongovision.connection'] = MongoDB.connect(addresses)
+	}
+	else if (predefinedSharedGlobals['mongoDb.defaultServers']) {
 		predefinedGlobals['mongovision.connection'] = MongoDB.connect(predefinedSharedGlobals['mongoDb.defaultServers'])
 	}
+	else {
+		predefinedGlobals['mongovision.connection'] = MongoDB.connect('127.0.0.1')
+	}
+}
+catch (x) {
 }
