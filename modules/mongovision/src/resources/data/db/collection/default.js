@@ -62,7 +62,7 @@ function handleGet(conversation) {
 		limit = maxLimit
 	}
 	
-	var collection = new MongoDB.Collection(collection, {db: database, connection: application.globals.get('mongoDbConnection')})
+	var collection = new MongoDB.Collection(collection, {db: database, connection: application.globals.get('mongovision.connection')})
 	
 	var documents = []
 	var result
@@ -138,7 +138,7 @@ function handlePut(conversation) {
 		return 400
 	}
 
-	var collection = new MongoDB.Collection(collection, {db: database, connection: application.globals.get('mongoDbConnection')})
+	var collection = new MongoDB.Collection(collection, {db: database, connection: application.globals.get('mongovision.connection')})
 	data.document._id = MongoDB.newId()
 	var r
 	var result

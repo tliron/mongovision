@@ -26,11 +26,11 @@ function handleGet(conversation) {
 	var nodes = []
 	
 	if (node == 'root') {
-		var connection = application.globals.get('mongoDbConnection')
+		var connection = application.globals.get('mongovision.connection')
 		if (null === connection) {
 			try {
 				connection = MongoDB.connect('127.0.0.1')
-				application.globals.put('mongoDbConnection', connect) 
+				application.globals.put('mongovision.connection', connection) 
 			}
 			catch (x) {
 			}

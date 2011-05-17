@@ -17,7 +17,7 @@ function handleInit(conversation) {
 }
 
 function handleGet(conversation) {
-	var connection = application.globals.get('mongoDbConnection')
+	var connection = application.globals.get('mongovision.connection')
 	if (null !== connection) {
 		connection = {
 			master: connection.address,
@@ -39,7 +39,7 @@ function handlePut(conversation) {
 	}
 	var data = JSON.from(text, true)
 	
-	var connection = application.globals.get('mongoDbConnection')
+	var connection = application.globals.get('mongovision.connection')
 	if (null !== connection) {
 		try {
 			connection.close()
@@ -48,11 +48,11 @@ function handlePut(conversation) {
 		}
 	}
 
-	application.globals.remove('mongoDbConnection')
+	application.globals.remove('mongovision.connection')
 	
 	try {
 		connection = MongoDB.connect(data.uris, data.options)
-		application.globals.put('mongoDbConnection', connection)
+		application.globals.put('mongovision.connection', connection)
 	}
 	catch (x) {
 		return 500
