@@ -93,7 +93,7 @@ Ext.define('MongoVision.DatabasesPanel', {
 									url: 'connection/',
 									method: 'PUT',
 									jsonData: {
-										uris: text
+										uris: text.split(',')
 									},
 									success: Ext.bind(function(response) {
 										var data = Ext.decode(response.responseText)
