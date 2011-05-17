@@ -14,7 +14,7 @@
 //
 
 document.execute('/defaults/application/settings/')
-document.executeOnce('/mongo-db/')
+document.executeOnce('/applications/mongovision/libraries/mongo-db/')
 
 applicationName = 'MongoVision'
 applicationDescription = 'A MongoDB frontend'
