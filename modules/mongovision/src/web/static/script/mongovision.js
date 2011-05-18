@@ -10,7 +10,7 @@
 //
 
 //
-// This file makes use of Ext JS 4.0.
+// This file makes use of Ext JS 4.0.0.
 // Copyright (c) 2006-2011, Sencha Inc.
 // All rights reserved.
 // licensing@sencha.com
@@ -188,7 +188,7 @@ Ext.define('MongoVision.CollectionPanel', {
 							text: (operation.error ? operation.error.statusText : null) || MongoVision.text.exception
 						}); 
 						
-						// Ext JS 4.0 does not handle this exception!
+						// Ext JS 4.0.0 does not handle this exception!
 						switch (operation.action) {
 							case 'create':
 								Ext.each(operation.records, function(record) {
