@@ -30,7 +30,7 @@ importClass(com.mongodb.rhino.BSON, com.mongodb.rhino.JSON)
  * @see Visit the <a href="https://github.com/geir/mongo-java-driver">MongoDB Java driver</a> 
  * 
  * @author Tal Liron
- * @version 1.48
+ * @version 1.50
  */
 var MongoDB = MongoDB || function() {
     var Public = /** @lends MongoDB */ {
@@ -1027,7 +1027,7 @@ var MongoDB = MongoDB || function() {
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					if (x.javaException instanceof com.mongodb.MongoException.DuplicateKey) {
-						// TODO?
+						throw MongoDB.exception(x.javaException, this.connection, false)
 					}
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
 					if (x) {
@@ -1059,7 +1059,7 @@ var MongoDB = MongoDB || function() {
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					if (x.javaException instanceof com.mongodb.MongoException.DuplicateKey) {
-						// TODO?
+						throw MongoDB.exception(x.javaException, this.connection, false)
 					}
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
 					if (x) {
@@ -1303,7 +1303,7 @@ var MongoDB = MongoDB || function() {
 				this.db = this.connection.getDB(this.db)
 			}
 
-			this.collection = exists(config.collection) ? config.collection : this.db.getCollection(name)
+			this.collection = exists(config.collection) ? config.collection : (exists(this.db) ? this.db.getCollection(name) : null)
 			
 			if (config.uniqueId) {
 				var index = {}
@@ -1324,51 +1324,59 @@ var MongoDB = MongoDB || function() {
 	
 	function isString(value) {
 		try {
-			return (typeof value == 'string') || (value instanceof String)
+			return (value instanceof String) || (typeof value == 'string')
 		}
 		catch (x) {
 			return false
 		}
 	}
 	
+	function getGlobal(name) {
+		var value
+		try {
+			value = predefinedGlobals[name]
+		}
+		catch (x) {}
+		if (!exists(value)) {
+			value = application.globals.get(name)
+		}
+		if (!exists(value)) {
+			try {
+				value = predefinedSharedGlobals[name]
+			}
+			catch (x) {}
+		}
+		if (!exists(value) && application.sharedGlobals) {
+			value = application.sharedGlobals.get(name)
+		}
+		return value
+	}
+	
 	//
 	// Construction
 	//
-	
-	// Initialize default connection from globals or shared globals
-	Public.defaultConnection = application.globals.get('mongoDb.defaultConnection')
+
+	// Initialize default connection
+	Public.defaultConnection = getGlobal('mongoDb.defaultConnection')
 	if (!exists(Public.defaultConnection)) {
-		if (exists(application.sharedGlobals)) {
-			Public.defaultConnection = application.sharedGlobals.get('mongoDb.defaultConnection')
-		}
-		
-		if (!exists(Public.defaultConnection)) {
-			var defaultServers = application.globals.get('mongoDb.defaultServers')
-			if (exists(defaultServers)) {
-				Public.defaultConnection = application.getGlobal('mongoDb.defaultConnection', Public.connect(defaultServers, {autoConnectRetry: true}))
-			}
+		var defaultServers = getGlobal('mongoDb.defaultServers')
+		if (exists(defaultServers)) {
+			Public.defaultConnection = application.getGlobal('mongoDb.defaultConnection', Public.connect(defaultServers, {slaveOk: true, autoConnectRetry: true}))
 		}
 	}
 	
-	if (Public.defaultConnection !== null) {
-		// Initialize default DB from globals
-		Public.defaultDb = application.globals.get('mongoDb.defaultDb')
-		if (exists(Public.defaultDb)) {
-			if (isString(Public.defaultDb)) {
-				Public.defaultDb = application.getGlobal('mongoDb.defaultDb', Public.defaultConnection.getDB(Public.defaultDb))
-			}
+	// Initialize default DB (only valid if there is a default connection)
+	if (exists(Public.defaultConnection)) {
+		Public.defaultDb = getGlobal('mongoDb.defaultDb')
+		
+		if (exists(Public.defaultDb) && isString(Public.defaultDb)) {
+			Public.defaultDb = Public.defaultConnection.getDB(Public.defaultDb)
 		}
 	}
 	
 	// Initialize default swallow mode
-	Public.defaultSwallow = application.globals.get('mongoDb.defaultSwallow')
-	if (!exists(Public.defaultSwallow)) {
-		if (exists(application.sharedGlobals)) {
-			Public.defaultSwallow = application.sharedGlobals.get('mongoDb.defaultSwallow')
-		}
-	}
-	
-	if (exists(Public.defaultSwallow)) {
+	Public.defaultSwallow = getGlobal('mongoDb.defaultSwallow')
+	if (exists(Public.defaultSwallow) && Public.defaultSwallow.booleanValue) {
 		Public.defaultSwallow = Public.defaultSwallow.booleanValue()
 	}
 	else {

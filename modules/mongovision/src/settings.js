@@ -14,7 +14,6 @@
 //
 
 document.execute('/defaults/application/settings/')
-document.executeOnce('/applications/mongovision/libraries/mongo-db/')
 
 applicationName = 'MongoVision'
 applicationDescription = 'A MongoDB frontend'
@@ -30,6 +29,7 @@ predefinedGlobals['mongovision.version'] = '1.0 R%REVISION%'
 predefinedGlobals['mongovision.extJS.debug'] = false
 predefinedGlobals['mongovision.locale'] = 'en'
 
+document.executeOnce('/applications/mongovision/libraries/mongo-db/')
 try {
 	if (null !== predefinedSharedGlobals['mongoDb.defaultConnection']) {
 		var addresses = []
@@ -47,3 +47,5 @@ try {
 }
 catch (x) {
 }
+MongoDB = null
+//document.markExecuted('/applications/mongovision/libraries/mongo-db/', false)
