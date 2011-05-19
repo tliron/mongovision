@@ -91,7 +91,6 @@
 		<zip destfile="${dist-standard}/mongovision-standard.prudence.zip" basedir="${tmp}" level="9" >
 			<exclude name="mongovision/web/static/script/ext/src/**" />
 			<exclude name="mongovision/web/static/script/ext/ext-debug.js" />
-			<exclude name="mongovision/web/static/style/ext/style/css/ext-all-debug.css" />
 		</zip>
 		<zip destfile="${dist-minimal}/mongovision-minimal.prudence.zip" basedir="${tmp}" level="9" >
 			<exclude name="mongovision/web/static/script/ext/**" />
