@@ -23,10 +23,6 @@ if (debug.booleanValue) {
 else if (typeof debug == 'string') {
 	debug = debug == 'true'
 }
-if (debug) {
-	// Debug CSS only has Blue theme
-	theme = 'blue'
-}
 %>
 <html>
 <head>
@@ -34,7 +30,7 @@ if (debug) {
 	<link rel="shortcut icon" href="media/mongovision.ico" />
 <% if (debug) { %>
 	<!-- Ext JS Debug -->
-	<link rel="stylesheet" type="text/css" href="style/ext/style/css/ext-all-debug.css" id="ext-theme" />
+	<link rel="stylesheet" type="text/css" href="style/ext/style/css/ext-all<%= theme == 'blue' ? '' : '-' + theme %>.css" id="ext-theme" />
 	<script type="text/javascript" src="script/ext/ext-debug.js"></script>
 <% } else { %>
 	<!-- Ext JS -->
