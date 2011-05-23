@@ -24,67 +24,60 @@
 		<echo>Revision ${revision.max}.</echo>
 	</target>
 
-	<macrodef name="fetch-licenses">
+	<macrodef name="fetch-license">
 		<attribute name="dist" />
+		<attribute name="library" />
 		<sequential>
-			<copy todir="@{dist}/licenses/ext-js">
-				<fileset dir="${lib}/ext-js/license" excludes="**/.svn/" />
-			</copy>
-			<copy todir="@{dist}/licenses/gritter">
-				<fileset dir="${lib}/gritter/license" excludes="**/.svn/" />
-			</copy>
-			<copy todir="@{dist}/licenses/mongodb-java-driver">
-				<fileset dir="${lib}/mongodb-java-driver/license" excludes="**/.svn/" />
-			</copy>
-			<copy todir="@{dist}/licenses/mongodb-rhino-driver">
-				<fileset dir="${lib}/mongodb-rhino-driver/license" excludes="**/.svn/" />
+			<copy todir="@{dist}/licenses/@{library}">
+				<fileset dir="${lib}/@{library}/license" excludes="**/.svn/" />
 			</copy>
 		</sequential>
 	</macrodef>
 
-	<target name="licenses" description="Fetch licences">
-		<fetch-licenses dist="${dist-debug}" />
-		<fetch-licenses dist="${dist-standard}" />
-		<fetch-licenses dist="${dist-minimal}" />
-	</target>
-
-	<macrodef name="fetch-libraries">
+	<macrodef name="fetch-library">
 		<attribute name="dist" />
+		<attribute name="library" />
 		<sequential>
-			<copy todir="@{dist}/licenses">
-				<fileset dir="${lib}" includes="*.txt" />
-			</copy>
-			<copy todir="${tmp}/mongovision/web/static/script/ext">
-				<fileset dir="${lib}/ext-js/lib/script" includes="**/*.js" />
-			</copy>
-			<copy todir="${tmp}/mongovision/web/static/style/ext/style">
-				<fileset dir="${lib}/ext-js/lib/style" excludes="**/.svn/" />
-			</copy>
-			<copy todir="${tmp}/mongovision/web/static/style/ext/resources">
-				<fileset dir="${lib}/ext-js/lib/resources" excludes="**/.svn/" />
-			</copy>
-			<copy todir="${tmp}/mongovision/web/static/script/ux">
-				<fileset dir="${lib}/gritter/lib" includes="*.js" />
-			</copy>
-			<copy todir="${tmp}/mongovision/web/static/style/ux/gritter">
-				<fileset dir="${lib}/gritter/lib/resources" excludes="**/.svn/" />
-			</copy>
+			<fetch-license dist="@{dist}" library="@{library}" />
 			<copy todir="@{dist}/libraries/">
-				<fileset dir="${lib}/mongodb-java-driver/lib" excludes="**/.svn/" />
-				<fileset dir="${lib}/mongodb-rhino-driver/lib" excludes="**/.svn/" />
+				<fileset dir="${lib}/@{library}/lib" excludes="**/.svn/" />
+				<fileset dir="${lib}" includes="*.txt" />
 			</copy>
 		</sequential>
 	</macrodef>
 
 	<target name="libraries" description="Fetch libraries">
-		<fetch-libraries dist="${dist-debug}" />
-		<fetch-libraries dist="${dist-standard}" />
-		<fetch-libraries dist="${dist-minimal}" />
+		<fetch-license dist="${dist-standard}" library="ext-js" />
+		<fetch-license dist="${dist-standard}" library="gritter" />
+		<fetch-library dist="${dist-standard}" library="mongodb-java-driver" />
+		<fetch-library dist="${dist-standard}" library="mongodb-rhino-driver" />
+
+		<fetch-license dist="${dist-debug}" library="ext-js" />
+		<fetch-license dist="${dist-debug}" library="gritter" />
+		<fetch-library dist="${dist-debug}" library="mongodb-java-driver" />
+		<fetch-library dist="${dist-debug}" library="mongodb-rhino-driver" />
+
+		<fetch-license dist="${dist-minimal}" library="gritter" />
 	</target>
 	
 	<target name="application" depends="libraries, revision" description="Fetch MongoVision application">
 		<copy todir="${tmp}/mongovision">
 			<fileset dir="${src}" excludes="**/.svn/" />
+		</copy>
+		<copy todir="${tmp}/mongovision/web/static/script/ext">
+			<fileset dir="${lib}/ext-js/lib/script" includes="**/*.js" />
+		</copy>
+		<copy todir="${tmp}/mongovision/web/static/style/ext/style">
+			<fileset dir="${lib}/ext-js/lib/style" excludes="**/.svn/" />
+		</copy>
+		<copy todir="${tmp}/mongovision/web/static/style/ext/resources">
+			<fileset dir="${lib}/ext-js/lib/resources" excludes="**/.svn/" />
+		</copy>
+		<copy todir="${tmp}/mongovision/web/static/script/ux">
+			<fileset dir="${lib}/gritter/lib" includes="*.js" />
+		</copy>
+		<copy todir="${tmp}/mongovision/web/static/style/ux/gritter">
+			<fileset dir="${lib}/gritter/lib/resources" excludes="**/.svn/" />
 		</copy>
 		<replace dir="${tmp}/mongovision" includes="settings.js" token="%REVISION%" value="${revision.max}" />
 		<zip destfile="${dist-debug}/mongovision-debug.prudence.zip" basedir="${tmp}" includes="**/*" level="9" />
@@ -110,7 +103,7 @@
 		</copy>
 	</target>
 	
-	<target name="package" depends="licenses, deploy" description="Create MongoVision zip">
+	<target name="package" depends="deploy" description="Create MongoVision zip">
 		<zip destfile="mongovision-debug-R${revision.max}.zip" basedir="${dist-debug}" includes="**/*" level="9" />
 		<zip destfile="mongovision-standard-R${revision.max}.zip" basedir="${dist-standard}" includes="**/*" level="9" />
 		<zip destfile="mongovision-minimal-R${revision.max}.zip" basedir="${dist-minimal}" includes="**/*" level="9" />
