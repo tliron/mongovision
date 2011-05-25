@@ -32,14 +32,16 @@ function handlePost(conversation) {
 	if (!data.document) {
 		return 400
 	}
-	
-	delete data.document._id
+	if (String(data.document._id) != id) {
+		application.logger.info('No match!')
+		return 400
+	}
 	
 	var collection = new MongoDB.Collection(collection, {db: database, connection: application.globals.get('mongovision.connection')})
-	var doc
+	var r
 	var result
 	try {
-		doc = collection.findAndModify({_id: id}, {$set: data.document}, {returnNew: true})
+		r = collection.save(data.document, 1)
 	}
 	catch (x) {
 		result = {
@@ -47,12 +49,12 @@ function handlePost(conversation) {
 			message: x.message
 		}
 	}
-	
+
 	if (!result) {
-		if (doc) {
+		if (r && (r.n == 1)) {
 			result = {
 				success: true,
-				documents: [doc],
+				documents: [data.document],
 				message: 'Updated document ' + id + ' in ' + database + '.' + collection.collection.name
 			}
 		}
