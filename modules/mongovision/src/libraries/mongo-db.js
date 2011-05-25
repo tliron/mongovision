@@ -30,7 +30,7 @@ importClass(com.mongodb.rhino.BSON, com.mongodb.rhino.JSON)
  * @see Visit the <a href="https://github.com/geir/mongo-java-driver">MongoDB Java driver</a> 
  * 
  * @author Tal Liron
- * @version 1.50
+ * @version 1.52
  */
 var MongoDB = MongoDB || function() {
     var Public = /** @lends MongoDB */ {
@@ -451,7 +451,7 @@ var MongoDB = MongoDB || function() {
 			/**
 			 * Moves the cursor forward without fetching documents.
 			 * 
-			 * @param {Number} The number of documents to skip
+			 * @param {Number} n The number of documents to skip
 			 * @returns {MongoDB.Cursor} This cursor
 			 */
 			this.skip = function(n) {
@@ -1023,7 +1023,7 @@ var MongoDB = MongoDB || function() {
 						result = this.collection.save(BSON.to(doc))
 					}
 					Public.setLastStatus(this.connection, true)
-					return exists(result) ? MongoDB.result(result) : null
+					return exists(result) ? Public.result(result) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					if (x.javaException instanceof com.mongodb.MongoException.DuplicateKey) {
@@ -1055,7 +1055,7 @@ var MongoDB = MongoDB || function() {
 						result = this.collection.insert(BSON.to(doc))
 					}
 					Public.setLastStatus(this.connection, true)
-					return exists(result) ? MongoDB.result(result) : null
+					return exists(result) ? Public.result(result) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					if (x.javaException instanceof com.mongodb.MongoException.DuplicateKey) {
@@ -1089,7 +1089,7 @@ var MongoDB = MongoDB || function() {
 						result = this.collection.update(BSON.to(query), BSON.to(update), false, multi == true)
 					}
 					Public.setLastStatus(this.connection, true)
-					return exists(result) ? MongoDB.result(result) : null
+					return exists(result) ? Public.result(result) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
@@ -1119,7 +1119,7 @@ var MongoDB = MongoDB || function() {
 						result = this.collection.update(BSON.to(query), BSON.to(update), true, multi == true)
 					}
 					Public.setLastStatus(this.connection, true)
-					return exists(result) ? MongoDB.result(result) : null
+					return exists(result) ? Public.result(result) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
@@ -1148,7 +1148,7 @@ var MongoDB = MongoDB || function() {
 						result = this.collection.remove(BSON.to(query))
 					}
 					Public.setLastStatus(this.connection, true)
-					return exists(result) ? MongoDB.result(result) : null
+					return exists(result) ? Public.result(result) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
