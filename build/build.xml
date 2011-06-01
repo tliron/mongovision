@@ -49,12 +49,10 @@
 	<target name="libraries" description="Fetch libraries">
 		<fetch-license dist="${dist-standard}" library="ext-js" />
 		<fetch-license dist="${dist-standard}" library="gritter" />
-		<fetch-library dist="${dist-standard}" library="mongodb-java-driver" />
 		<fetch-library dist="${dist-standard}" library="mongodb-rhino-driver" />
 
 		<fetch-license dist="${dist-debug}" library="ext-js" />
 		<fetch-license dist="${dist-debug}" library="gritter" />
-		<fetch-library dist="${dist-debug}" library="mongodb-java-driver" />
 		<fetch-library dist="${dist-debug}" library="mongodb-rhino-driver" />
 
 		<fetch-license dist="${dist-minimal}" library="gritter" />
