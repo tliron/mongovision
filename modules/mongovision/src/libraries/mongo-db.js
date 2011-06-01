@@ -30,7 +30,7 @@ importClass(com.mongodb.rhino.BSON, com.mongodb.rhino.JSON)
  * @see Visit the <a href="https://github.com/geir/mongo-java-driver">MongoDB Java driver</a> 
  * 
  * @author Tal Liron
- * @version 1.52
+ * @version 1.56
  */
 var MongoDB = MongoDB || function() {
     var Public = /** @lends MongoDB */ {
@@ -273,7 +273,7 @@ var MongoDB = MongoDB || function() {
 				try {
 					var collection = this.result.outputCollection
 					Public.setLastStatus(this.connection, true)
-					return exists(collection) ? new MongoDB.Collection(null, {collection: collection}) : null
+					return exists(collection) ? new MongoDB.Collection(null, {collection: collection, swallow: this.swallow}) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
@@ -311,9 +311,9 @@ var MongoDB = MongoDB || function() {
 			 */
 			this.getCursor = function() {
 				try {
-					var cursor = this.result.results()
+					var collection = this.getOutputCollection()
 					Public.setLastStatus(this.connection, true)
-					return exists(cursor) ? new MongoDB.Cursor(cursor, this.swallow) : null
+					return exists(collection) ? collection.find() : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
@@ -326,12 +326,18 @@ var MongoDB = MongoDB || function() {
 			
 			/**
 			 * For inline mapReduce, returns the results.
+			 * 
+			 * @returns {Array}
 			 */
 			this.getInline = function() {
 				try {
-					var doc = this.result.results()
+					var iterator = this.result.results()
 					Public.setLastStatus(this.connection, true)
-					return BSON.from(doc)
+					var r = []
+					while (iterator.hasNext()) {
+						r.push(BSON.from(iterator.next()))
+					}
+					return r
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
@@ -352,6 +358,12 @@ var MongoDB = MongoDB || function() {
 			this.result = result
 			this.connection = connection
 			this.swallow = exists(swallow) ? swallow : Public.defaultSwallow
+					
+			// The following is a necessary workaround because the Java driver does not properly deal with map reduce outputs
+			// in a replica set (see http://groups.google.com/group/mongodb-user/browse_thread/thread/ff3d0a6a2b076473/6956b87bdc1bb63c)
+			if (this.result.outputCollection) {
+				this.result.outputCollection.options &= ~com.mongodb.Bytes.QUERYOPTION_SLAVEOK
+			}
 		},
 		
 		/**
