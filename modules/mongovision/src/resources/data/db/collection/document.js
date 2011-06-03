@@ -33,7 +33,7 @@ function handlePost(conversation) {
 		return 400
 	}
 	if (String(data.document._id) != id) {
-		application.logger.info('No match!')
+		application.logger.warning('No match!')
 		return 400
 	}
 	
@@ -54,7 +54,7 @@ function handlePost(conversation) {
 		if (r && (r.n == 1)) {
 			result = {
 				success: true,
-				documents: [data.document],
+				//documents: [data.document],
 				message: 'Updated document ' + id + ' in ' + database + '.' + collection.collection.name
 			}
 		}
