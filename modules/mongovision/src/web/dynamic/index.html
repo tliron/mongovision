@@ -14,7 +14,7 @@ if (theme) {
 	}
 }
 
-theme = conversation.query.get('theme') || theme || application.globals.get('mongovision.theme') || 'access'
+theme = conversation.query.get('theme') || theme || application.globals.get('mongovision.theme') || 'gray'
 
 var debug = conversation.query.get('debug') || application.globals.get('mongovision.extJS.debug') || 'true'
 if (debug.booleanValue) {
