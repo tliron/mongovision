@@ -816,7 +816,7 @@ Ext.onReady(function() {
 									{id: 'mv-theme', prefix: 'style/mongovision'}
 								],
 								themes: [
-									{id: 'gray', postfix: '.css', label: MongoVision.text['theme.gray']},
+									{id: 'gray', postfix: '-gray.css', label: MongoVision.text['theme.gray']},
 									{id: 'blue', postfix: '.css', label: MongoVision.text['theme.blue']},
 									{id: 'access', postfix: '-access.css', label: MongoVision.text['theme.accessible']}
 								]
