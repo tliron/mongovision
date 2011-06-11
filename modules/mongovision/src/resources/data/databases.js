@@ -80,5 +80,5 @@ function handleGet(conversation) {
 	}
 	
 	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
-	return JSON.to(nodes, conversation.query.get('human') == 'true')
+	return MongoDB.JSON.to(nodes, conversation.query.get('human') == 'true')
 }

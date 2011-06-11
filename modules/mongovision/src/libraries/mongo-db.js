@@ -18,8 +18,6 @@
 // at http://threecrickets.com/
 //
 
-importClass(com.mongodb.rhino.BSON, com.mongodb.rhino.JSON)
-
 /**
  * MongoDB API for Prudence. Uses the MongoDB Java driver.
  * 
@@ -30,39 +28,98 @@ importClass(com.mongodb.rhino.BSON, com.mongodb.rhino.JSON)
  * @see Visit the <a href="https://github.com/geir/mongo-java-driver">MongoDB Java driver</a> 
  * 
  * @author Tal Liron
- * @version 1.56
+ * @version 1.60
  */
 var MongoDB = MongoDB || function() {
     var Public = /** @lends MongoDB */ {
     	/**
     	 * The logger.
+    	 * 
+    	 * @field
+    	 * @returns {java.util.Logger}
     	 */
     	logger: application.getSubLogger('mongodb'),
+
+    	/**
+    	 * @field
+    	 * @returns {com.mongodb.rhino.BSON}
+    	 */
+    	BSON: com.mongodb.rhino.BSON,
     	
+    	/**
+    	 * @field
+    	 * @returns {com.mongodb.rhino.JSON}
+    	 */
+    	JSON: com.mongodb.rhino.JSON,
+
+		/**
+		 * Common MongoDB error codes
+		 * 
+		 * @namespace
+		 */
+		Error: {
+			/** @constant */
+			Gone: -2,
+			/** @constant */
+			NotFound: -5,
+			/** @constant */
+			Capped: 10003,
+			/** @constant */
+			DuplicateKey: 11000,
+			/** @constant */
+			DuplicateKeyOnUpdate: 11001
+		},
+		
+		/**
+		 * Query options.
+		 *
+		 * @namespace
+		 * @see MongoDB.Cursor#addOption;
+		 * @see MongoDB.Cursor#setOptions;
+		 * @see MongoDB.Cursor#getOptions;
+		 * @see Visit the <a href="http://api.mongodb.org/java/current/index.html?com/mongodb/Bytes.html">Bytes documentation (see QUERYOPTION_)</a>
+		 */
+		QueryOption: {
+			/** @constant */
+			awaitData: com.mongodb.Bytes.QUERYOPTION_AWAITDATA,
+			/** @constant */
+			exhaust: com.mongodb.Bytes.QUERYOPTION_EXHAUST,
+			/** @constant */
+			noTimeout: com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT,
+			/** @constant */
+			slaveOk: com.mongodb.Bytes.QUERYOPTION_SLAVEOK,
+			/** @constant */
+			tailable: com.mongodb.Bytes.QUERYOPTION_TAILABLE
+		},
+		
     	/**
     	 * Defaults to the 'mongoDb.defaultConnection' application global or shared application global.
     	 * If those do not exist, uses the 'mongoDb.defaultServers' application global or shared application
-    	 * global to call {@link MongoDB.connect}. If that does not exist either, then tries to connect
+    	 * global to call {@link MongoDB#connect}. If that does not exist either, then tries to connect
     	 * to localhost using the default port.
     	 *  
     	 * @field
-		 * @returns {com.mongodb.Mongo} See the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/Mongo.html">Mongo connection documentation</a>
-    	 * @see MongoDB.connect
+		 * @returns {com.mongodb.Mongo} See the <a href="http://api.mongodb.org/java/current/index.html?com/mongodb/Mongo.html">Mongo connection documentation</a>
+    	 * @see MongoDB#connect
     	 */
 		defaultConnection: null,
 
     	/**
-    	 * Defaults to the 'mongo.defaultDb' application global or shared application global.
+    	 * Defaults to the 'mongoDb.defaultDb' application global or shared application global.
+		 * Can be configured as the database name, or an object in the form of {name:'string', username:'string', password:'string'}
+		 * for authenticated databases.
     	 * 
     	 * @field
-    	 * @returns {String|com.mongodb.DB}
-    	 * @see MongoDB.connect
+    	 * @returns {com.mongodb.DB}
+    	 * @see MongoDB#connect
     	 */
 		defaultDb: null,
 		
 		/**
+    	 * Defaults to the 'mongoDb.defaultSwallow' application global or shared application global.
+    	 * 
 		 * @field
-		 * @returns {Boolean}
+		 * @returns {Boolean}  If true, do not throw exceptions
 		 */
 		defaultSwallow: null,
 		
@@ -80,18 +137,20 @@ var MongoDB = MongoDB || function() {
 		 * @param {Boolean} [options.autoConnectRetry] True if failed connections are retried
 		 * @param {Number} [options.connectionsPerHost] Pool size per URI
 		 * @param {Number} [options.connectTimeout] Milliseconds allowed for connection to be made before an exception is thrown
-		 * @param {Boolean} [options.fsync] Default {@link MongoDB.WriteConcern} value
+		 * @param {Boolean} [options.fsync] Default {@link MongoDB#writeConcern} value
 		 * @param {Number} [options.maxWaitTime] Milliseconds allowed for a thread to block before an exception is thrown
 		 * @param {Boolean} [options.safe] True calls getLastError after every MongoDB command
 		 * @param {Boolean} [options.slaveOk] True if allowed to read from slaves
 		 * @param {Number} [options.socketTimeout] Milliseconds allowed for a socket operation before an exception is thrown
 		 * @param {Number} [options.threadsAllowedToBlockForConnectionMultiplier] multiply this by connectionsPerHost to get the number
 		 *        of threads allowed to block before an exception is thrown
-		 * @param {Number} [options.w] Default {@link MongoDB.WriteConcern} value
-		 * @param {Number} [options.wtimeout] Default {@link MongoDB.WriteConcern} value
-		 * @returns {com.mongodb.Mongo} See the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/Mongo.html">Mongo connection documentation</a>
+		 * @param {Number} [options.w] Default {@link MongoDB#writeConcern} value
+		 * @param {Number} [options.wtimeout] Default {@link MongoDB#writeConcern} value
+		 * @param {String} [username] Optional username for authentication of 'admin' database 
+		 * @param {String} [password] Optional password for authentication of 'admin' database
+		 * @returns {com.mongodb.Mongo} See the <a href="http://api.mongodb.org/java/current/index.html?com/mongodb/Mongo.html">Mongo connection documentation</a>
 		 */
-		connect: function(uris, options) {
+		connect: function(uris, options, username, password) {
 			if (Object.prototype.toString.call(uris) == '[object Array]') {
 				var array = new java.util.ArrayList(uris.length)
 				for (var u in uris) {
@@ -111,24 +170,32 @@ var MongoDB = MongoDB || function() {
 				options = mongoOptions
 			}
 			
+			var connection
 			if (uris) {
 				if (options) {
-					return new com.mongodb.Mongo(uris, options)
+					connection = new com.mongodb.Mongo(uris, options)
 				}
 				else {
-					return new com.mongodb.Mongo(uris)
+					connection = new com.mongodb.Mongo(uris)
 				}
 			}
 			else {
-				return new com.mongodb.Mongo()
+				connection = new com.mongodb.Mongo()
 			}
+			
+			if (exists(connection) && username && password) {
+				// Authenticate the 'admin' database
+				Public.getDB(connection, 'admin', username, password)
+			}
+			
+			return connection
 		},
 		
 		/**
 		 * Creates a new, universally unique MongoDB object ID.
 		 * 
 		 * @returns {org.bson.types.ObjectId} A a new ObjectId;
-		 *          See the <a href="http://api.mongodb.org/java/2.5.3/index.html?org/bson/types/ObjectId.html">ObjectId documentation</a>
+		 *          See the <a href="http://api.mongodb.org/java/current/index.html?org/bson/types/ObjectId.html">ObjectId documentation</a>
 		 */
 		newId: function() {
 			return org.bson.types.ObjectId.get()
@@ -139,7 +206,7 @@ var MongoDB = MongoDB || function() {
 		 * 
 		 * @param {String} id The object ID string
 		 * @returns {org.bson.types.ObjectId} An ObjectId or null if invalid;
-		 *          See the <a href="http://api.mongodb.org/java/2.5.3/index.html?org/bson/types/ObjectId.html">ObjectId documentation</a>
+		 *          See the <a href="http://api.mongodb.org/java/current/index.html?org/bson/types/ObjectId.html">ObjectId documentation</a>
 		 */
 		id: function(id) {
 			try {
@@ -158,7 +225,7 @@ var MongoDB = MongoDB || function() {
 		 *        Numeric values are converted to 'w';
 		 *        boolean values are converted to 'fsync';
 		 *        otherwise provide a dict in the form of {w:number, fsync:boolean, timeout:number} 
-		 * @returns {com.mongodb.WriteConcern} See the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/WriteConcern.html">WriteConcern documentation</a>
+		 * @returns {com.mongodb.WriteConcern} See the <a href="http://api.mongodb.org/java/current/index.html?com/mongodb/WriteConcern.html">WriteConcern documentation</a>
 		 */
 		writeConcern: function(writeConcern) {
 			var type = typeof writeConcern
@@ -187,17 +254,18 @@ var MongoDB = MongoDB || function() {
 		 * </ul>
 		 * 
 		 * @param result The JVM result
-		 * @see Visit the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/CommandResult.html">CommandResult documentation</a>;
-		 * @see Visit the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/WriteResult.html">WriteResult documentation</a>
+		 * @see Visit the <a href="http://api.mongodb.org/java/current/index.html?com/mongodb/CommandResult.html">CommandResult documentation</a>;
+		 * @see Visit the <a href="http://api.mongodb.org/java/current/index.html?com/mongodb/WriteResult.html">WriteResult documentation</a>
 		 */
 		result: function(result) {
-			return exists(result) ? BSON.from(result.cachedLastError) : null
+			return exists(result) ? Public.BSON.from(result.cachedLastError) : null
 		},
 		
 		/**
 		 * Converts the JVM exception to a JavaScript-friendly version.
 		 * 
 		 * @param {com.mongodb.MongoException} exception The MongoDB exception
+		 * @param {com.mongodb.Mongo} connection The MongoDB connection
 		 * @param {Boolean} [swallow=false] If true, do not return exceptions
 		 * @returns {Object} In the form of {code:number, message:'message'}
 		 * @see MongoDB.Error
@@ -220,6 +288,27 @@ var MongoDB = MongoDB || function() {
 			return {code: exception.code, message: exception.message}
 		},
 		
+		/**
+		 * Gets a MongoDB database from a connection, optionally authenticating it.
+		 * 
+		 * @param {com.mongodb.Mongo} connection The MongoDB connection
+		 * @param {String} name The database name
+		 * @param {String} [username] Optional username for authentication 
+		 * @param {String} [password] Optional password for authentication
+		 * @returns {com.mongodb.DB}
+		 */
+		getDB: function(connection, name, username, password) {
+			var db = connection.getDB(name)
+			if (username && password && exists(db)) {
+				db.authenticate(username, new java.lang.String(password).toCharArray())
+			}
+			return db
+		},
+
+		/**
+		 * @param {com.mongodb.Mongo} connection The MongoDB connection
+		 * @returns {Boolean} True if MongoDB was last seen as up
+		 */
 		getLastStatus: function(connection) {
 			var status = application.globals.get('mongoDb.status.' + connection.hashCode())
 			if (exists(status)) {
@@ -228,6 +317,11 @@ var MongoDB = MongoDB || function() {
 			return true
 		},
 		
+
+		/**
+		 * @param {com.mongodb.Mongo} connection The MongoDB connection
+		 * @param {Boolean} status True if MongoDB was last seen as up
+		 */
 		setLastStatus: function(connection, status) {
 			if (status && !Public.getLastStatus(connection)) {
 				Public.logger.info('Up! ' + connection)
@@ -236,31 +330,13 @@ var MongoDB = MongoDB || function() {
 		},
 		
 		/**
-		 * Common MongoDB error codes
-		 * 
-		 * @class
-		 */
-		Error: {
-			/** @constant */
-			Gone: -2,
-			/** @constant */
-			NotFound: -5,
-			/** @constant */
-			Capped: 10003,
-			/** @constant */
-			DuplicateKey: 11000,
-			/** @constant */
-			DuplicateKeyOnUpdate: 11001
-		},
-		
-		/**
-		 * The results of a {@link #mapReduce} command.
+		 * The results of a {@link MongoDB.Collection#mapReduce} command.
 		 * 
 		 * @class
 		 * @param {com.mongodb.MapReduceOutput} result The JVM map-reduce result
 		 * @param {com.mongodb.Mongo} connection The MongoDB connection
 		 * @param {Boolean} [swallow=MongoDB.defaultSwallow] If true, do not throw exceptions
-		 * @see Visit the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/MapReduceOutput.html">MapReduceOutput documentation</a>
+		 * @see Visit the <a href="http://api.mongodb.org/java/current/index.html?com/mongodb/MapReduceOutput.html">MapReduceOutput documentation</a>
 		 */
 		MapReduceResult: function(result, connection, swallow) {
 
@@ -335,7 +411,7 @@ var MongoDB = MongoDB || function() {
 					Public.setLastStatus(this.connection, true)
 					var r = []
 					while (iterator.hasNext()) {
-						r.push(BSON.from(iterator.next()))
+						r.push(Public.BSON.from(iterator.next()))
 					}
 					return r
 				}
@@ -348,9 +424,6 @@ var MongoDB = MongoDB || function() {
 				}
 			}
 			
-			// //////////////////////////////////////////////////////////////////////////
-			// Private
-			
 			//
 			// Construction
 			//
@@ -360,32 +433,11 @@ var MongoDB = MongoDB || function() {
 			this.swallow = exists(swallow) ? swallow : Public.defaultSwallow
 					
 			// The following is a necessary workaround because the Java driver does not properly deal with map reduce outputs
-			// in a replica set (see http://groups.google.com/group/mongodb-user/browse_thread/thread/ff3d0a6a2b076473/6956b87bdc1bb63c)
+			// in a replica set (see https://jira.mongodb.org/browse/JAVA-364 and 
+			// http://groups.google.com/group/mongodb-user/browse_thread/thread/ff3d0a6a2b076473/6956b87bdc1bb63c)
 			if (this.result.outputCollection) {
 				this.result.outputCollection.options &= ~com.mongodb.Bytes.QUERYOPTION_SLAVEOK
 			}
-		},
-		
-		/**
-		 * Cursor options.
-		 *
-		 * @class
-		 * @see MongoDB.Cursor#addOption;
-		 * @see MongoDB.Cursor#setOptions;
-		 * @see MongoDB.Cursor#getOptions;
-		 * @see Visit the <a href="http://api.mongodb.org/java/2.5.3/index.html?com/mongodb/Bytes.html">Bytes documentation (see QUERYOPTION_)</a>
-		 */
-		CursorOption: {
-			/** @constant */
-			awaitData: com.mongodb.Bytes.QUERYOPTION_AWAITDATA,
-			/** @constant */
-			exhaust: com.mongodb.Bytes.QUERYOPTION_EXHAUST,
-			/** @constant */
-			noTimeout: com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT,
-			/** @constant */
-			slaveOk: com.mongodb.Bytes.QUERYOPTION_SLAVEOK,
-			/** @constant */
-			tailable: com.mongodb.Bytes.QUERYOPTION_TAILABLE
 		},
 		
 		/**
@@ -429,7 +481,7 @@ var MongoDB = MongoDB || function() {
 				try {
 					var doc = this.cursor.next()
 					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
-					return BSON.from(doc)
+					return Public.BSON.from(doc)
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
@@ -449,7 +501,7 @@ var MongoDB = MongoDB || function() {
 				try {
 					var doc = this.cursor.curr()
 					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
-					return BSON.from(doc)
+					return Public.BSON.from(doc)
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
@@ -510,7 +562,7 @@ var MongoDB = MongoDB || function() {
 			 */
 			this.sort = function(orderBy) {
 				try {
-					this.cursor.sort(BSON.to(orderBy))
+					this.cursor.sort(Public.BSON.to(orderBy))
 					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
 					return this
 				}
@@ -612,7 +664,7 @@ var MongoDB = MongoDB || function() {
 				try {
 					var doc = this.cursor.explain()
 					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
-					return BSON.from(doc)
+					return Public.BSON.from(doc)
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
@@ -628,7 +680,7 @@ var MongoDB = MongoDB || function() {
 			 */
 			this.keysWanted = function() {
 				try {
-					return BSON.from(this.cursor.keysWanted)
+					return Public.BSON.from(this.cursor.keysWanted)
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.cursor.collection.getDB().mongo, this.swallow)
@@ -671,7 +723,7 @@ var MongoDB = MongoDB || function() {
 						this.cursor.hint(hint)
 					}
 					else {
-						this.cursor.hint(BSON.to(hint))
+						this.cursor.hint(Public.BSON.to(hint))
 					}
 					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
 					return this
@@ -727,7 +779,6 @@ var MongoDB = MongoDB || function() {
 			 * Removes all options.
 			 * 
 			 * @returns {MongoDB.Cursor} This cursor
-			 * @returns {MongoDB.Cursor} This cursor
 			 */
 			this.resetOptions = function() {
 				try {
@@ -748,15 +799,15 @@ var MongoDB = MongoDB || function() {
 			 * Gets the cursor's options.
 			 * 
 			 * @returns {String[]} The options
-			 * @see MongoDB.CursorOption
+			 * @see MongoDB.QueryOption
 			 */
 			this.getOptions = function() {
 				try {
 					var options = []
 					var bits = this.cursor.options
 					Public.setLastStatus(this.cursor.collection.getDB().mongo, true)
-					for (var o in Public.CursorOption) {
-						var option = Public.CursorOption[o]
+					for (var o in Public.QueryOption) {
+						var option = Public.QueryOption[o]
 						if (bits & option) {
 							options.push(o)
 						}
@@ -777,7 +828,7 @@ var MongoDB = MongoDB || function() {
 			 * 
 			 * @param {String[]|Number} options The options
 			 * @returns {MongoDB.Cursor} This cursor
-			 * @see MongoDB.CursorOption
+			 * @see MongoDB.QueryOption
 			 */
 			this.setOptions = function(options) {
 				var bits = 0
@@ -787,7 +838,7 @@ var MongoDB = MongoDB || function() {
 				else if (typeof options == 'object') {
 					// Array of strings
 					for (var o in options) {
-						var option = Public.CursorOption[options[o]]
+						var option = Public.QueryOption[options[o]]
 						if (option) {
 							bits |= option
 						}
@@ -812,7 +863,7 @@ var MongoDB = MongoDB || function() {
 			 * 
 			 * @param {String|Number} option The option to add
 			 * @returns {MongoDB.Cursor} This cursor
-			 * @see MongoDB.CursorOption
+			 * @see MongoDB.QueryOption
 			 */
 			this.addOption = function(option) {
 				var bits = 0
@@ -820,7 +871,7 @@ var MongoDB = MongoDB || function() {
 					bits = option
 				}
 				else if (typeof option == 'string') {
-					option = Public.CursorOption[option]
+					option = Public.QueryOption[option]
 					if (option) {
 						bits = option
 					}
@@ -897,36 +948,18 @@ var MongoDB = MongoDB || function() {
 		 * 
 		 * @param {String} name The collection name
 		 * @param [config]
-		 * @param {String|com.mongodb.DB} [config.db=MongoDB.defaultDb] The MongoDB database to use
+		 * @param {String|Object|com.mongodb.DB} [config.db=MongoDB.defaultDb] The MongoDB database to use, can be its
+		 *        name, or an object in the form of {name:'string', username:'string', password:'string'} for authenticated
+		 *        connections
 		 * @param {String|com.mongodb.Mongo} [config.connection=MongoDb.defaultConnect] A MongoDB connection
-		 *        instance (see {@link MongoDB.connect})
+		 *        instance (see {@link MongoDB#connect})
 		 * @param {String} [config.uniqueId] If supplied, {@link #ensureIndex} will automatically be called on the
 		 *        key
 		 * @param {Boolean} [config.swallow=MongoDB.defaultSwallow] If true, do not throw exceptions
 		 */
 		Collection: function(name, config) {
-
-			/**
-			 * Creates an index if it does not exist.
-			 * 
-			 * @param index The index to create
-			 * @param [options] Index options
-			 */
-			this.ensureIndex = function(index, options) {
-				try {
-					this.collection.ensureIndex(BSON.to(index), BSON.to(options))
-					// Might not actually make a connection if index already exists:
-					// Public.setLastStatus(this.connection, true)
-					return this
-				}
-				catch (x if x.javaException instanceof com.mongodb.MongoException) {
-					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
-					if (x) {
-						throw x
-					}
-					return this
-				}
-			}
+			
+			// Document retrieval
 			
 			/**
 			 * Creates a cursor to iterate over one or more documents.
@@ -940,10 +973,10 @@ var MongoDB = MongoDB || function() {
 					var cursor
 					if (query) {
 						if (undefined !== fields) {
-							cursor = this.collection.find(BSON.to(query), BSON.to(fields))
+							cursor = this.collection.find(Public.BSON.to(query), Public.BSON.to(fields))
 						}
 						else {
-							cursor = this.collection.find(BSON.to(query))
+							cursor = this.collection.find(Public.BSON.to(query))
 						}
 					}
 					else {
@@ -962,7 +995,7 @@ var MongoDB = MongoDB || function() {
 			}
 			
 			/**
-			 * Fetches a single document.
+			 * Fetches a single document, the first to match the query.
 			 * 
 			 * @param query The query
 			 * @param [fields] The fields to fetch
@@ -972,13 +1005,13 @@ var MongoDB = MongoDB || function() {
 				try {
 					var doc
 					if (undefined !== fields) {
-						doc = this.collection.findOne(BSON.to(query), BSON.to(fields))
+						doc = this.collection.findOne(Public.BSON.to(query), Public.BSON.to(fields))
 					}
 					else {
-						doc = this.collection.findOne(BSON.to(query))
+						doc = this.collection.findOne(Public.BSON.to(query))
 					}
 					Public.setLastStatus(this.connection, true)
-					return BSON.from(doc)
+					return Public.BSON.from(doc)
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
@@ -989,58 +1022,32 @@ var MongoDB = MongoDB || function() {
 				}
 			}
 			
-			/**
-			 * Counts documents without fetching them.
-			 * 
-			 * @param [query] The query or null to count all documents
-			 * @returns {Number}
-			 */
-			this.count = function(query) {
-				try {
-					var count
-					if (query) {
-						count = this.collection.getCount(BSON.to(query))
-					}
-					else {
-						count = this.collection.getCount()
-					}
-					Public.setLastStatus(this.connection, true)
-					return count
-				}
-				catch (x if x.javaException instanceof com.mongodb.MongoException) {
-					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
-					if (x) {
-						throw x
-					}
-					return -1
-				}
-			}
+			// Document modification
 			
 			/**
-			 * Shortcut to upsert a document with the given _id.
+			 * Updates one or more documents.
 			 * 
-			 * @param doc The document to save
-			 * @param [writeConcern] See {@link MongoDB.writeConcern}
-			 * @returns See {@link MongoDB.result}
-			 * @see #upsert;
-			 * @see #insert
+			 * @param query The query
+			 * @param update The update
+			 * @param {Boolean} [multi=false] True to update all documents, false to update
+			 *        only the first document matching the query
+			 * @param [writeConcern] See {@link MongoDB#writeConcern}
+			 * @returns See {@link MongoDB#result}
+			 * @see #upsert
 			 */
-			this.save = function(doc, writeConcern) {
+			this.update = function(query, update, multi, writeConcern) {
 				try {
 					var result
 					if (undefined !== writeConcern) {
-						result = this.collection.save(BSON.to(doc), MongoDB.writeConcern(writeConcern))
+						result = this.collection.update(Public.BSON.to(query), Public.BSON.to(update), false, multi == true, MongoDB.writeConcern(writeConcern))
 					}
 					else {
-						result = this.collection.save(BSON.to(doc))
+						result = this.collection.update(Public.BSON.to(query), Public.BSON.to(update), false, multi == true)
 					}
 					Public.setLastStatus(this.connection, true)
 					return exists(result) ? Public.result(result) : null
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
-					if (x.javaException instanceof com.mongodb.MongoException.DuplicateKey) {
-						throw MongoDB.exception(x.javaException, this.connection, false)
-					}
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
 					if (x) {
 						throw x
@@ -1049,22 +1056,24 @@ var MongoDB = MongoDB || function() {
 				}
 			}
 			
+			// Document insertion
+			
 			/**
 			 * Inserts a document, creating a default _id if not provided.
 			 * 
 			 * @param doc The document to insert
-			 * @param [writeConcern] See {@link MongoDB.writeConcern}
-			 * @returns See {@link MongoDB.result}
+			 * @param [writeConcern] See {@link MongoDB#writeConcern}
+			 * @returns See {@link MongoDB#result}
 			 * @see #save
 			 */
 			this.insert = function(doc, writeConcern) {
 				try {
 					var result
 					if (undefined !== writeConcern) {
-						result = this.collection.insert(BSON.to(doc), MongoDB.writeConcern(writeConcern))
+						result = this.collection.insert(Public.BSON.to(doc), MongoDB.writeConcern(writeConcern))
 					}
 					else {
-						result = this.collection.insert(BSON.to(doc))
+						result = this.collection.insert(Public.BSON.to(doc))
 					}
 					Public.setLastStatus(this.connection, true)
 					return exists(result) ? Public.result(result) : null
@@ -1082,53 +1091,24 @@ var MongoDB = MongoDB || function() {
 			}
 
 			/**
-			 * Updates one or more documents.
+			 * Like {@link #update}, but if no document is found works similary to {@link #insert}, 
+			 * creating a default _id if not provided.
 			 * 
 			 * @param query The query
 			 * @param update The update
-			 * @param {Boolean} [multi=false] True to update more than one document
-			 * @param [writeConcern] See {@link MongoDB.writeConcern}
-			 * @returns See {@link MongoDB.result}
-			 * @see #upsert
-			 */
-			this.update = function(query, update, multi, writeConcern) {
-				try {
-					var result
-					if (undefined !== writeConcern) {
-						result = this.collection.update(BSON.to(query), BSON.to(update), false, multi == true, MongoDB.writeConcern(writeConcern))
-					}
-					else {
-						result = this.collection.update(BSON.to(query), BSON.to(update), false, multi == true)
-					}
-					Public.setLastStatus(this.connection, true)
-					return exists(result) ? Public.result(result) : null
-				}
-				catch (x if x.javaException instanceof com.mongodb.MongoException) {
-					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
-					if (x) {
-						throw x
-					}
-					return null
-				}
-			}
-			
-			/**
-			 * Like {@link #update}, but inserts a document if no documents are found.
-			 * 
-			 * @param query The query
-			 * @param update The update
-			 * @param {Boolean} [multi=false] True to update more than one document
-			 * @param [writeConcern] See {@link MongoDB.writeConcern}
-			 * @returns See {@link MongoDB.result}
+			 * @param {Boolean} [multi=false] True to update all documents, false to update
+			 *        only the first document matching the query
+			 * @param [writeConcern] See {@link MongoDB#writeConcern}
+			 * @returns See {@link MongoDB#result}
 			 */
 			this.upsert = function(query, update, multi, writeConcern) {
 				try {
 					var result
 					if (undefined !== writeConcern) {
-						result = this.collection.update(BSON.to(query), BSON.to(update), true, multi == true, MongoDB.writeConcern(writeConcern))
+						result = this.collection.update(Public.BSON.to(query), Public.BSON.to(update), true, multi == true, MongoDB.writeConcern(writeConcern))
 					}
 					else {
-						result = this.collection.update(BSON.to(query), BSON.to(update), true, multi == true)
+						result = this.collection.update(Public.BSON.to(query), Public.BSON.to(update), true, multi == true)
 					}
 					Public.setLastStatus(this.connection, true)
 					return exists(result) ? Public.result(result) : null
@@ -1141,26 +1121,199 @@ var MongoDB = MongoDB || function() {
 					return null
 				}
 			}
+
+			/**
+			 * Shortcut to {@link #upsert} a single document.
+			 * 
+			 * @param doc The document to save
+			 * @param [writeConcern] See {@link MongoDB#writeConcern}
+			 * @returns See {@link MongoDB#result}
+			 * @see #upsert;
+			 * @see #insert
+			 */
+			this.save = function(doc, writeConcern) {
+				try {
+					var result
+					if (undefined !== writeConcern) {
+						result = this.collection.save(Public.BSON.to(doc), MongoDB.writeConcern(writeConcern))
+					}
+					else {
+						result = this.collection.save(Public.BSON.to(doc))
+					}
+					Public.setLastStatus(this.connection, true)
+					return exists(result) ? Public.result(result) : null
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					if (x.javaException instanceof com.mongodb.MongoException.DuplicateKey) {
+						throw MongoDB.exception(x.javaException, this.connection, false)
+					}
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
+			}
+			
+			// Combined modification and retrieval (a.k.a. "compare-and-set")
 			
 			/**
-			 * Removes one or more documents.
+			 * Atomic find-and-modify on a single document.
 			 * 
 			 * @param query The query
-			 * @param [writeConcern] See {@link MongoDB.writeConcern}
-			 * @returns See {@link MongoDB.result}
+			 * @param update The update
+			 * @param [options] Find-and-modify options
+			 * @param [options.fields] The fields to fetch
+			 * @param [options.sort] The sort to apply
+			 * @param {Boolean} [options.returnNew=false] True to return the modified document
+			 * @param {Boolean} [options.upsert=false] True to insert if not found
+			 * @returns The document or null if not found (see options.returnNew param)
+			 */
+			this.findAndModify = function(query, update, options) {
+				try {
+					var doc
+					if (undefined !== options) {
+						doc = this.collection.findAndModify(Public.BSON.to(query), options.fields ? Public.BSON.to(options.fields) : null, options.sort ? Public.BSON.to(options.sort) : null, false, Public.BSON.to(update), options.returnNew || false, options.upsert || false)
+					}
+					else {
+						doc = this.collection.findAndModify(Public.BSON.to(query), Public.BSON.to(update))
+					}
+					Public.setLastStatus(this.connection, true)
+					return Public.BSON.from(doc)
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					if (x.javaException.code == MongoDB.Error.NotFound) {
+						// TODO?
+						return null
+					}
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
+			}
+			
+			// Document removal
+			
+			/**
+			 * Removes all documents matching the query.
+			 * 
+			 * @param query The query
+			 * @param [writeConcern] See {@link MongoDB#writeConcern}
+			 * @returns See {@link MongoDB#result}
 			 * @see #findAndRemove
 			 */
 			this.remove = function(query, writeConcern) {
 				try {
 					var result
 					if (undefined !== writeConcern) {
-						result = this.collection.remove(BSON.to(query), MongoDB.writeConcern(writeConcern))
+						result = this.collection.remove(Public.BSON.to(query), MongoDB.writeConcern(writeConcern))
 					}
 					else {
-						result = this.collection.remove(BSON.to(query))
+						result = this.collection.remove(Public.BSON.to(query))
 					}
 					Public.setLastStatus(this.connection, true)
 					return exists(result) ? Public.result(result) : null
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
+			}
+			
+			/**
+			 * Removes a single document and returns its last value.
+			 * 
+			 * @param query The query
+			 * @returns The document or null if not found
+			 * @see #remove
+			 */
+			this.findAndRemove = function(query) {
+				try {
+					var doc = this.collection.findAndRemove(Public.BSON.to(query))
+					Public.setLastStatus(this.connection, true)
+					return Public.BSON.from(doc)
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					if (x.javaException.code == MongoDB.Error.NotFound) {
+						// TODO?
+						return null
+					}
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return null
+				}
+			}
+			
+			/**
+			 * Drops the collection. You should not call any more methods on the collection
+			 * after calling this.
+			 */
+			this.drop = function() {
+				try {
+					this.collection.drop()
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+				}
+			}
+			
+			// Aggregate queries
+			
+			/**
+			 * Counts documents without fetching them.
+			 * 
+			 * @param [query] The query or null to count all documents
+			 * @returns {Number}
+			 */
+			this.count = function(query) {
+				try {
+					var count
+					if (query) {
+						count = this.collection.getCount(Public.BSON.to(query))
+					}
+					else {
+						count = this.collection.getCount()
+					}
+					Public.setLastStatus(this.connection, true)
+					return count
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return -1
+				}
+			}
+			
+			/**
+			 * Finds all distinct values of key.
+			 * 
+			 * @param {String} key
+			 * @param [query] The query or null
+			 * @returns {Array}
+			 */
+			this.distinct = function(key, query) {
+				try {
+					var list
+					if (query) {
+						list = this.collection.distinct(key, Public.BSON.to(query))
+					}
+					else {
+						list = this.collection.distinct(key)
+					}
+					Public.setLastStatus(this.connection, true)
+					return Public.BSON.from(list)
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
@@ -1222,10 +1375,10 @@ var MongoDB = MongoDB || function() {
 				var result
 				try {
 					if (!exists(outputType)) {
-						result = this.collection.mapReduce(String(mapFn), String(reduceFn), out, BSON.to(query))
+						result = this.collection.mapReduce(String(mapFn), String(reduceFn), out, Public.BSON.to(query))
 					}
 					else {
-						result = this.collection.mapReduce(String(mapFn), String(reduceFn), out, outputType, BSON.to(query))
+						result = this.collection.mapReduce(String(mapFn), String(reduceFn), out, outputType, Public.BSON.to(query))
 					}
 					Public.setLastStatus(this.connection, true)
 					return exists(result) ? new MongoDB.MapReduceResult(result, this.connection, this.swallow) : null
@@ -1239,35 +1392,20 @@ var MongoDB = MongoDB || function() {
 				}
 			}
 			
+			// Index management
+			
 			/**
-			 * Atomic find-and-modify on a single document.
+			 * Information about all indexes on the collection.
 			 * 
-			 * @param query The query
-			 * @param update The update
-			 * @param [options] Find-and-modify options
-			 * @param [options.fields] The fields to fetch
-			 * @param [options.sort] The sort to apply
-			 * @param {Boolean} [options.returnNew=false] True to return the modified document
-			 * @param {Boolean} [options.upsert=false] True to insert if not found
-			 * @returns The document or null if not found (see options.returnNew param)
+			 * @returns {Array}
 			 */
-			this.findAndModify = function(query, update, options) {
+			this.getIndexInfo = function() {
 				try {
-					var doc
-					if (undefined !== options) {
-						doc = this.collection.findAndModify(BSON.to(query), options.fields ? BSON.to(options.fields) : null, options.sort ? BSON.to(options.sort) : null, false, BSON.to(update), options.returnNew || false, options.upsert || false)
-					}
-					else {
-						doc = this.collection.findAndModify(BSON.to(query), BSON.to(update))
-					}
+					var info = Public.BSON.from(this.collection.indexInfo)
 					Public.setLastStatus(this.connection, true)
-					return BSON.from(doc)
+					return Public.BSON.from(info)
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
-					if (x.javaException.code == MongoDB.Error.NotFound) {
-						// TODO?
-						return null
-					}
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
 					if (x) {
 						throw x
@@ -1275,30 +1413,177 @@ var MongoDB = MongoDB || function() {
 					return null
 				}
 			}
-			
+
 			/**
-			 * Removes a single document and returns it.
+			 * Creates an index if it does not exist.
 			 * 
-			 * @param query The query
-			 * @returns The document or null if not found
-			 * @see #remove
+			 * @param index The index to create
+			 * @param [options] Index options
+			 * @returns {MongoDB.Collection}
 			 */
-			this.findAndRemove = function(query) {
+			this.ensureIndex = function(index, options) {
 				try {
-					var doc = this.collection.findAndRemove(BSON.to(query))
-					Public.setLastStatus(this.connection, true)
-					return BSON.from(doc)
+					if (options) {
+						this.collection.ensureIndex(Public.BSON.to(index), Public.BSON.to(options))
+					}
+					else {
+						this.collection.ensureIndex(Public.BSON.to(index))
+					}
+					// Will not do any operation if the cached collection instance
+					// thinks there is an index, so we cannot reliably assume the
+					// connection is working:
+					// Public.setLastStatus(this.connection, true)
+					return this
 				}
 				catch (x if x.javaException instanceof com.mongodb.MongoException) {
-					if (x.javaException.code == MongoDB.Error.NotFound) {
-						// TODO?
-						return null
-					}
 					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
 					if (x) {
 						throw x
 					}
-					return null
+					return this
+				}
+			}
+			
+			/**
+			 * Removes an index.
+			 * 
+			 * @param {String|Object} index The index name or descriptor
+			 * @returns {MongoDB.Collection}
+			 */
+			this.dropIndex = function(index) {
+				try {
+					if (isString(index)) {
+						this.collection.dropIndex(index)
+					}
+					else {
+						this.collection.dropIndex(Public.BSON.to(index))
+					}
+					Public.setLastStatus(this.connection, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
+			}
+			
+			// Options
+			
+			/**
+			 * Removes all options.
+			 * 
+			 * @returns {MongoDB.Collection} This collection
+			 */
+			this.resetOptions = function() {
+				try {
+					this.collection.resetOptions()
+					Public.setLastStatus(this.connection, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
+			}
+			
+			/**
+			 * Gets the collection's options.
+			 * 
+			 * @returns {String[]} The options
+			 * @see MongoDB.QueryOption
+			 */
+			this.getOptions = function() {
+				try {
+					var options = []
+					var bits = this.collection.options
+					Public.setLastStatus(this.connection, true)
+					for (var o in Public.QueryOption) {
+						var option = Public.QueryOption[o]
+						if (bits & option) {
+							options.push(o)
+						}
+					}
+					return options
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
+			}
+			
+			/**
+			 * Sets the collection's options.
+			 * 
+			 * @param {String[]|Number} options The options
+			 * @returns {MongoDB.Collection} This collection
+			 * @see MongoDB.QueryOption
+			 */
+			this.setOptions = function(options) {
+				var bits = 0
+				if (typeof options == 'number') {
+					bits = options
+				}
+				else if (typeof options == 'object') {
+					// Array of strings
+					for (var o in options) {
+						var option = Public.QueryOption[options[o]]
+						if (option) {
+							bits |= option
+						}
+					}
+				}
+				try {
+					this.collection.setOptions(bits)
+					Public.setLastStatus(this.connection, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
+				}
+			}
+			
+			/**
+			 * Adds a collection option.
+			 * 
+			 * @param {String|Number} option The option to add
+			 * @returns {MongoDB.Collection} This collection
+			 * @see MongoDB.QueryOption
+			 */
+			this.addOption = function(option) {
+				var bits = 0
+				if (typeof option == 'number') {
+					bits = option
+				}
+				else if (typeof option == 'string') {
+					option = Public.QueryOption[option]
+					if (option) {
+						bits = option
+					}
+				}
+				try {
+					this.collection.addOption(bits)
+					Public.setLastStatus(this.connection, true)
+					return this
+				}
+				catch (x if x.javaException instanceof com.mongodb.MongoException) {
+					x = MongoDB.exception(x.javaException, this.connection, this.swallow)
+					if (x) {
+						throw x
+					}
+					return this
 				}
 			}
 			
@@ -1307,12 +1592,17 @@ var MongoDB = MongoDB || function() {
 			//
 			
 			config = config || {}
+			this.swallow = exists(config.swallow) ? config.swallow : Public.defaultSwallow
 			this.connection = exists(config.connection) ? config.connection : Public.defaultConnection
 			this.db = exists(config.db) ? config.db : Public.defaultDb
-			this.swallow = exists(config.swallow) ? config.swallow : Public.defaultSwallow
-
-			if (isString(this.db)) {
-				this.db = this.connection.getDB(this.db)
+					
+			if (exists(this.db) && !(this.db instanceof com.mongodb.DB)) {
+				if (isString(this.db)) {
+					this.db = Public.getDB(this.connection, this.db)
+				}
+				else {
+					this.db = Public.getDB(this.connection, this.db.name, config.username, config.password)
+				}
 			}
 
 			this.collection = exists(config.collection) ? config.collection : (exists(this.db) ? this.db.getCollection(name) : null)
@@ -1367,7 +1657,7 @@ var MongoDB = MongoDB || function() {
 	//
 	// Construction
 	//
-
+	
 	// Initialize default connection
 	Public.defaultConnection = getGlobal('mongoDb.defaultConnection')
 	if (!exists(Public.defaultConnection)) {
@@ -1381,8 +1671,14 @@ var MongoDB = MongoDB || function() {
 	if (exists(Public.defaultConnection)) {
 		Public.defaultDb = getGlobal('mongoDb.defaultDb')
 		
-		if (exists(Public.defaultDb) && isString(Public.defaultDb)) {
-			Public.defaultDb = Public.defaultConnection.getDB(Public.defaultDb)
+		if (exists(Public.defaultDb) && !(Public.defaultDb instanceof com.mongodb.DB)) {
+			if (isString(Public.defaultDb)) {
+				Public.defaultDb = Public.getDB(Public.defaultConnection, Public.defaultDb)
+			}
+			else {
+				Public.defaultDb = Public.getDB(Public.defaultConnection, Public.defaultDb.name, Public.defaultDb.username, Public.defaultDb.password)
+			}
+			Public.defaultDb = application.getGlobal('mongoDb.defaultDb', Public.defaultDb)
 		}
 	}
 	

@@ -32,7 +32,7 @@ function handleGet(conversation) {
 		if (query.charAt(0) != '{') {
 			query = '{' + query + '}'
 		}
-		query = JSON.from(query, true)
+		query = MongoDB.JSON.from(query, true)
 	}
 	if (sort) {
 		if (sort.substr(0, tabularKeyPrefix.length) == tabularKeyPrefix) {
@@ -44,7 +44,7 @@ function handleGet(conversation) {
 		if (sort.charAt(0) != '{') {
 			sort = '{' + sort + '}'
 		}
-		sort = JSON.from(sort, true)
+		sort = MongoDB.JSON.from(sort, true)
 	}
 	if (start) {
 		start = parseInt(start)
@@ -104,7 +104,7 @@ function handleGet(conversation) {
 		}
 	}
 	catch (x) {
-		application.logger.warning(JSON.to(x))
+		application.logger.warning(MongoDB.JSON.to(x))
 		
 		result = {
 			success: false,
@@ -122,7 +122,7 @@ function handleGet(conversation) {
 	//java.lang.Thread.sleep(3000)
 	
 	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
-	return JSON.to(result, conversation.query.get('human') == 'true')
+	return MongoDB.JSON.to(result, conversation.query.get('human') == 'true')
 }
 
 function handlePut(conversation) {
@@ -133,7 +133,7 @@ function handlePut(conversation) {
 	if (null === text) {
 		return 400
 	}
-	var data = JSON.from(text, true)
+	var data = MongoDB.JSON.from(text, true)
 	if (!data.document) {
 		return 400
 	}
@@ -177,5 +177,5 @@ function handlePut(conversation) {
 	}
 
 	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
-	return JSON.to(result, conversation.query.get('human') == 'true')
+	return MongoDB.JSON.to(result, conversation.query.get('human') == 'true')
 }

@@ -28,7 +28,7 @@ function handlePost(conversation) {
 	if (null === text) {
 		return 400
 	}
-	var data = JSON.from(text, true)
+	var data = MongoDB.JSON.from(text, true)
 	if (!data.document) {
 		return 400
 	}
@@ -74,7 +74,7 @@ function handlePost(conversation) {
 	}
 	
 	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
-	return JSON.to(result, conversation.query.get('human') == 'true')
+	return MongoDB.JSON.to(result, conversation.query.get('human') == 'true')
 }
 
 function handleDelete(conversation) {
@@ -121,5 +121,5 @@ function handleDelete(conversation) {
 	}
 
 	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
-	return JSON.to(result, conversation.query.get('human') == 'true')
+	return MongoDB.JSON.to(result, conversation.query.get('human') == 'true')
 }

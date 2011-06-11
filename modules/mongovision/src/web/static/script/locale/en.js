@@ -20,7 +20,11 @@ Ext.namespace('MongoVision');
 MongoVision.text = {
 	collections: 'Collections',
 	connect: 'Connect',
-	connectPrompt: 'Enter one or MongoDB host addresses separated by commas:',
+	'connect.addresses': 'Addresses',
+	'connect.username': 'Username',
+	'connect.password': 'Password',
+	'connect.prompt1': 'One or more host addresses separated by commas',
+	'connect.prompt2': 'Credentials if required',
 	noDocuments: 'No documents to display',
 	documentsDisplayed: 'Documents {0} to {1} of {2}',
 	keepRefreshing: 'Keep Refreshing',

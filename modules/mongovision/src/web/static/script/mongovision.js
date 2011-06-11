@@ -87,31 +87,106 @@ Ext.define('MongoVision.DatabasesPanel', {
 				}, {
 					text: MongoVision.text.connect,
 					handler: Ext.bind(function() {
-						Ext.Msg.prompt(MongoVision.text.connect, MongoVision.text.connectPrompt, Ext.bind(function(button, text) {
-							if (button == 'ok') {
-								Ext.Ajax.request({
-									url: 'connection/',
-									method: 'PUT',
-									jsonData: {
-										uris: text.split(',')
-									},
-									success: Ext.bind(function(response) {
-										var data = Ext.decode(response.responseText)
-										Ext.gritter.add({
-											title: MongoVision.text.connect,
-											text: data.master
-										}); 
-										this.store.load();
-									}, this),
-									failure: function(response) {
-										Ext.gritter.add({
-											title: MongoVision.text.connect,
-											text: MongoVision.text.exception
-										}); 
-									}
-								});
+						var connect = Ext.bind(function(el) {
+							var form = el.up('form').getForm();
+							if (!form.isValid()) {
+								return;
 							}
-						}, this), null, false, '');
+							
+							var values = form.getValues();
+							el.up('window').destroy();
+							Ext.Ajax.request({
+								url: 'connection/',
+								method: 'PUT',
+								jsonData: {
+									uris: values.uris.split(','),
+									username: values.username || null,
+									password: values.password || null
+								},
+								success: Ext.bind(function(response) {
+									var data = Ext.decode(response.responseText)
+									Ext.gritter.add({
+										title: MongoVision.text.connect,
+										text: data.master
+									}); 
+									this.store.load();
+								}, this),
+								failure: function(response) {
+									Ext.gritter.add({
+										title: MongoVision.text.connect,
+										text: MongoVision.text.exception
+									}); 
+								}
+							});
+						}, this);
+						
+						Ext.create('Ext.window.Window', {
+							title: MongoVision.text.connect,
+							layout: 'fit',
+							items: {
+								xtype: 'form',
+								border: 'false',
+								bodyPadding: 10,
+								layout: 'anchor',
+								defaults: {
+									anchor: '100%'
+								},
+								items: [{
+									xtype: 'fieldset',
+									title: MongoVision.text['connect.prompt1'],
+									layout: 'anchor',
+									defaults: {
+										anchor: '100%'
+									},
+									defaultType: 'textfield',
+									items: [{
+										fieldLabel: MongoVision.text['connect.addresses'],
+										name: 'uris',
+										listeners: {
+											specialkey: function(field, e) {
+												if (e.getKey() == e.ENTER) {
+													connect(field);
+												}
+											}
+										}
+									}]
+								}, {
+									xtype: 'fieldset',
+									title: MongoVision.text['connect.prompt2'],
+									layout: 'anchor',
+									defaults: {
+										anchor: '100%'
+									},
+									defaultType: 'textfield',
+									items: [{
+										fieldLabel: MongoVision.text['connect.username'],
+										name: 'username',
+										listeners: {
+											specialkey: function(field, e) {
+												if (e.getKey() == e.ENTER) {
+													connect(field);
+												}
+											}
+										}
+									}, {
+										fieldLabel: MongoVision.text['connect.password'],
+										name: 'password',
+										inputType: 'password',
+										listeners: {
+											specialkey: function(field, e) {
+												if (e.getKey() == e.ENTER) {
+													connect(field);
+												}
+											}
+										}
+									}]
+								}],
+								buttons: [{
+									text: 'Connect',
+									handler: connect
+								}]
+							}
+						}).show()
 					}, this)
 				}]
 			}],
@@ -158,6 +233,7 @@ Ext.define('MongoVision.CollectionPanel', {
 	alias: 'widget.mv-collection',
 	extend: 'Ext.panel.Panel',
 
+	stateful: false,
 	wrap: true,
 	
 	constructor: function(config) {

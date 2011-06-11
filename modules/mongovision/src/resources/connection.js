@@ -29,7 +29,7 @@ function handleGet(conversation) {
 		connection = {}
 	}
 	
-	return JSON.to(connection, conversation.query.get('human') == 'true')
+	return MongoDB.JSON.to(connection, conversation.query.get('human') == 'true')
 }
 
 function handlePut(conversation) {
@@ -37,7 +37,7 @@ function handlePut(conversation) {
 	if (null === text) {
 		return 400
 	}
-	var data = JSON.from(text, true)
+	var data = MongoDB.JSON.from(text, true)
 	
 	var connection = application.globals.get('mongovision.connection')
 	if (null !== connection) {
@@ -51,7 +51,7 @@ function handlePut(conversation) {
 	application.globals.remove('mongovision.connection')
 	
 	try {
-		connection = MongoDB.connect(data.uris, data.options)
+		connection = MongoDB.connect(data.uris, data.options, data.username, data.password)
 		application.globals.put('mongovision.connection', connection)
 	}
 	catch (x) {
