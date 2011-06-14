@@ -335,6 +335,7 @@ Ext.define('MongoVision.CollectionPanel', {
 		
 		this.dataView = Ext.create('Ext.view.View', {
 			id: config.mvCollection + '/dataView',
+			stateful: false,
 			store: this.store,
 			tpl: tpl,
 			autoScroll: true,
@@ -377,6 +378,7 @@ Ext.define('MongoVision.CollectionPanel', {
 				emptyMsg: MongoVision.text.noDocuments,
 				items: [{
 					id: config.mvCollection + '-keepRefreshing',
+					stateful: false,
 					enableToggle: true,
 					text: MongoVision.text.keepRefreshing,
 					toggleHandler: Ext.bind(function(button, pressed) {
@@ -395,6 +397,7 @@ Ext.define('MongoVision.CollectionPanel', {
 					}, this)
 				}, '-', {
 					id: config.mvCollection + '-wrap',
+					stateful: false,
 					pressed: this.wrap,
 					enableToggle: true,
 					text: MongoVision.text.wrap,
@@ -431,6 +434,7 @@ Ext.define('MongoVision.CollectionPanel', {
 					plugins: Ext.create('Ext.ux.TextFieldPopup'),
 					title: MongoVision.text.sort,
 					id: config.mvCollection + '/sort',
+					stateful: false,
 					width: 150,
 					listeners: {
 						specialkey: Ext.bind(function(textfield, event) {
@@ -449,6 +453,7 @@ Ext.define('MongoVision.CollectionPanel', {
 					xtype: 'textfield',
 					plugins: Ext.create('Ext.ux.TextFieldPopup'),
 					id: config.mvCollection + '/query',
+					stateful: false,
 					title: MongoVision.text.query,
 					width: 150,
 					listeners: {
@@ -514,6 +519,7 @@ Ext.define('MongoVision.CollectionPanel', {
 		// New grid
 		grid = Ext.create('Ext.grid.Panel', {
 			id: this.mvCollection + '/gridView',
+			stateful: false,
 			store: this.store,
 			columns: columns,
 			border: false,
@@ -860,6 +866,7 @@ Ext.onReady(function() {
 		layout: 'border',
 		items: [{
 			region: 'north',
+			id: 'header-container',
 			margins: '0 0 0 0',
 			border: false,
 			padding: '5 10 5 10',
@@ -903,6 +910,7 @@ Ext.onReady(function() {
 			}
 		}, {
 			xtype: 'mv-databases',
+			id: 'mv-databases',
 			region: 'west',
 			collapsible: true,
 			margins: '0 0 20 20',
