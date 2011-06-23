@@ -56,8 +56,8 @@ Ext.define('Ext.ux.TextFieldPopup', {
 		}, this, [textfield]);
 		
 		textfield.addEvents({'popup': true});
-		textfield.on('render', function(textfield) {
-			textfield.getEl().on('dblclick', popup);
+		textfield.mon('render', function(textfield) {
+			textfield.getEl().mon('dblclick', popup);
 		});
 	}
 });
