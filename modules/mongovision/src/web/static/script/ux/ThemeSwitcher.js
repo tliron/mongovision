@@ -84,7 +84,7 @@ Ext.define('Ext.ux.ThemeSwitcher', {
 		
 		this.callParent([config]);
 
-		this.mon('select', function(combo, selections) {
+		this.on('select', function(combo, selections) {
 			var record = selections[0];
 			this.doSwitch(record.get('id'));
 		})

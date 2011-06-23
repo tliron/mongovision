@@ -572,7 +572,7 @@ Ext.define('MongoVision.CollectionPanel', {
 		if (index < 0) {
 			// Move to previous page, if available
 			if (this.store.currentPage > 1) {
-				this.store.mon('load', Ext.bind(function() {
+				this.store.on('load', Ext.bind(function() {
 					// Select last record on page
 					var index = this.store.getCount() - 1;
 					this.select(index);
@@ -595,7 +595,7 @@ Ext.define('MongoVision.CollectionPanel', {
 			// Move to next page, if available
 			var pages = Math.ceil(this.store.getTotalCount() / this.store.pageSize);
 			if (this.store.currentPage < pages) {
-				this.store.mon('load', Ext.bind(function() {
+				this.store.on('load', Ext.bind(function() {
 					// Select first record on page
 					this.select(0);
 				}, this), {

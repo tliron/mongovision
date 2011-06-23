@@ -43,9 +43,9 @@ Ext.define('Ext.ux.LoadMask', {
 					this.treeLoader.un('exception', loadmask.onLoad);
 				}.createDelegate(this);
 
-				this.treeLoader.mon('beforeload', loadmask.onBeforeLoad, loadmask, {delay: 1});
-				this.treeLoader.mon('load', loadmask.onLoad, loadmask);
-				this.treeLoader.mon('exception', loadmask.onLoad, loadmask);
+				this.treeLoader.on('beforeload', loadmask.onBeforeLoad, loadmask, {delay: 1});
+				this.treeLoader.on('load', loadmask.onLoad, loadmask);
+				this.treeLoader.on('exception', loadmask.onLoad, loadmask);
 			}
 		}.createDelegate(this));
 	}
