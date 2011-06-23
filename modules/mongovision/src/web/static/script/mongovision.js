@@ -572,11 +572,11 @@ Ext.define('MongoVision.CollectionPanel', {
 		if (index < 0) {
 			// Move to previous page, if available
 			if (this.store.currentPage > 1) {
-				this.store.on('load', Ext.bind(function() {
+				this.store.on('load', function() {
 					// Select last record on page
 					var index = this.store.getCount() - 1;
 					this.select(index);
-				}, this), {
+				}, this, {
 					single: true
 				});
 				this.getDockedComponent('bottom').movePrevious();
@@ -595,10 +595,10 @@ Ext.define('MongoVision.CollectionPanel', {
 			// Move to next page, if available
 			var pages = Math.ceil(this.store.getTotalCount() / this.store.pageSize);
 			if (this.store.currentPage < pages) {
-				this.store.on('load', Ext.bind(function() {
+				this.store.on('load', function() {
 					// Select first record on page
 					this.select(0);
-				}, this), {
+				}, this, {
 					single: true
 				});
 				this.getDockedComponent('bottom').moveNext();
