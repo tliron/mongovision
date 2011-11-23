@@ -1678,7 +1678,7 @@ var MongoDB = MongoDB || function() {
 			else {
 				Public.defaultDb = Public.getDB(Public.defaultConnection, Public.defaultDb.name, Public.defaultDb.username, Public.defaultDb.password)
 			}
-			Public.defaultDb = application.getGlobal('mongoDb.defaultDb', Public.defaultDb)
+			Public.defaultDb = application.globals.putIfAbsent('mongoDb.defaultDb', Public.defaultDb)
 		}
 	}
 	
