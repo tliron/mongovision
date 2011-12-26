@@ -16,7 +16,7 @@
 		<attribute name="library" />
 		<sequential>
 			<copy todir="@{dist}/licenses/@{library}">
-				<fileset dir="${lib}/@{library}/license" excludes="**/.svn/" />
+				<fileset dir="${lib}/@{library}/license" />
 			</copy>
 		</sequential>
 	</macrodef>
@@ -27,7 +27,7 @@
 		<sequential>
 			<fetch-license dist="@{dist}" library="@{library}" />
 			<copy todir="@{dist}/libraries/">
-				<fileset dir="${lib}/@{library}/lib" excludes="**/.svn/" />
+				<fileset dir="${lib}/@{library}/lib" />
 				<fileset dir="${lib}" includes="*.txt" />
 			</copy>
 		</sequential>
@@ -47,22 +47,22 @@
 	
 	<target name="application" depends="libraries" description="Fetch MongoVision application">
 		<copy todir="${tmp}/mongovision">
-			<fileset dir="${src}" excludes="**/.svn/" />
+			<fileset dir="${src}" />
 		</copy>
 		<copy todir="${tmp}/mongovision/web/static/script/ext">
 			<fileset dir="${lib}/ext-js/lib/script" includes="**/*.js" />
 		</copy>
 		<copy todir="${tmp}/mongovision/web/static/style/ext/style">
-			<fileset dir="${lib}/ext-js/lib/style" excludes="**/.svn/" />
+			<fileset dir="${lib}/ext-js/lib/style" />
 		</copy>
 		<copy todir="${tmp}/mongovision/web/static/style/ext/resources">
-			<fileset dir="${lib}/ext-js/lib/resources" excludes="**/.svn/" />
+			<fileset dir="${lib}/ext-js/lib/resources" />
 		</copy>
 		<copy todir="${tmp}/mongovision/web/static/script/ux">
 			<fileset dir="${lib}/gritter/lib" includes="*.js" />
 		</copy>
 		<copy todir="${tmp}/mongovision/web/static/style/ux/gritter">
-			<fileset dir="${lib}/gritter/lib/resources" excludes="**/.svn/" />
+			<fileset dir="${lib}/gritter/lib/resources" />
 		</copy>
 		<replace dir="${tmp}/mongovision" includes="settings.js" token="%VERSION%" value="${version}" />
 		<zip destfile="${dist-debug}/mongovision-debug.prudence.zip" basedir="${tmp}" includes="**/*" level="9" />
@@ -78,13 +78,13 @@
 
 	<target name="deploy" depends="application" description="Fetch deployment">
 		<copy todir="${dist-debug}">
-			<fileset dir="${deploy}" excludes="**/.svn/" />
+			<fileset dir="${deploy}" />
 		</copy>
 		<copy todir="${dist-standard}">
-			<fileset dir="${deploy}" excludes="**/.svn/" />
+			<fileset dir="${deploy}" />
 		</copy>
 		<copy todir="${dist-minimal}">
-			<fileset dir="${deploy}" excludes="**/.svn/" />
+			<fileset dir="${deploy}" />
 		</copy>
 	</target>
 	
