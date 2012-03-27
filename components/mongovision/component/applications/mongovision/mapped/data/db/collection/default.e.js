@@ -1,8 +1,8 @@
 //
-// Copyright 2010-2011 Three Crickets LLC.
+// Copyright 2010-2012 Three Crickets LLC.
 //
 // The contents of this file are subject to the terms of the Apache License
-// version 2.0: http://www.opensource.org/licenses/apache2.0.php
+// version 2.0: http://www.apache.org/licenses/LICENSE-2.0.txt
 // 
 // Alternatively, you can obtain a royalty free commercial license with less
 // limitations, transferable or non-transferable, directly from Three Crickets
@@ -10,6 +10,7 @@
 //
 
 document.executeOnce('/mongo-db/')
+document.executeOnce('/sincerity/json/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -32,7 +33,7 @@ function handleGet(conversation) {
 		if (query.charAt(0) != '{') {
 			query = '{' + query + '}'
 		}
-		query = MongoDB.JSON.from(query, true)
+		query = Sincerity.JSON.from(query, true)
 	}
 	if (sort) {
 		if (sort.substr(0, tabularKeyPrefix.length) == tabularKeyPrefix) {
@@ -44,7 +45,7 @@ function handleGet(conversation) {
 		if (sort.charAt(0) != '{') {
 			sort = '{' + sort + '}'
 		}
-		sort = MongoDB.JSON.from(sort, true)
+		sort = Sincerity.JSON.from(sort, true)
 	}
 	if (start) {
 		start = parseInt(start)
@@ -104,7 +105,7 @@ function handleGet(conversation) {
 		}
 	}
 	catch (x) {
-		application.logger.warning(MongoDB.JSON.to(x))
+		application.logger.warning(Sincerity.JSON.to(x))
 		
 		result = {
 			success: false,
@@ -122,7 +123,7 @@ function handleGet(conversation) {
 	//java.lang.Thread.sleep(3000)
 	
 	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
-	return MongoDB.JSON.to(result, conversation.query.get('human') == 'true')
+	return Sincerity.JSON.to(result, conversation.query.get('human') == 'true')
 }
 
 function handlePut(conversation) {
@@ -133,7 +134,7 @@ function handlePut(conversation) {
 	if (null === text) {
 		return 400
 	}
-	var data = MongoDB.JSON.from(text, true)
+	var data = Sincerity.JSON.from(text, true)
 	if (!data.document) {
 		return 400
 	}
@@ -177,5 +178,5 @@ function handlePut(conversation) {
 	}
 
 	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
-	return MongoDB.JSON.to(result, conversation.query.get('human') == 'true')
+	return Sincerity.JSON.to(result, conversation.query.get('human') == 'true')
 }

@@ -1,8 +1,8 @@
 //
-// Copyright 2010-2011 Three Crickets LLC.
+// Copyright 2010-2012 Three Crickets LLC.
 //
 // The contents of this file are subject to the terms of the Apache License
-// version 2.0: http://www.opensource.org/licenses/apache2.0.php
+// version 2.0: http://www.apache.org/licenses/LICENSE-2.0.txt
 // 
 // Alternatively, you can obtain a royalty free commercial license with less
 // limitations, transferable or non-transferable, directly from Three Crickets
@@ -10,6 +10,7 @@
 //
 
 document.executeOnce('/mongo-db/')
+document.executeOnce('/sincerity/json/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -28,7 +29,7 @@ function handlePost(conversation) {
 	if (null === text) {
 		return 400
 	}
-	var data = MongoDB.JSON.from(text, true)
+	var data = Sincerity.JSON.from(text, true)
 	if (!data.document) {
 		return 400
 	}
@@ -74,7 +75,7 @@ function handlePost(conversation) {
 	}
 	
 	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
-	return MongoDB.JSON.to(result, conversation.query.get('human') == 'true')
+	return Sincerity.JSON.to(result, conversation.query.get('human') == 'true')
 }
 
 function handleDelete(conversation) {
@@ -121,5 +122,5 @@ function handleDelete(conversation) {
 	}
 
 	conversation.modificationTimestamp = java.lang.System.currentTimeMillis()
-	return MongoDB.JSON.to(result, conversation.query.get('human') == 'true')
+	return Sincerity.JSON.to(result, conversation.query.get('human') == 'true')
 }

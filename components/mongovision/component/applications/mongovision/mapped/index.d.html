@@ -1,4 +1,15 @@
 <%
+//
+// Copyright 2010-2012 Three Crickets LLC.
+//
+// The contents of this file are subject to the terms of the Apache License
+// version 2.0: http://www.apache.org/licenses/LICENSE-2.0.txt
+// 
+// Alternatively, you can obtain a royalty free commercial license with less
+// limitations, transferable or non-transferable, directly from Three Crickets
+// at http://threecrickets.com/
+//
+
 document.cacheDuration = 5000
 
 var locale = conversation.query.get('locale') || application.globals.get('mongovision.locale') || 'en'
@@ -14,9 +25,9 @@ if (theme) {
 	}
 }
 
-theme = conversation.query.get('theme') || theme || application.globals.get('mongovision.theme') || 'gray'
+theme = conversation.query.get('theme') || theme || application.globals.get('mongovision.extJs.theme') || 'gray'
 
-var debug = conversation.query.get('debug') || application.globals.get('mongovision.extJS.debug') || 'true'
+var debug = conversation.query.get('debug') || application.globals.get('mongovision.extJs.debug') || 'true'
 if (debug.booleanValue) {
 	debug = debug.booleanValue()
 }
@@ -30,29 +41,29 @@ else if (typeof debug == 'string') {
 	<link rel="shortcut icon" href="media/mongovision.ico" />
 <% if (debug) { %>
 	<!-- Ext JS Debug -->
-	<link rel="stylesheet" type="text/css" href="style/ext/style/css/ext-all<%= theme == 'blue' ? '' : '-' + theme %>.css" id="ext-theme" />
-	<script type="text/javascript" src="script/ext/ext-debug.js"></script>
+	<link rel="stylesheet" type="text/css" href="style/ext-js/style/css/ext-all<%= theme == 'blue' ? '' : '-' + theme %>.css" id="ext-theme" />
+	<script type="text/javascript" src="scripts/ext-js/ext-debug.js"></script>
 <% } else { %>
 	<!-- Ext JS -->
-	<link rel="stylesheet" type="text/css" href="style/ext/style/css/ext-all<%= theme == 'blue' ? '' : '-' + theme %>.css" id="ext-theme" />
-	<script type="text/javascript" src="script/ext/ext-all.js"></script>
+	<link rel="stylesheet" type="text/css" href="style/ext-js/style/css/ext-all<%= theme == 'blue' ? '' : '-' + theme %>.css" id="ext-theme" />
+	<script type="text/javascript" src="scripts/ext-js/ext-all.js"></script>
 <% } %>
 	<!-- MongoVision's Ext JS Extensions -->
-	<script type="text/javascript" src="script/ux/HumanJSON.js"></script>
-	<script type="text/javascript" src="script/ux/LoadMask.js"></script>
-	<script type="text/javascript" src="script/ux/PerPage.js"></script>
-	<script type="text/javascript" src="script/ux/TextFieldPopup.js"></script>
-	<script type="text/javascript" src="script/ux/ThemeSwitcher.js"></script>
+	<script type="text/javascript" src="scripts/ux/HumanJSON.js"></script>
+	<script type="text/javascript" src="scripts/ux/LoadMask.js"></script>
+	<script type="text/javascript" src="scripts/ux/PerPage.js"></script>
+	<script type="text/javascript" src="scripts/ux/TextFieldPopup.js"></script>
+	<script type="text/javascript" src="scripts/ux/ThemeSwitcher.js"></script>
 
 	<!-- Gritter Ext JS Extension (https://github.com/zir/ext-growl) -->
 	<link rel="stylesheet" type="text/css" href="style/ux/gritter/css/ext-growl.css" />
-	<script type="text/javascript" src="script/ux/ext-growl.js"></script>
+	<script type="text/javascript" src="scripts/ux/ext-growl.js"></script>
 
 	<!-- MongoVision -->
 	<link rel="stylesheet" type="text/css" href="style/mongovision-base.css" />
 	<link rel="stylesheet" type="text/css" href="style/mongovision-<%= theme %>.css" id="mongovision-theme" />
-	<script type="text/javascript" src="script/locale/<%= locale %>.js"></script>
-	<script type="text/javascript" src="script/mongovision.js"></script>
+	<script type="text/javascript" src="scripts/locale/<%= locale %>.js"></script>
+	<script type="text/javascript" src="scripts/mongovision.js"></script>
 <% if (debug) { %>
 	<script type="text/javascript">
 		Ext.onReady(function() {

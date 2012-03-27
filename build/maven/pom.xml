@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.threecrickets.mongovision</groupId>
+	<artifactId>mongovision</artifactId>
+	<version>1.1</version>
+	<packaging>pom</packaging>
+
+	<name>MongoVision</name>
+	<description>A MongoDB web frontend based on Prudence.</description>
+	<url>http://threecrickets.com/savory/</url>
+	<inceptionYear>2011</inceptionYear>
+
+	<scm>
+		<connection>scm:git:https://code.google.com/p/mongo-vision/</connection>
+		<url>http://code.google.com/p/mongo-vision/source/browse/</url>
+	</scm>
+
+	<organization>
+		<name>Three Crickets LLC</name>
+		<url>http://threecrickets.com/</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>tal.liron</id>
+			<name>Tal Liron</name>
+			<email>tal.liron@threecrickets.com</email>
+			<timezone>-6</timezone>
+		</developer>
+	</developers>
+
+	<mailingLists>
+		<mailingList>
+			<name>The Prudence Community</name>
+			<archive>https://groups.google.com/forum/#!forum/prudence-community</archive>
+		</mailingList>
+	</mailingLists>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.threecrickets.prudence</groupId>
+			<artifactId>prudence-skeleton</artifactId>
+			<version>2.0-beta1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.threecrickets.sincerity.library</groupId>
+			<artifactId>sincerity-mongodb</artifactId>
+			<version>1.69</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sencha</groupId>
+			<artifactId>ext-js</artifactId>
+			<version>4.0.7</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<directory>../cache/maven</directory>
+
+		<plugins>
+			<!-- jar artifact -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<archive>
+								<manifestEntries>
+									<Package-Folders>package</Package-Folders>
+								</manifestEntries>
+							</archive>
+							<descriptors>
+								<descriptor>package.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
