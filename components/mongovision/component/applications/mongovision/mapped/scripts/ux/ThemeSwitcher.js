@@ -1,8 +1,8 @@
 //
-// Copyright 2010-2011 Three Crickets LLC.
+// Copyright 2010-2012 Three Crickets LLC.
 //
 // The contents of this file are subject to the terms of the Apache License
-// version 2.0: http://www.opensource.org/licenses/apache2.0.php
+// version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Alternatively, you can obtain a royalty free commercial license with less
 // limitations, transferable or non-transferable, directly from Three Crickets
@@ -50,6 +50,8 @@ Ext.define('Ext.ux.ThemeSwitcher', {
 					current = current.getAttribute('href');
 					for (var t = 0, length2 = config.themes.length; t < length2; t++) {
 						var theme = config.themes[t];
+						console.log(current)
+						console.log(styleSheet.prefix + theme.postfix)
 						if (current == (styleSheet.prefix + theme.postfix)) {
 							return theme.id;
 						}

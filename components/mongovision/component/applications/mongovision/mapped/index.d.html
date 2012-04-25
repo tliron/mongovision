@@ -3,7 +3,7 @@
 // Copyright 2010-2012 Three Crickets LLC.
 //
 // The contents of this file are subject to the terms of the Apache License
-// version 2.0: http://www.apache.org/licenses/LICENSE-2.0.txt
+// version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Alternatively, you can obtain a royalty free commercial license with less
 // limitations, transferable or non-transferable, directly from Three Crickets
@@ -25,6 +25,13 @@ if (theme) {
 	}
 }
 
+var css = {
+	gray: 'ext-all-gray.css',
+	blue: 'ext-all.css',
+	access: 'ext-all-access.css',
+	neptune: 'ext-neptune.css',
+}
+
 theme = conversation.query.get('theme') || theme || application.globals.get('mongovision.extJs.theme') || 'gray'
 
 var debug = conversation.query.get('debug') || application.globals.get('mongovision.extJs.debug') || 'true'
@@ -41,11 +48,11 @@ else if (typeof debug == 'string') {
 	<link rel="shortcut icon" href="media/mongovision.ico" />
 <% if (debug) { %>
 	<!-- Ext JS Debug -->
-	<link rel="stylesheet" type="text/css" href="style/ext-js/style/css/ext-all<%= theme == 'blue' ? '' : '-' + theme %>.css" id="ext-theme" />
+	<link rel="stylesheet" type="text/css" href="style/ext-js/style/css/<%= css[theme] %>" id="ext-theme" />
 	<script type="text/javascript" src="scripts/ext-js/ext-debug.js"></script>
 <% } else { %>
 	<!-- Ext JS -->
-	<link rel="stylesheet" type="text/css" href="style/ext-js/style/css/ext-all<%= theme == 'blue' ? '' : '-' + theme %>.css" id="ext-theme" />
+	<link rel="stylesheet" type="text/css" href="style/ext-js/style/css/<%= css[theme] %>" id="ext-theme" />
 	<script type="text/javascript" src="scripts/ext-js/ext-all.js"></script>
 <% } %>
 	<!-- MongoVision's Ext JS Extensions -->

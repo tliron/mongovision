@@ -1,8 +1,8 @@
 //
-// Copyright 2010-2011 Three Crickets LLC.
+// Copyright 2010-2012 Three Crickets LLC.
 //
 // The contents of this file are subject to the terms of the Apache License
-// version 2.0: http://www.opensource.org/licenses/apache2.0.php
+// version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Alternatively, you can obtain a royalty free commercial license with less
 // limitations, transferable or non-transferable, directly from Three Crickets
@@ -10,7 +10,7 @@
 //
 
 //
-// This file makes use of Ext JS 4.0.0.
+// This file makes use of Ext JS 4.1.0.
 // Copyright (c) 2006-2011, Sencha Inc.
 // All rights reserved.
 // licensing@sencha.com
@@ -887,43 +887,7 @@ Ext.onReady(function() {
 			border: false,
 			padding: '5 10 5 10',
 			bodyCls: 'x-border-layout-ct', // Uses the neutral background color
-			contentEl: 'header',
-			listeners: {
-				afterrender: function() {
-					Ext.create('Ext.panel.Panel', {
-						id: 'header',
-						renderTo: 'header-main',
-						border: false,
-						bodyCls: 'x-border-layout-ct', // Uses the neutral background color
-						padding: '0 20px 0 20px',
-						items: {
-							border: false,
-							bodyCls: 'x-border-layout-ct', // Uses the neutral background color
-							height: 50,
-							layout: 'vbox',
-							align: 'left',
-							items: [{
-								xtype: 'label',
-								text: MongoVision.text.theme
-							}, {
-								xtype: 'themeswitcher',
-								statefulThemeId: 'theme',
-								loadingText: MongoVision.text.switchingTheme,
-								layoutContainers: ['viewport', 'header'],
-								styleSheets: [
-									{id: 'ext-theme', prefix: 'style/ext/style/css/ext-all'},
-									{id: 'mv-theme', prefix: 'style/mongovision'}
-								],
-								themes: [
-									{id: 'gray', postfix: '-gray.css', label: MongoVision.text['theme.gray']},
-									{id: 'blue', postfix: '.css', label: MongoVision.text['theme.blue']},
-									{id: 'access', postfix: '-access.css', label: MongoVision.text['theme.accessible']}
-								]
-							}]
-						}
-					});
-				}
-			}
+			contentEl: 'header'
 		}, {
 			xtype: 'mv-databases',
 			id: 'mv-databases',
@@ -952,6 +916,44 @@ Ext.onReady(function() {
 				xtype: 'mv-editor',
 				height: 200
 			}]
-		}]
+		}],
+		listeners: {
+			afterrender: function() {
+				Ext.create('Ext.panel.Panel', {
+					id: 'header',
+					renderTo: 'header-main',
+					border: false,
+					bodyCls: 'x-border-layout-ct', // Uses the neutral background color
+					width: 200,
+					padding: '0 20px 0 20px',
+					items: {
+						border: false,
+						bodyCls: 'x-border-layout-ct', // Uses the neutral background color
+						height: 50,
+						layout: 'vbox',
+						align: 'left',
+						items: [{
+							xtype: 'label',
+							text: MongoVision.text.theme
+						}, {
+							xtype: 'themeswitcher',
+							statefulThemeId: 'theme',
+							loadingText: MongoVision.text.switchingTheme,
+							layoutContainers: ['viewport', 'header'],
+							styleSheets: [
+								{id: 'ext-theme', prefix: 'style/ext-js/style/css/ext-all'},
+								{id: 'mv-theme', prefix: 'style/mongovision'}
+							],
+							themes: [
+								{id: 'gray', postfix: '-gray.css', label: MongoVision.text['theme.gray']},
+								{id: 'blue', postfix: '.css', label: MongoVision.text['theme.blue']},
+								//{id: 'neptune', postfix: '-neptune.css', label: MongoVision.text['theme.neptune']},
+								{id: 'access', postfix: '-access.css', label: MongoVision.text['theme.accessible']}
+							]
+						}]
+					}
+				});
+			}
+		}
 	});
 });

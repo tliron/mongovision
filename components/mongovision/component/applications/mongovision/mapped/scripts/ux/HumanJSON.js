@@ -1,24 +1,13 @@
 //
-// Copyright 2010-2011 Three Crickets LLC.
+// Copyright 2010-2012 Three Crickets LLC.
 //
 // The contents of this file are subject to the terms of the Apache License
-// version 2.0: http://www.opensource.org/licenses/apache2.0.php
+// version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Alternatively, you can obtain a royalty free commercial license with less
 // limitations, transferable or non-transferable, directly from Three Crickets
 // at http://threecrickets.com/
 //
-
-/**
- * Ext.ux.HumanJSON
- *
- * A JSON encoder that supports optional multiline indenting, HTML vs. plain text,
- * and removing curly brackets from the root object. The point is to produce
- * human-readable JSON, not necessarily the most compact JSON.
- *
- * We've been inspired by the code in Ext.util.JSON, though have diverged
- * significantly. We also use some code from Douglas Crockford's json2.js.
-*/
 
 Ext.namespace('Ext.ux.HumanJSON');
 
