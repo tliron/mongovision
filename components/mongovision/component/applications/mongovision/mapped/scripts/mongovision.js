@@ -845,7 +845,7 @@ Ext.onReady(function() {
 			'<tpl if="tabIdx"> tabIndex="{tabIdx}"</tpl>',
 			' class="{fieldCls} {typeCls}" ',
 			'<tpl if="fieldStyle"> style="{fieldStyle}"</tpl>',
-			' autocomplete="off" spellcheck="off" wrap="off">\n',
+			' autocomplete="off" spellcheck="false" wrap="off">\n',
 			'<tpl if="value">{[Ext.util.Format.htmlEncode(values.value)]}</tpl>',
 		'</textarea>',
 	    {
@@ -868,7 +868,7 @@ Ext.onReady(function() {
 			'<tpl if="tabIdx"> tabIndex="{tabIdx}"</tpl>',
 			' class="{fieldCls} {typeCls}" ',
 			'<tpl if="fieldStyle"> style="{fieldStyle}"</tpl>',
-			' autocomplete="off" spellcheck="off">\n',
+			' autocomplete="off" spellcheck="false">\n',
 			'<tpl if="value">{[Ext.util.Format.htmlEncode(values.value)]}</tpl>',
 		'</textarea>',
 	    {
