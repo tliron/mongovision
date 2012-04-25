@@ -10,6 +10,7 @@
 //
 
 document.executeOnce('/mongo-db/')
+document.executeOnce('/sincerity/json/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -29,7 +30,7 @@ function handleGet(conversation) {
 		connection = {}
 	}
 	
-	return MongoDB.JSON.to(connection, conversation.query.get('human') == 'true')
+	return Sincerity.JSON.to(connection, conversation.query.get('human') == 'true')
 }
 
 function handlePut(conversation) {
@@ -37,7 +38,7 @@ function handlePut(conversation) {
 	if (null === text) {
 		return 400
 	}
-	var data = MongoDB.JSON.from(text, true)
+	var data = Sincerity.JSON.from(text, true)
 	
 	var connection = application.globals.get('mongovision.connection')
 	if (null !== connection) {

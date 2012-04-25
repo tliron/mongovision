@@ -104,10 +104,10 @@ Ext.define('MongoVision.DatabasesPanel', {
 									password: values.password || null
 								},
 								success: Ext.bind(function(response) {
-									var data = Ext.decode(response.responseText)
+									var data = Ext.decode(response.responseText);
 									Ext.gritter.add({
 										title: MongoVision.text.connect,
-										text: data.master
+										text: data.master || data.addresses[0]
 									}); 
 									this.store.load();
 								}, this),
@@ -744,6 +744,7 @@ Ext.define('MongoVision.EditorPanel', {
 			value: value,
 			enableKeyEvents: true,
 			fieldSubTpl: this.wrap ? MongoVision.noSpellCheckTextAreaTpl : MongoVision.noWrapTextAreaTpl,
+			fieldStyle: {border: 'none'},
 			listeners: {
 				keypress: {
 					fn: Ext.bind(function(textarea, event) {
@@ -768,7 +769,6 @@ Ext.define('MongoVision.EditorPanel', {
 		});
 		this.removeAll();
 		this.add(textarea);
-		this.doLayout();
 		return textarea;
 	},
 	
@@ -832,14 +832,22 @@ Ext.onReady(function() {
 
 	// See: http://www.sencha.com/forum/showthread.php?131656-TextArea-with-wrap-off
 	MongoVision.noWrapTextAreaTpl = Ext.create('Ext.XTemplate',
-	    '<textarea id="{id}" ',
-	        '<tpl if="name">name="{name}" </tpl>',
-	        '<tpl if="rows">rows="{rows}" </tpl>',
-	        '<tpl if="cols">cols="{cols}" </tpl>',
-	        '<tpl if="tabIdx">tabIndex="{tabIdx}" </tpl>',
-	        'class="{fieldCls} {typeCls}" style="border: none;" ',
-	        'autocomplete="off" spellcheck="false" wrap="off">',
-	    '</textarea>',
+		'<textarea id="{id}" ',
+			'<tpl if="name">name="{name}" </tpl>',
+			'<tpl if="rows">rows="{rows}" </tpl>',
+			'<tpl if="cols">cols="{cols}" </tpl>',
+			'<tpl if="cols"> cols="{cols}" </tpl>',
+			'<tpl if="placeholder"> placeholder="{placeholder}"</tpl>',
+			'<tpl if="size"> size="{size}"</tpl>',
+			'<tpl if="maxLength !== undefined"> maxlength="{maxLength}"</tpl>',
+			'<tpl if="readOnly"> readonly="readonly"</tpl>',
+			'<tpl if="disabled"> disabled="disabled"</tpl>',
+			'<tpl if="tabIdx">tabIndex="{tabIdx}"</tpl>',
+			' class="{fieldCls} {typeCls}" ',
+			'<tpl if="fieldStyle"> style="{fieldStyle}"</tpl>',
+			' autocomplete="off" spellcheck="off" wrap="off">\n',
+			'<tpl if="value">{[Ext.util.Format.htmlEncode(values.value)]}</tpl>',
+		'</textarea>',
 	    {
 	        compiled: true,
 	        disableFormats: true
@@ -847,14 +855,22 @@ Ext.onReady(function() {
 	);
 
 	MongoVision.noSpellCheckTextAreaTpl = Ext.create('Ext.XTemplate',
-	    '<textarea id="{id}" ',
-	        '<tpl if="name">name="{name}" </tpl>',
-	        '<tpl if="rows">rows="{rows}" </tpl>',
-	        '<tpl if="cols">cols="{cols}" </tpl>',
-	        '<tpl if="tabIdx">tabIndex="{tabIdx}" </tpl>',
-	        'class="{fieldCls} {typeCls}" style="border: none;" ',
-	        'autocomplete="off" spellcheck="false">',
-	    '</textarea>',
+			'<textarea id="{id}" ',
+			'<tpl if="name">name="{name}" </tpl>',
+			'<tpl if="rows">rows="{rows}" </tpl>',
+			'<tpl if="cols">cols="{cols}" </tpl>',
+			'<tpl if="cols"> cols="{cols}" </tpl>',
+			'<tpl if="placeholder"> placeholder="{placeholder}"</tpl>',
+			'<tpl if="size"> size="{size}"</tpl>',
+			'<tpl if="maxLength !== undefined"> maxlength="{maxLength}"</tpl>',
+			'<tpl if="readOnly"> readonly="readonly"</tpl>',
+			'<tpl if="disabled"> disabled="disabled"</tpl>',
+			'<tpl if="tabIdx">tabIndex="{tabIdx}"</tpl>',
+			' class="{fieldCls} {typeCls}" ',
+			'<tpl if="fieldStyle"> style="{fieldStyle}"</tpl>',
+			' autocomplete="off" spellcheck="off">\n',
+			'<tpl if="value">{[Ext.util.Format.htmlEncode(values.value)]}</tpl>',
+		'</textarea>',
 	    {
 	        compiled: true,
 	        disableFormats: true
@@ -873,7 +889,7 @@ Ext.onReady(function() {
 			bodyCls: 'x-border-layout-ct', // Uses the neutral background color
 			contentEl: 'header',
 			listeners: {
-				render: function() {
+				afterrender: function() {
 					Ext.create('Ext.panel.Panel', {
 						id: 'header',
 						renderTo: 'header-main',

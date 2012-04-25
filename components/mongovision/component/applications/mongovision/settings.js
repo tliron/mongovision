@@ -9,7 +9,10 @@
 // at http://threecrickets.com/
 //
 
-document.executeOnce('/mongo-db/')
+document.executeOnce('/sincerity/objects/')
+
+MongoDB = null
+document.execute('/mongo-db/')
 
 app.settings = {
 	description: {
@@ -48,14 +51,23 @@ app.settings = {
 
 app.globals = {
 	mongovision: {
-		version: '1.0',
-		connection: MongoDB.connect('127.0.0.1', {slaveOk: true, autoConnectRetry: true}),
+		version: '1.1',
+		connection: MongoDB.defaultConnection,
 		extJs: {
 			debug: false,
 			theme: 'gray'
 		},
 		locale: 'en'
 	}
+}
+
+if (Sincerity.Objects.exists(app.globals.mongovision.connection)) {
+	// Create a new connection pool based on the existing one
+	var addresses = []
+	for (var i = app.globals.mongovision.connection.allAddress.iterator(); i.hasNext(); ) {
+		addresses.push(String(i.next()))
+	}
+	app.globals.mongovision.connection = MongoDB.connect(addresses, {autoConnectRetry: true})
 }
 
 
