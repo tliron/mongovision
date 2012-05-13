@@ -25,8 +25,7 @@ app.settings = {
 	errors: {
 		debug: true,
 		homeUrl: 'http://threecrickets/', // Only used when debug=false
-		contactEmail: 'info@threecrickets.com', // Only used when debug=false,
-		404: '/404/'
+		contactEmail: 'info@threecrickets.com' // Only used when debug=false,
 	},
 	
 	code: {
@@ -55,7 +54,7 @@ app.globals = {
 		connection: MongoDB.defaultConnection,
 		extJs: {
 			debug: false,
-			theme: 'all-gray'
+			theme: 'gray'
 		},
 		locale: 'en'
 	}

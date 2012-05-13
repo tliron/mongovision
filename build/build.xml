@@ -1,108 +1,50 @@
 <?xml version="1.0"?>
 <project name="MongoVision" default="build">
 
-	<property file="mongovision.properties" />
+	<property file="component.properties" />
 	
-	<property name="src" value="../modules/mongovision/src" />
-	<property name="lib" value="../libraries" />
-	<property name="deploy" value="../modules/mongovision/deploy" />
-	<property name="dist-debug" value="./debug" />
-	<property name="dist-standard" value="./standard" />
-	<property name="dist-minimal" value="./minimal" />
-	<property name="tmp" value="./tmp" />
+	<property name="reference" value="../components/reference" />
+	<property name="mongovision" value="../components/mongovision" />
+	
+	<property name="distribution" value="./distribution" />
+	<property name="distribution.content" value="${distribution}/content" />
 
-	<macrodef name="fetch-license">
-		<attribute name="dist" />
-		<attribute name="library" />
-		<sequential>
-			<copy todir="@{dist}/licenses/@{library}">
-				<fileset dir="${lib}/@{library}/license" />
-			</copy>
-		</sequential>
-	</macrodef>
-
-	<macrodef name="fetch-library">
-		<attribute name="dist" />
-		<attribute name="library" />
-		<sequential>
-			<fetch-license dist="@{dist}" library="@{library}" />
-			<copy todir="@{dist}/libraries/">
-				<fileset dir="${lib}/@{library}/lib" />
-				<fileset dir="${lib}" includes="*.txt" />
-			</copy>
-		</sequential>
-	</macrodef>
-
-	<target name="libraries" description="Fetch libraries">
-		<fetch-license dist="${dist-standard}" library="ext-js" />
-		<fetch-license dist="${dist-standard}" library="gritter" />
-		<fetch-library dist="${dist-standard}" library="mongodb-rhino-driver" />
-
-		<fetch-license dist="${dist-debug}" library="ext-js" />
-		<fetch-license dist="${dist-debug}" library="gritter" />
-		<fetch-library dist="${dist-debug}" library="mongodb-rhino-driver" />
-
-		<fetch-license dist="${dist-minimal}" library="gritter" />
+	<target name="sincerity" description="Create Sincerity container">
+		<copy todir="${distribution.content}/configuration/sincerity">
+			<fileset dir="sincerity" />
+		</copy>
+		<exec executable="${sincerity.home}/sincerity">
+			<arg value="container:create" />
+			<arg value="--force" />
+			<arg value="${distribution.content}" />
+			<arg value="${sincerity.template}" />
+			<arg value=":" />
+			<arg value="repositories:attach" />
+			<arg value="three-crickets" />
+			<arg value=":" />
+			<arg value="install" />
+		</exec>
 	</target>
-	
-	<target name="application" depends="libraries" description="Fetch MongoVision application">
-		<copy todir="${tmp}/mongovision">
-			<fileset dir="${src}" />
+
+	<target name="distribution" depends="sincerity" description="Assemble distribution">
+		<copy todir="${distribution.content}">
+			<fileset dir="${reference}" />
+			<fileset dir="${mongovision}" />
 		</copy>
-		<copy todir="${tmp}/mongovision/web/static/script/ext">
-			<fileset dir="${lib}/ext-js/lib/script" includes="**/*.js" />
-		</copy>
-		<copy todir="${tmp}/mongovision/web/static/style/ext/style">
-			<fileset dir="${lib}/ext-js/lib/style" />
-		</copy>
-		<copy todir="${tmp}/mongovision/web/static/style/ext/resources">
-			<fileset dir="${lib}/ext-js/lib/resources" />
-		</copy>
-		<copy todir="${tmp}/mongovision/web/static/script/ux">
-			<fileset dir="${lib}/gritter/lib" includes="*.js" />
-		</copy>
-		<copy todir="${tmp}/mongovision/web/static/style/ux/gritter">
-			<fileset dir="${lib}/gritter/lib/resources" />
-		</copy>
-		<replace dir="${tmp}/mongovision" includes="settings.js" token="%VERSION%" value="${version}" />
-		<zip destfile="${dist-debug}/mongovision-debug.prudence.zip" basedir="${tmp}" includes="**/*" level="9" />
-		<zip destfile="${dist-standard}/mongovision-standard.prudence.zip" basedir="${tmp}" level="9" >
-			<exclude name="mongovision/web/static/script/ext/src/**" />
-			<exclude name="mongovision/web/static/script/ext/ext-debug.js" />
+	</target>
+
+	<target name="package" depends="distribution" description="Create distribution package">
+		<zip destfile="${distribution}/${component}-${version}.zip">
+			<fileset dir="${distribution.content}" excludes="cache/, logs/" />
 		</zip>
-		<zip destfile="${dist-minimal}/mongovision-minimal.prudence.zip" basedir="${tmp}" level="9" >
-			<exclude name="mongovision/web/static/script/ext/**" />
-			<exclude name="mongovision/web/static/style/ext/**" />
-		</zip>
-	</target>
-
-	<target name="deploy" depends="application" description="Fetch deployment">
-		<copy todir="${dist-debug}">
-			<fileset dir="${deploy}" />
-		</copy>
-		<copy todir="${dist-standard}">
-			<fileset dir="${deploy}" />
-		</copy>
-		<copy todir="${dist-minimal}">
-			<fileset dir="${deploy}" />
-		</copy>
-	</target>
-	
-	<target name="package" depends="deploy" description="Create MongoVision zip">
-		<zip destfile="mongovision-debug-${version}.zip" basedir="${dist-debug}" includes="**/*" level="9" />
-		<zip destfile="mongovision-standard-${version}.zip" basedir="${dist-standard}" includes="**/*" level="9" />
-		<zip destfile="mongovision-minimal-${version}.zip" basedir="${dist-minimal}" includes="**/*" level="9" />
 	</target>
 	
 	<target name="build" depends="package" description="Build distribution" />
 	
 	<target name="clean" description="Clean">
-		<delete dir="${tmp}" />
-		<delete dir="${dist-debug}" />
-		<delete dir="${dist-standard}" />
-		<delete dir="${dist-minimal}" />
+		<delete dir="${distribution}" />
 	</target>
 	
-	<target name="rebuild" depends="clean, build" description="Clean and build distribution" />
-
+	<target name="rebuild" depends="clean, build" description="First clean and then build distribution" />
+	
 </project>

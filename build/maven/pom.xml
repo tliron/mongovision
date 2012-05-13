@@ -56,7 +56,7 @@
 		<dependency>
 			<groupId>com.threecrickets.sincerity.library</groupId>
 			<artifactId>sincerity-mongodb</artifactId>
-			<version>1.69</version>
+			<version>1.70</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sencha</groupId>
