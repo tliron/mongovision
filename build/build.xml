@@ -35,7 +35,8 @@
 
 	<target name="package" depends="distribution" description="Create distribution package">
 		<zip destfile="${distribution}/${component}-${version}.zip">
-			<fileset dir="${distribution.content}" excludes="cache/, logs/" />
+			<zipfileset dir="${distribution.content}" excludes="cache/, logs/, sincerity" />
+			<zipfileset dir="${distribution.content}" includes="sincerity" filemode="755" />
 		</zip>
 	</target>
 	
