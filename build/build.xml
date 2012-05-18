@@ -3,9 +3,10 @@
 
 	<property file="component.properties" />
 	
-	<property name="reference" value="../components/reference" />
+	<property name="notices" value="../components/notices" />
 	<property name="mongovision" value="../components/mongovision" />
 	
+	<property name="cache" value="./cache" />
 	<property name="distribution" value="./distribution" />
 	<property name="distribution.content" value="${distribution}/content" />
 
@@ -28,7 +29,7 @@
 
 	<target name="distribution" depends="sincerity" description="Assemble distribution">
 		<copy todir="${distribution.content}">
-			<fileset dir="${reference}" />
+			<fileset dir="${notices}" />
 			<fileset dir="${mongovision}" />
 		</copy>
 	</target>
@@ -39,10 +40,50 @@
 			<zipfileset dir="${distribution.content}" includes="sincerity" filemode="755" />
 		</zip>
 	</target>
-	
-	<target name="build" depends="package" description="Build distribution" />
+
+	<target name="installer-installbuilder" depends="package" description="Create InstallBuilder installer">
+		<exec executable="${installbuilder}">
+			<arg value="build" />
+			<arg value="./installbuilder/${component}.xml" />
+			<arg value="linux-x64" />
+			<arg value="--license" />
+			<arg value="./installbuilder/license.xml" />
+		</exec>
+		<exec executable="${installbuilder}">
+			<arg value="build" />
+			<arg value="./installbuilder/${component}.xml" />
+			<arg value="linux" />
+				<arg value="--license" />
+				<arg value="./installbuilder/license.xml" />
+		</exec>
+		<exec executable="${installbuilder}">
+			<arg value="build" />
+			<arg value="./installbuilder/${component}.xml" />
+			<arg value="windows" />
+			<arg value="--license" />
+			<arg value="./installbuilder/license.xml" />
+		</exec>
+		<exec executable="${installbuilder}">
+			<arg value="build" />
+			<arg value="./installbuilder/${component}.xml" />
+			<arg value="osx" />
+			<arg value="--license" />
+			<arg value="./installbuilder/license.xml" />
+			<arg value="--setvars" />
+			<arg value="project.outputDirectory=${cache}" />
+		</exec>
+		<zip destfile="${distribution}/${component}-${version}-osx-installer.zip">
+			<zipfileset dir="${cache}/${component}-${version}-osx-installer.app" prefix="${component}-${version}-osx-installer.app" />
+		</zip>
+		<chmod perm="ugo+rx">
+			<fileset dir="${distribution}" includes="*.run" />
+		</chmod>
+	</target>
+
+	<target name="build" depends="distribution" description="Build distribution" />
 	
 	<target name="clean" description="Clean">
+		<delete dir="${cache}" />
 		<delete dir="${distribution}" />
 	</target>
 	
