@@ -5,7 +5,6 @@
     <licenseFile>${build_project_directory}/../../components/notices/license.txt</licenseFile>
     <wrapLicenseFileText>0</wrapLicenseFileText>
     <leftImage>${build_project_directory}/../../components/media/installer.png</leftImage>
-    <outputDirectory>${build_project_directory}/../distribution/</outputDirectory>
     <componentList>
         <component>
             <name>default</name>
@@ -23,7 +22,7 @@
                     <distributionFileList>
                         <distributionDirectory>
                             <allowWildcards>1</allowWildcards>
-                            <excludeFiles>*/sincerity;*/sincerity.bat</excludeFiles>
+                            <excludeFiles>*/sincerity;*/sincerity.bat;*/cache;*/logs</excludeFiles>
                             <origin>${build_project_directory}/../distribution/content/*</origin>
                         </distributionDirectory>
                     </distributionFileList>
@@ -97,6 +96,7 @@
             <promptUser>0</promptUser>
             <validVersionList>
                 <validVersion>
+                    <bitness></bitness>
                     <maxVersion></maxVersion>
                     <minVersion>1.5</minVersion>
                     <requireJDK>0</requireJDK>
@@ -105,9 +105,15 @@
             </validVersionList>
         </autodetectJava>
     </preInstallationActionList>
+    <postInstallationActionList>
+        <createDirectory>
+            <path>${installdir}/.sincerity</path>
+        </createDirectory>
+    </postInstallationActionList>
     <disableSplashScreen>1</disableSplashScreen>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>
+    <outputDirectory>${build_project_directory}/../distribution/</outputDirectory>
     <vendor>Three Crickets</vendor>
     <licenseFileList>
         <licenseFile>
