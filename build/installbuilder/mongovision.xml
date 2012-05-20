@@ -4,7 +4,7 @@
     <version>1.1</version>
     <licenseFile>${build_project_directory}/../../components/notices/license.txt</licenseFile>
     <wrapLicenseFileText>0</wrapLicenseFileText>
-    <leftImage>${build_project_directory}/../../components/media/installer.png</leftImage>
+    <leftImage>${build_project_directory}/../../components/media/mongovision.png</leftImage>
     <componentList>
         <component>
             <name>default</name>

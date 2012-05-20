@@ -1,0 +1,9 @@
+sincerity            /usr/lib/mongovision/
+*.jar                /usr/lib/mongovision/
+*.txt                /usr/lib/mongovision/
+programs/*           /usr/lib/mongovision/programs/
+component/*          /usr/lib/mongovision/component/
+configuration/*      /usr/lib/mongovision/configuration/
+libraries/*          /usr/lib/mongovision/libraries/
+mongovision.desktop  /usr/share/applications
+mongovision.png      /usr/lib/mongovision

@@ -1,0 +1,4 @@
+*.deb
+*.dsc
+*.changes
+*.tar.gz

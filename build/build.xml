@@ -34,28 +34,14 @@
 		</copy>
 	</target>
 
-	<target name="package" depends="distribution" description="Create distribution package">
+	<target name="package-zip" depends="distribution" description="Create zip distribution package">
 		<zip destfile="${distribution}/${component}-${version}.zip">
 			<zipfileset dir="${distribution.content}" excludes="cache/, logs/, sincerity" />
 			<zipfileset dir="${distribution.content}" includes="sincerity" filemode="755" />
 		</zip>
 	</target>
 
-	<target name="installer-installbuilder" depends="package" description="Create InstallBuilder installer">
-		<exec executable="${installbuilder}">
-			<arg value="build" />
-			<arg value="./installbuilder/${component}.xml" />
-			<arg value="linux-x64" />
-			<arg value="--license" />
-			<arg value="./installbuilder/license.xml" />
-		</exec>
-		<exec executable="${installbuilder}">
-			<arg value="build" />
-			<arg value="./installbuilder/${component}.xml" />
-			<arg value="linux" />
-				<arg value="--license" />
-				<arg value="./installbuilder/license.xml" />
-		</exec>
+	<target name="package-installbuilder" depends="distribution" description="Create InstallBuilder installer">
 		<exec executable="${installbuilder}">
 			<arg value="build" />
 			<arg value="./installbuilder/${component}.xml" />

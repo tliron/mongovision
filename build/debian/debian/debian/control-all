@@ -1,0 +1,13 @@
+Standards-Version: 3.8.0
+Source: mongovision
+Section: devel
+Priority: optional
+Maintainer: Tal Liron <tal.liron@gmail.com>
+Build-Depends: cdbs (>=0.4), debhelper (>=9)
+
+Package: mongovision
+Architecture: all
+Homepage: http://code.google.com/p/mongo-vision/
+Recommends: java5-runtime
+Suggests: openjdk-7-jre
+Description: MongoVision is a web front-end for MongoDB.
