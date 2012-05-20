@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=MongoVision
-Comment=MongoVision
+Name=Start MongoVision
+Comment=Start MongoVision
 Terminal=false
 Exec=/usr/lib/mongovision/sincerity use /usr/lib/mongovision : start component
 Icon=/usr/lib/mongovision/mongovision.png

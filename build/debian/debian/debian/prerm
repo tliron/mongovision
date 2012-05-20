@@ -17,23 +17,13 @@ set -e
 
 case "$1" in
 	purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
-		#set +e
-		#if service sincerity status > /dev/null 2>&1; then 
-		#	service sincerity stop
-		#fi
-		#set -e
-		
-		#if id sincerity > /dev/null 2>&1; then
-		#	userdel -f sincerity
-		#fi
-		
-		#if grep -i "^sincerity" /etc/group > /dev/null 2>&1; then
-		#	groupdel sincerity
-		#fi
-
 		rm -rf /usr/lib/mongovision/.sincerity
 		rm -f /usr/lib/mongovision/logs
 		rm -f /usr/lib/mongovision/cache
+		rm -f /usr/lib/mongovision/programs
+		rm -f /usr/lib/mongovision/libraries
+		rm -f /usr/lib/mongovision/component
+		rm -f /usr/lib/mongovision/configuration
 	;;
 	
 	*)

@@ -16,11 +16,6 @@ set -e
 
 case "$1" in
 	configure)
-		#if ! id sincerity > /dev/null 2>&1; then
-		#	useradd -rU sincerity
-		#fi
-		#chown -R sincerity:sincerity /usr/lib/sincerity
-		
 		mkdir -p /usr/lib/mongovision/.sincerity
 		
 		mkdir -p /var/logs/mongovision
@@ -30,6 +25,13 @@ case "$1" in
 		mkdir -p /var/cache/mongovision
 		chmod a+w /var/cache/mongovision
 		ln -fsT /var/cache/mongovision /usr/lib/mongovision/cache 
+
+		chmod a+w -R /var/lib/mongovision
+
+		ln -fsT /var/lib/mongovision/programs /usr/lib/mongovision/programs 
+		ln -fsT /var/lib/mongovision/libraries /usr/lib/mongovision/libraries 
+		ln -fsT /var/lib/mongovision/component /usr/lib/mongovision/component 
+		ln -fsT /etc/mongovision /usr/lib/mongovision/configuration 
 	;;
 
 	abort-upgrade|abort-remove|abort-deconfigure)
