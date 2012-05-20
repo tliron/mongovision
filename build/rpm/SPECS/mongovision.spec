@@ -28,6 +28,7 @@ chmod a+w /var/cache/mongovision
 ln -fsT /var/cache/mongovision /usr/lib/mongovision/cache 
 
 chmod a+w -R /var/lib/mongovision
+chmod a+w -R /etc/mongovision
 
 ln -fsT /var/lib/mongovision/programs /usr/lib/mongovision/programs 
 ln -fsT /var/lib/mongovision/libraries /usr/lib/mongovision/libraries 

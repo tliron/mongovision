@@ -1,4 +1,5 @@
 sincerity            /usr/lib/mongovision/
+sincerity.bat        /usr/lib/mongovision/
 *.jar                /usr/lib/mongovision/
 *.txt                /usr/lib/mongovision/
 programs/*           /var/lib/mongovision/programs/
