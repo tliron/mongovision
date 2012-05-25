@@ -19,12 +19,12 @@ app.settings = {
 		name: 'MongoVision',
 		description: 'A MongoDB frontend',
 		author: 'Three Crickets',
-		owner: 'Three Crickets'
+		owner: 'MongoVision'
 	},
 
 	errors: {
 		debug: true,
-		homeUrl: 'http://threecrickets/', // Only used when debug=false
+		homeUrl: 'http://code.google.com/p/mongo-vision/', // Only used when debug=false
 		contactEmail: 'info@threecrickets.com' // Only used when debug=false,
 	},
 	

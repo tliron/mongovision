@@ -19,9 +19,9 @@ MongoVision is a web front-end for MongoDB.
 %post
 mkdir -p /usr/lib/mongovision/.sincerity
 
-mkdir -p /var/logs/mongovision
-chmod a+w /var/logs/mongovision
-ln -fsT /var/logs/mongovision /usr/lib/mongovision/logs
+mkdir -p /var/log/mongovision
+chmod a+w /var/log/mongovision
+ln -fsT /var/log/mongovision /usr/lib/mongovision/logs
 
 mkdir -p /var/cache/mongovision
 chmod a+w /var/cache/mongovision
