@@ -50,8 +50,6 @@ Ext.define('Ext.ux.ThemeSwitcher', {
 					current = current.getAttribute('href');
 					for (var t = 0, length2 = config.themes.length; t < length2; t++) {
 						var theme = config.themes[t];
-						console.log(current)
-						console.log(styleSheet.prefix + theme.postfix)
 						if (current == (styleSheet.prefix + theme.postfix)) {
 							return theme.id;
 						}
