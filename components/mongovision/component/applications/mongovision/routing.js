@@ -18,12 +18,9 @@ app.routes = {
 	'/*': [
 		'explicit',
 		'dynamicWeb',
-		{type: 'cacheControl', mediaTypes: {'text/css': -1, 'application/x-javascript': -1}, next:
-			[
-				'staticWeb',
-				{type: 'staticWeb', root: sincerity.container.getLibrariesFile('web')}
-			]
-		}
+		{type: 'cacheControl', mediaTypes: {'text/css': 'farFuture', 'application/x-javascript': 'farFuture', 'image/png': 'farFuture', 'image/gif': 'farFuture', 'image/jpeg': -1}, next: [
+			'staticWeb',
+			{type: 'staticWeb', root: sincerity.container.getLibrariesFile('web')}]}
 	],
 	'/data/db/{database}/{collection}/{id}': {type: 'capture', uri: '/data/db/collection/document/', hidden: true},
 	'/data/db/{database}/{collection}/': {type: 'capture', uri: '/data/db/collection/', hidden: true}
