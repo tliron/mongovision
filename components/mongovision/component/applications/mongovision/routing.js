@@ -25,6 +25,6 @@ app.routes = {
 			]
 		}
 	],
-	'/data/db/{database}/{collection}/': {type: 'capture', uri: '/data/db/collection/', hidden: true},
-	'/data/db/{database}/{collection}/{id}/': {type: 'capture', uri: '/data/db/collection/document/', hidden: true}
+	'/data/db/{database}/{collection}/{id}': {type: 'capture', uri: '/data/db/collection/document/', hidden: true},
+	'/data/db/{database}/{collection}/': {type: 'capture', uri: '/data/db/collection/', hidden: true}
 }
