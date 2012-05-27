@@ -3,11 +3,11 @@
 
 	<property file="custom.properties" />
 	
-	<property name="mongovision" value="../components/mongovision" />
+	<property name="mongovision" location="../components/mongovision" />
 	
-	<property name="cache" value="./cache" />
-	<property name="distribution" value="./distribution" />
-	<property name="distribution.content" value="${distribution}/content" />
+	<property name="cache" location="./cache" />
+	<property name="distribution" location="./distribution" />
+	<property name="distribution.content" location="${distribution}/content" />
 
 	<target name="components" description="Assemble components">
 		<exec executable="${maven}" dir="maven" failifexecutionfails="false">
@@ -16,7 +16,7 @@
 		</exec>
 	</target>
 
-	<target name="distribution" description="Create Sincerity container">
+	<target name="distribution" depends="components" description="Create Sincerity container">
 		<copy todir="${distribution.content}/configuration/sincerity">
 			<fileset dir="sincerity" />
 		</copy>
@@ -74,4 +74,10 @@
 	
 	<target name="rebuild" depends="clean, build" description="First clean and then build distribution" />
 	
+	<target name="dirty" description="Quick-and-dirty update of the content">
+		<copy todir="${distribution.content}">
+			<fileset dir="${mongovision}" />
+		</copy>
+	</target>
+
 </project>
