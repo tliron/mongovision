@@ -11,10 +11,8 @@
 
 document.executeOnce('/sincerity/objects/')
 
-try {
-	delete MongoDB
-	document.execute('/mongo-db/')
-} catch(x) {}
+MongoDB = null
+document.execute('/mongo-db/')
 
 app.settings = {
 	description: {
