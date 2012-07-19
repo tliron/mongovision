@@ -56,6 +56,7 @@ Ext.define('MongoVision.DatabasesPanel', {
 			proxy: {
 				type: 'rest',
 				url: 'data/databases/',
+				appendId: false,
 				noCache: false
 			},
 			autoLoad: true // maybe not?
