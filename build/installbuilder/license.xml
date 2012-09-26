@@ -1,12 +1,12 @@
 <license>
-    <issueDate>2012-05-18</issueDate>
+    <issueDate>2012-08-29</issueDate>
     <licenseSchemaVersion>1.2</licenseSchemaVersion>
     <licenseType>standard</licenseType>
     <majorVersion>8</majorVersion>
-    <minorVersion>2</minorVersion>
+    <minorVersion>5</minorVersion>
     <organization>Tal Liron - Three Crickets - Open Source License</organization>
     <patchVersion>0</patchVersion>
     <product>BitRock InstallBuilder Multiplatform Enterprise</product>
-    <project>Sincerity*;Mongo*;Prudence*;The Savory*</project>
-    <signature>0e10295df4249fb0177a0467dbba41a1</signature>
+    <project>Sincerity*;Mongo*;Prudence*;The Savory*;Diligence*</project>
+    <signature>81cda2cbf1141fd4acc955957abea678</signature>
 </license>
