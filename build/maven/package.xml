@@ -13,7 +13,7 @@
 
 	<fileSets>
 		<fileSet>
-			<directory>../../components/mongovision</directory>
+			<directory>@ROOT@/components/mongovision</directory>
 			<outputDirectory>.</outputDirectory>
 			<includes>
 				<include>**</include>

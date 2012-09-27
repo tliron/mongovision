@@ -1,12 +1,18 @@
 <?xml version="1.0"?>
 <project name="MongoVision" default="build">
 
-	<property file="custom.properties" />
+	<property name="root" location="${basedir}/.." />
+
+	<property file="${root}/build/private.properties" />
+	<property file="${root}/build/custom.properties" />
 	
-	<property name="mongovision" location="../components/mongovision" />
+	<property name="mongovision" location="${root}/components/mongovision" />
 	
-	<property name="cache" location="./cache" />
-	<property name="distribution" location="./distribution" />
+	<property name="cache" location="${root}/build/cache" />
+	<property name="cache.maven.pom" location="${cache}/maven/pom" />
+	<property name="cache.maven.build" location="${cache}/maven/build" />
+
+	<property name="distribution" location="${root}/build/distribution" />
 	<property name="distribution.content" location="${distribution}/content" />
 
 	<target name="components" description="Assemble components">
@@ -32,7 +38,25 @@
 			<arg value="dependencies:install" />
 		</exec>
 	</target>
-
+	
+	<target name="deploy" if="maven" description="Deploy to Maven repository">
+		<copy todir="${cache.maven.pom}">
+			<fileset dir="${root}/build/maven" excludes="*~" />
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${version}" />
+					<token key="ROOT" value="${root}" />
+					<token key="CACHE" value="${cache.maven.build}" />
+					<token key="JARS" value="${cache.jars}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+		<exec executable="${maven}" dir="${cache.maven.pom}">
+			<arg value="deploy" />
+			<arg value="-DaltDeploymentRepository=default::default::${distribution.repo}" />
+		</exec>
+	</target>
+	
 	<target name="package-zip" depends="distribution" description="Create zip distribution package">
 		<zip destfile="${distribution}/${component}-${version}.zip">
 			<zipfileset dir="${distribution.content}" excludes="cache/, logs/, sincerity" />
