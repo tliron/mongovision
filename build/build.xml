@@ -15,31 +15,7 @@
 	<property name="distribution" location="${root}/build/distribution" />
 	<property name="distribution.content" location="${distribution}/content" />
 
-	<target name="components" description="Assemble components">
-		<exec executable="${maven}" dir="maven" failifexecutionfails="false">
-			<arg value="deploy" />
-			<arg value="-DaltDeploymentRepository=${maven.repo}" />
-		</exec>
-	</target>
-
-	<target name="distribution" depends="components" description="Create Sincerity container">
-		<copy todir="${distribution.content}/configuration/sincerity">
-			<fileset dir="sincerity" />
-		</copy>
-		<exec executable="${sincerity.home}/sincerity">
-			<arg value="container:create" />
-			<arg value="--force" />
-			<arg value="${distribution.content}" />
-			<arg value="${sincerity.template}" />
-			<arg value=":" />
-			<arg value="repositories:attach" />
-			<arg value="three-crickets" />
-			<arg value=":" />
-			<arg value="dependencies:install" />
-		</exec>
-	</target>
-	
-	<target name="deploy" if="maven" description="Deploy to Maven repository">
+	<target name="deploy-maven" if="maven" description="Deploy to Maven repository">
 		<copy todir="${cache.maven.pom}">
 			<fileset dir="${root}/build/maven" excludes="*~" />
 			<filterchain>
@@ -47,13 +23,47 @@
 					<token key="VERSION" value="${version}" />
 					<token key="ROOT" value="${root}" />
 					<token key="CACHE" value="${cache.maven.build}" />
-					<token key="JARS" value="${cache.jars}" />
 				</replacetokens>
 			</filterchain>
 		</copy>
 		<exec executable="${maven}" dir="${cache.maven.pom}">
 			<arg value="deploy" />
 			<arg value="-DaltDeploymentRepository=default::default::${distribution.repo}" />
+		</exec>
+	</target>
+	
+	<target name="distribution" depends="deploy-maven" description="Create Sincerity container">
+		<copy todir="${distribution.content}/configuration/sincerity">
+			<fileset dir="sincerity" />
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${version}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+		<exec executable="${sincerity}">
+			<arg value="container:create" />
+			<arg value="--force" />
+			<arg value="${distribution.content}" />
+			<arg value="${sincerity.template}" />
+			<arg value=":" />
+			<arg value="repositories:attach" />
+			<arg value="public" />
+			<arg value="${component}" />
+			<arg value="maven" />
+			<arg value="${distribution.repo}" />
+			<arg value=":" />
+			<arg value="repositories:attach" />
+			<arg value="public" />
+			<arg value="three-crickets" />
+			<arg value="maven" />
+			<arg value="${dependencies.repo}" />
+			<arg value=":" />
+			<arg value="dependencies:install" />
+			<arg value=":" />
+			<arg value="repositories:detach" />
+			<arg value="public" />
+			<arg value="${component}" />
 		</exec>
 	</target>
 	
