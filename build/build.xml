@@ -16,6 +16,8 @@
 	<property name="distribution.content" location="${distribution}/content" />
 
 	<target name="deploy-maven" if="maven" description="Deploy to Maven repository">
+		<delete dir="${cache.maven.pom}" />
+		<delete dir="${cache.maven.build}" />
 		<copy todir="${cache.maven.pom}">
 			<fileset dir="${root}/build/maven" excludes="*~" />
 			<filterchain>
