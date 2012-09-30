@@ -15,6 +15,23 @@
 	<property name="distribution" location="${root}/build/distribution" />
 	<property name="distribution.content" location="${distribution}/content" />
 
+	<property name="googlecode" location="${dependencies}/libraries/python/googlecode_upload.py" />
+	<macrodef name="googlecode">
+		<attribute name="description" />
+		<attribute name="label" />
+		<attribute name="suffix" />
+		<sequential>
+			<exec executable="${googlecode}">
+				<arg value="--project=${component}" />
+				<arg value="--user=${googlecode.username}" />
+				<arg value="--password=${googlecode.password}" />
+				<arg value="--summary=@{description} for version ${component.version}${component.version.postfix}" />
+				<arg value="--labels=${component.version.short}${component.version.short.postfix},@{label}" />
+				<arg value="${distribution}/${component}-${component.version}${component.version.postfix}@{suffix}" />
+			</exec>
+		</sequential>
+	</macrodef>
+
 	<target name="deploy-maven" if="maven" description="Deploy to Maven repository">
 		<delete dir="${cache.maven.pom}" />
 		<delete dir="${cache.maven.build}" />
@@ -22,7 +39,8 @@
 			<fileset dir="${root}/build/maven" excludes="*~" />
 			<filterchain>
 				<replacetokens>
-					<token key="VERSION" value="${version}${version.postfix}" />
+					<token key="VERSION" value="${component.version}${component.version.postfix}" />
+					<token key="DEPENDENCIES" value="${dependencies.repo}" />
 					<token key="SINCERITY.MONGODB.VERSION" value="${sincerity.mongodb.version}" />
 					<token key="PRUDENCE.VERSION" value="${prudence.version}" />
 					<token key="ROOT" value="${root}" />
@@ -35,13 +53,22 @@
 			<arg value="-DaltDeploymentRepository=default::default::${distribution.repo}" />
 		</exec>
 	</target>
-	
+
+	<target name="deploy-googlecode" if="googlecode.password" description="Deploy to Google Code">
+		<googlecode description="Universal installer" label="universal" suffix="-installer.jar" />
+		<googlecode description="Zip distribution" label="zip" suffix=".zip" />
+		<googlecode description="RPM package" label="rpm" suffix=".rpm" />
+		<googlecode description="Debian package" label="deb" suffix=".deb" />
+		<googlecode description="Mac OS X installer" label="mac" suffix="-osx-installer.zip" />
+		<googlecode description="Windows installer" label="windows" suffix="-windows-installer.exe" />
+	</target>
+
 	<target name="distribution" depends="deploy-maven" description="Create Sincerity container">
 		<copy todir="${distribution.content}/configuration/sincerity">
 			<fileset dir="sincerity" />
 			<filterchain>
 				<replacetokens>
-					<token key="VERSION" value="${version}${version.postfix}" />
+					<token key="VERSION" value="${component.version}${component.version.postfix}" />
 					<token key="SINCERITY.VERSION" value="${sincerity.version}" />
 					<token key="PRUDENCE.VERSION" value="${prudence.version}" />
 				</replacetokens>
@@ -74,7 +101,7 @@
 	</target>
 	
 	<target name="package-zip" depends="distribution" description="Create zip distribution package">
-		<zip destfile="${distribution}/${component}-${version}${version.postfix}.zip">
+		<zip destfile="${distribution}/${component}-${component.version}${component.version.postfix}.zip">
 			<zipfileset dir="${distribution.content}" excludes="cache/, logs/, sincerity" />
 			<zipfileset dir="${distribution.content}" includes="sincerity" filemode="755" />
 		</zip>
@@ -97,8 +124,8 @@
 			<arg value="--setvars" />
 			<arg value="project.outputDirectory=${cache}" />
 		</exec>
-		<zip destfile="${distribution}/${component}-${version}${version.postfix}-osx-installer.zip">
-			<zipfileset dir="${cache}/${component}-${version}${version.postfix}-osx-installer.app" prefix="${component}-${version}${version.postfix}-osx-installer.app" />
+		<zip destfile="${distribution}/${component}-${component.version}${component.version.postfix}-osx-installer.zip">
+			<zipfileset dir="${cache}/${component}-${component.version}${component.version.postfix}-osx-installer.app" prefix="${component}-${component.version}${component.version.postfix}-osx-installer.app" />
 		</zip>
 		<chmod perm="ugo+rx">
 			<fileset dir="${distribution}" includes="*.run" />
