@@ -61,7 +61,7 @@
 		<dependency>
 			<groupId>com.sencha</groupId>
 			<artifactId>ext-js</artifactId>
-			<version>4.1.1a</version>
+			<version>[4.1,4.2)</version>
 		</dependency>
 	</dependencies>
 
