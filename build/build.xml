@@ -15,14 +15,14 @@
 	<property name="distribution" location="${root}/build/distribution" />
 	<property name="distribution.content" location="${distribution}/content" />
 
-	<property name="googlecode" location="${dependencies}/libraries/python/googlecode_upload.py" />
+	<property name="googlecode" location="${root}/dependencies/libraries/python/googlecode_upload.py" />
 	<macrodef name="googlecode">
 		<attribute name="description" />
 		<attribute name="label" />
 		<attribute name="suffix" />
 		<sequential>
 			<exec executable="${googlecode}">
-				<arg value="--project=${component}" />
+				<arg value="--project=mongo-vision" />
 				<arg value="--user=${googlecode.username}" />
 				<arg value="--password=${googlecode.password}" />
 				<arg value="--summary=@{description} for version ${component.version}${component.version.postfix}" />
@@ -55,12 +55,12 @@
 	</target>
 
 	<target name="deploy-googlecode" if="googlecode.password" description="Deploy to Google Code">
-		<googlecode description="Universal installer" label="universal" suffix="-installer.jar" />
+		<!--<googlecode description="Universal installer" label="universal" suffix="-installer.jar" />-->
 		<googlecode description="Zip distribution" label="zip" suffix=".zip" />
-		<googlecode description="RPM package" label="rpm" suffix=".rpm" />
+		<!--<googlecode description="RPM package" label="rpm" suffix=".rpm" />
 		<googlecode description="Debian package" label="deb" suffix=".deb" />
 		<googlecode description="Mac OS X installer" label="mac" suffix="-osx-installer.zip" />
-		<googlecode description="Windows installer" label="windows" suffix="-windows-installer.exe" />
+		<googlecode description="Windows installer" label="windows" suffix="-windows-installer.exe" />-->
 	</target>
 
 	<target name="distribution" depends="deploy-maven" description="Create Sincerity container">
@@ -107,17 +107,24 @@
 		</zip>
 	</target>
 
-	<target name="package-installbuilder" depends="distribution" description="Create InstallBuilder installer">
+	<target name="package-platform-installers" depends="distribution" description="Create InstallBuilder installer" if="installbuilder">
+		<copy todir="${cache}" file="${root}/build/installbuilder/${component}.xml">
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${component.version}${component.version.postfix}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
 		<exec executable="${installbuilder}">
 			<arg value="build" />
-			<arg value="./installbuilder/${component}.xml" />
+			<arg value="${cache}/${component}.xml" />
 			<arg value="windows" />
 			<arg value="--license" />
 			<arg value="./installbuilder/license.xml" />
 		</exec>
 		<exec executable="${installbuilder}">
 			<arg value="build" />
-			<arg value="./installbuilder/${component}.xml" />
+			<arg value="${cache}/${component}.xml" />
 			<arg value="osx" />
 			<arg value="--license" />
 			<arg value="./installbuilder/license.xml" />

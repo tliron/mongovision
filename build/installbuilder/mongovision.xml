@@ -1,7 +1,7 @@
 <project>
     <shortName>mongovision</shortName>
     <fullName>MongoVision</fullName>
-    <version>1.1</version>
+    <version>@VERSION@</version>
     <licenseFile>${build_project_directory}/../../components/notices/license.txt</licenseFile>
     <wrapLicenseFileText>0</wrapLicenseFileText>
     <leftImage>${build_project_directory}/../../components/media/mongovision.png</leftImage>
