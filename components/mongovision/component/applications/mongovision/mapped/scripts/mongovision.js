@@ -942,14 +942,14 @@ Ext.onReady(function() {
 							loadingText: MongoVision.text.switchingTheme,
 							layoutContainers: ['viewport', 'header'],
 							styleSheets: [
-								{id: 'ext-theme', prefix: 'style/ext-js/style/css/ext-all'},
-								{id: 'mv-theme', prefix: 'style/mongovision'}
+								{id: 'ext-theme', prefix: 'style/ext-js/'},
+								{id: 'mv-theme', prefix: 'style/mongovision/'}
 							],
 							themes: [
-								{id: 'gray', postfix: '-gray.css', label: MongoVision.text['theme.gray']},
-								{id: 'blue', postfix: '.css', label: MongoVision.text['theme.blue']},
-								//{id: 'neptune', postfix: '-neptune.css', label: MongoVision.text['theme.neptune']},
-								{id: 'access', postfix: '-access.css', label: MongoVision.text['theme.accessible']}
+								{id: 'gray', postfix: 'ext-theme-gray/ext-theme-gray-all.css', label: MongoVision.text['theme.gray']},
+								{id: 'blue', postfix: 'ext-theme-classic/ext-theme-classic-all.css', label: MongoVision.text['theme.blue']},
+								{id: 'neptune', postfix: 'ext-theme-neptune/ext-theme-neptune-all.css', label: MongoVision.text['theme.neptune']},
+								{id: 'access', postfix: 'ext-theme-access/ext-theme-access-all.css', label: MongoVision.text['theme.accessible']}
 							]
 						}]
 					}
