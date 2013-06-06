@@ -17,7 +17,7 @@ app.hosts = {
 app.routes = {
 	'/*': [
 		'manual',
-		'textual',
+		'scriptlet',
 		{type: 'cacheControl', mediaTypes: {'text/css': 'farFuture', 'application/x-javascript': 'farFuture', 'image/png': 'farFuture', 'image/gif': 'farFuture', 'image/jpeg': 'farFuture'}, next: [
 			'static',
 			{type: 'static', root: sincerity.container.getLibrariesFile('web')}]}
