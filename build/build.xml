@@ -9,6 +9,7 @@
 	<property name="mongovision" location="${root}/components/mongovision" />
 	
 	<property name="cache" location="${root}/build/cache" />
+	<property name="cache.mongovision" location="${cache}/${component}" />
 	<property name="cache.maven.pom" location="${cache}/maven/pom" />
 	<property name="cache.maven.build" location="${cache}/maven/build" />
 
@@ -136,6 +137,14 @@
 				</replacetokens>
 			</filterchain>
 		</copy>
+		<copy todir="${cache.mongovision}">
+			<fileset dir="${mongovision}" excludes="*~" />
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${component.version}${component.version.postfix}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
 		<exec executable="${maven}" dir="${cache.maven.pom}">
 			<arg value="deploy" />
 			<arg value="-DaltDeploymentRepository=default::default::${distribution.repo}" />
@@ -143,12 +152,12 @@
 	</target>
 
 	<target name="deploy-googledrive" if="googledrive.repo" description="Deploy to Google Drive">
-		<googlecode suffix="-installer.jar" />
-		<googlecode suffix=".zip" />
-		<googlecode suffix=".rpm" />
-		<googlecode suffix=".deb" />
-		<googlecode suffix="-osx-installer.zip" />
-		<googlecode suffix="-windows-installer.exe" />
+		<googledrive suffix="-installer.jar" />
+		<googledrive suffix=".zip" />
+		<googledrive suffix=".rpm" />
+		<googledrive suffix=".deb" />
+		<googledrive suffix="-osx-installer.zip" />
+		<googledrive suffix="-windows-installer.exe" />
 	</target>
 	
 	<target name="deploy-googlecode" if="googlecode.password" description="Deploy to Google Code">

@@ -50,7 +50,7 @@ app.settings = {
 
 app.globals = {
 	mongovision: {
-		version: '1.1',
+		version: '@VERSION@',
 		connection: MongoDB.defaultConnection,
 		extJs: {
 			debug: false,
