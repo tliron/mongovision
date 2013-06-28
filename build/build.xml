@@ -15,6 +15,16 @@
 	<property name="distribution" location="${root}/build/distribution" />
 	<property name="distribution.content" location="${distribution}/content" />
 
+	<macrodef name="googledrive">
+		<attribute name="suffix" />
+		<sequential>
+			<copy
+				file="${distribution}/${component}-${component.version}${component.version.postfix}@{suffix}"
+				todir="${googledrive.repo}/${googledrive.section}/${component.version}${component.version.postfix}"
+				failonerror="false" />
+		</sequential>
+	</macrodef>
+	
 	<property name="googlecode" location="${root}/dependencies/libraries/python/googlecode_upload.py" />
 	<macrodef name="googlecode">
 		<attribute name="description" />
@@ -31,37 +41,6 @@
 			</exec>
 		</sequential>
 	</macrodef>
-
-	<target name="deploy-maven" if="maven" description="Deploy to Maven repository">
-		<delete dir="${cache.maven.pom}" />
-		<delete dir="${cache.maven.build}" />
-		<copy todir="${cache.maven.pom}">
-			<fileset dir="${root}/build/maven" excludes="*~" />
-			<filterchain>
-				<replacetokens>
-					<token key="VERSION" value="${component.version}${component.version.postfix}" />
-					<token key="DEPENDENCIES" value="${dependencies.repo}" />
-					<token key="SINCERITY.MONGODB.VERSION" value="${sincerity.mongodb.version}" />
-					<token key="PRUDENCE.VERSION" value="${prudence.version}" />
-					<token key="ROOT" value="${root}" />
-					<token key="CACHE" value="${cache.maven.build}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
-		<exec executable="${maven}" dir="${cache.maven.pom}">
-			<arg value="deploy" />
-			<arg value="-DaltDeploymentRepository=default::default::${distribution.repo}" />
-		</exec>
-	</target>
-
-	<target name="deploy-googlecode" if="googlecode.password" description="Deploy to Google Code">
-		<!--<googlecode description="Universal installer" label="universal" suffix="-installer.jar" />-->
-		<googlecode description="Zip distribution" label="zip" suffix=".zip" />
-		<!--<googlecode description="RPM package" label="rpm" suffix=".rpm" />
-		<googlecode description="Debian package" label="deb" suffix=".deb" />
-		<googlecode description="Mac OS X installer" label="mac" suffix="-osx-installer.zip" />
-		<googlecode description="Windows installer" label="windows" suffix="-windows-installer.exe" />-->
-	</target>
 
 	<target name="distribution" depends="deploy-maven" description="Create Sincerity container">
 		<copy todir="${distribution.content}/configuration/sincerity">
@@ -92,7 +71,7 @@
 			<arg value="maven" />
 			<arg value="${dependencies.repo}" />
 			<arg value=":" />
-			<arg value="dependencies:install" />
+			<arg value="artifacts:install" />
 			<arg value=":" />
 			<arg value="repositories:detach" />
 			<arg value="public" />
@@ -137,6 +116,48 @@
 		<chmod perm="ugo+rx">
 			<fileset dir="${distribution}" includes="*.run" />
 		</chmod>
+	</target>
+
+	<target name="package" depends="package-zip, package-platform-installers" description="Create all packages and installers" />
+
+	<target name="deploy-maven" if="maven" description="Deploy to Maven repository">
+		<delete dir="${cache.maven.pom}" />
+		<delete dir="${cache.maven.build}" />
+		<copy todir="${cache.maven.pom}">
+			<fileset dir="${root}/build/maven" excludes="*~" />
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${component.version}${component.version.postfix}" />
+					<token key="DEPENDENCIES" value="${dependencies.repo}" />
+					<token key="SINCERITY.MONGODB.VERSION" value="${sincerity.mongodb.version}" />
+					<token key="PRUDENCE.VERSION" value="${prudence.version}" />
+					<token key="ROOT" value="${root}" />
+					<token key="CACHE" value="${cache.maven.build}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+		<exec executable="${maven}" dir="${cache.maven.pom}">
+			<arg value="deploy" />
+			<arg value="-DaltDeploymentRepository=default::default::${distribution.repo}" />
+		</exec>
+	</target>
+
+	<target name="deploy-googledrive" if="googledrive.repo" description="Deploy to Google Drive">
+		<googlecode suffix="-installer.jar" />
+		<googlecode suffix=".zip" />
+		<googlecode suffix=".rpm" />
+		<googlecode suffix=".deb" />
+		<googlecode suffix="-osx-installer.zip" />
+		<googlecode suffix="-windows-installer.exe" />
+	</target>
+	
+	<target name="deploy-googlecode" if="googlecode.password" description="Deploy to Google Code">
+		<!--<googlecode description="Universal installer" label="universal" suffix="-installer.jar" />-->
+		<googlecode description="Zip distribution" label="zip" suffix=".zip" />
+		<!--<googlecode description="RPM package" label="rpm" suffix=".rpm" />
+		<googlecode description="Debian package" label="deb" suffix=".deb" />
+		<googlecode description="Mac OS X installer" label="mac" suffix="-osx-installer.zip" />
+		<googlecode description="Windows installer" label="windows" suffix="-windows-installer.exe" />-->
 	</target>
 
 	<target name="build" depends="distribution" description="Build distribution" />
