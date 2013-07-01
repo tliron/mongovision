@@ -125,7 +125,7 @@
 		<delete dir="${cache.maven.pom}" />
 		<delete dir="${cache.maven.build}" />
 		<copy todir="${cache.maven.pom}">
-			<fileset dir="${root}/build/maven" excludes="*~" />
+			<fileset dir="${root}/build/maven" excludes="**/*~" />
 			<filterchain>
 				<replacetokens>
 					<token key="VERSION" value="${component.version}${component.version.postfix}" />
@@ -138,7 +138,10 @@
 			</filterchain>
 		</copy>
 		<copy todir="${cache.mongovision}">
-			<fileset dir="${mongovision}" excludes="*~" />
+			<fileset dir="${mongovision}" excludes="**/*~, **/*.js" />
+		</copy>
+		<copy todir="${cache.mongovision}">
+			<fileset dir="${mongovision}" includes="**/*.js" />
 			<filterchain>
 				<replacetokens>
 					<token key="VERSION" value="${component.version}${component.version.postfix}" />
