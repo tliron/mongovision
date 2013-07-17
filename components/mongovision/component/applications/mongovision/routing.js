@@ -18,10 +18,9 @@ app.routes = {
 	'/*': [
 		'manual',
 		'scriptlet',
-		{type: 'cacheControl', mediaTypes: {'text/css': 'farFuture', 'application/x-javascript': 'farFuture', 'image/png': 'farFuture', 'image/gif': 'farFuture', 'image/jpeg': 'farFuture'}, next: [
-			'static',
-			{type: 'static', root: sincerity.container.getLibrariesFile('web')}]}
+		{type: 'cacheControl', mediaTypes: {'text/css': 'farFuture', 'application/x-javascript': 'farFuture', 'image/png': 'farFuture', 'image/gif': 'farFuture', 'image/jpeg': 'farFuture'}, next:
+			'static'}
 	],
-	'/data/db/{database}/{collection}/{id}': {type: 'capture', uri: '/data/db/collection/document/', hidden: true},
-	'/data/db/{database}/{collection}/': {type: 'capture', uri: '/data/db/collection/', hidden: true}
+	'/data/db/{database}/{collection}/{id}': '/data/db/collection/document/!',
+	'/data/db/{database}/{collection}/': '/data/db/collection/!'
 }

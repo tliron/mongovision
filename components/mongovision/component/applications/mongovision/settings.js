@@ -51,7 +51,7 @@ app.settings = {
 app.globals = {
 	mongovision: {
 		version: '@VERSION@',
-		connection: MongoDB.defaultConnection,
+		client: MongoDB.defaultClient,
 		extJs: {
 			debug: false,
 			theme: 'gray'
@@ -60,12 +60,9 @@ app.globals = {
 	}
 }
 
-if (Sincerity.Objects.exists(app.globals.mongovision.connection)) {
+if (Sincerity.Objects.exists(app.globals.mongovision.client)) {
 	// Create a new connection pool based on the existing one
-	var addresses = []
-	for (var i = app.globals.mongovision.connection.allAddress.iterator(); i.hasNext(); ) {
-		var address = i.next()
-		addresses.push(address.host + ':' + address.port)
-	}
-	app.globals.mongovision.connection = MongoDB.connect(addresses, {autoConnectRetry: true})
+	var uris = app.globals.mongovision.client.allAddress
+	var options = app.globals.mongovision.client.mongoClientOptions
+	app.globals.mongovision.client = new com.mongodb.MongoClient(uris, options)
 }

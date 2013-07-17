@@ -95,14 +95,22 @@ Ext.define('MongoVision.DatabasesPanel', {
 							}
 							
 							var values = form.getValues();
+							var uris = values.uris.trim().split(',')
+							var options = {}
+							if (values.username) {
+								options.username = values.username
+							}
+							if (values.password) {
+								options.password = values.password
+							}
+							
 							el.up('window').destroy();
 							Ext.Ajax.request({
-								url: 'connection/',
+								url: 'client/',
 								method: 'PUT',
 								jsonData: {
-									uris: values.uris.split(','),
-									username: values.username || null,
-									password: values.password || null
+									uris: uris,
+									options: options
 								},
 								success: Ext.bind(function(response) {
 									var data = Ext.decode(response.responseText);

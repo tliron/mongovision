@@ -38,7 +38,7 @@ function handlePost(conversation) {
 		return 400
 	}
 	
-	var collection = new MongoDB.Collection(collection, {db: database, connection: application.globals.get('mongovision.connection')})
+	var collection = new MongoDB.Collection(collection, {db: database, client: application.globals.get('mongovision.client')})
 	var r
 	var result
 	try {
@@ -86,7 +86,7 @@ function handleDelete(conversation) {
 		return 400
 	}
 	
-	var collection = new MongoDB.Collection(collection, {db: database, connection: application.globals.get('mongovision.connection')})
+	var collection = new MongoDB.Collection(collection, {db: database, client: application.globals.get('mongovision.client')})
 	var r
 	var result
 	try {

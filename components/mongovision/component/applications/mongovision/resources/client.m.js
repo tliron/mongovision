@@ -18,19 +18,19 @@ function handleInit(conversation) {
 }
 
 function handleGet(conversation) {
-	var connection = application.globals.get('mongovision.connection')
-	if (null !== connection) {
-		connection = {
-			master: connection.address,
-			addresses: connection.allAddress,
-			options: connection.mongoOptions
+	var client = application.globals.get('mongovision.client')
+	if (null !== client) {
+		client = {
+			master: client.address,
+			addresses: client.allAddress,
+			options: client.mongoOptions
 		}
 	}
 	else {
-		connection = {}
+		client = {}
 	}
 	
-	return Sincerity.JSON.to(connection, conversation.query.get('human') == 'true')
+	return Sincerity.JSON.to(client, conversation.query.get('human') == 'true')
 }
 
 function handlePut(conversation) {
@@ -40,20 +40,20 @@ function handlePut(conversation) {
 	}
 	var data = Sincerity.JSON.from(text, true)
 	
-	var connection = application.globals.get('mongovision.connection')
-	if (null !== connection) {
+	var client = application.globals.get('mongovision.client')
+	if (null !== client) {
 		try {
-			connection.close()
+			client.close()
 		}
 		catch (x) {
 		}
 	}
 
-	application.globals.remove('mongovision.connection')
+	application.globals.remove('mongovision.client')
 	
 	try {
-		connection = MongoDB.connect(data.uris, data.options, data.username, data.password)
-		application.globals.put('mongovision.connection', connection)
+		client = MongoDB.connect(data.uris, data.options)
+		application.globals.put('mongovision.client', client)
 	}
 	catch (x) {
 		return 500

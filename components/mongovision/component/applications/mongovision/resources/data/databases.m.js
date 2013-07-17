@@ -27,13 +27,13 @@ function handleGet(conversation) {
 	var nodes = []
 	
 	if (node == 'root') {
-		var connection = application.globals.get('mongovision.connection')
-		if (null !== connection) {
+		var client = application.globals.get('mongovision.client')
+		if (null !== client) {
 			try {
-				var databaseNames = connection.databaseNames.toArray()
+				var databaseNames = client.databaseNames.toArray()
 				for (var d in databaseNames) {
 					var databaseName = databaseNames[d]
-					var database = connection.getDB(databaseName)
+					var database = client.getDB(databaseName)
 					var children = []
 					var systemChildren = []
 					var collectionNames = database.collectionNames.toArray()
