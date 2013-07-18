@@ -10,17 +10,26 @@
 //
 
 app.hosts = {
-	'default': '/mongovision/',
-	internal: '/mongovision/'
+	'default': '/mongovision/'
 }
 
 app.routes = {
 	'/*': [
 		'manual',
 		'scriptlet',
-		{type: 'cacheControl', mediaTypes: {'text/css': 'farFuture', 'application/x-javascript': 'farFuture', 'image/png': 'farFuture', 'image/gif': 'farFuture', 'image/jpeg': 'farFuture'}, next:
-			'static'}
+		{
+			type: 'cacheControl',
+			mediaTypes: {
+				'image/png': 'farFuture',
+				'image/gif': 'farFuture',
+				'image/jpeg': 'farFuture',
+				'text/css': 'farFuture',
+				'application/x-javascript': 'farFuture'
+			},
+			next: 'static'
+		}
 	],
+
 	'/data/db/{database}/{collection}/{id}': '/data/db/collection/document/!',
 	'/data/db/{database}/{collection}/': '/data/db/collection/!'
 }
