@@ -31,7 +31,7 @@ app.settings = {
 	code: {
 		libraries: ['libraries'], // Handlers and tasks will be found here
 		defrost: true,
-		minimumTimeBetweenValidityChecks: 1000,
+		minimumTimeBetweenValidityChecks: '1s',
 		defaultDocumentName: 'default',
 		defaultExtension: 'js',
 		defaultLanguageTag: 'javascript',
@@ -40,7 +40,7 @@ app.settings = {
 	
 	uploads: {
 		root: 'uploads',
-		sizeThreshold: 0
+		sizeThreshold: '0kb'
 	},
 	
 	mediaTypes: {
