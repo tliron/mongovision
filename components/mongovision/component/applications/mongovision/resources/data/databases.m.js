@@ -9,8 +9,9 @@
 // at http://threecrickets.com/
 //
 
-document.executeOnce('/mongo-db/')
-document.executeOnce('/sincerity/json/')
+document.require(
+	'/mongo-db/',
+	'/sincerity/json/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')

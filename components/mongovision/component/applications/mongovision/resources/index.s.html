@@ -34,12 +34,15 @@ var css = {
 
 theme = conversation.query.get('theme') || theme || application.globals.get('mongovision.extJs.theme') || 'gray'
 
-var debug = conversation.query.get('debug') || application.globals.get('mongovision.extJs.debug') || 'true'
+var debug = conversation.query.get('debug') || application.globals.get('mongovision.extJs.debug')
 if (debug.booleanValue) {
 	debug = debug.booleanValue()
 }
 else if (typeof debug == 'string') {
 	debug = debug == 'true'
+}
+else {
+	debug = false
 }
 %>
 <html>

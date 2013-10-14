@@ -9,8 +9,9 @@
 // at http://threecrickets.com/
 //
 
-document.executeOnce('/mongo-db/')
-document.executeOnce('/sincerity/json/')
+document.require(
+	'/mongo-db/',
+	'/sincerity/json/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -85,7 +86,7 @@ function handleGet(conversation) {
 			var doc = cursor.next()
 			var id
 			try {
-				id = String(doc._id)
+				id = Sincerity.JSON.to(doc._id)
 			}
 			catch(x) {
 				// Some system collections do not have an _id!

@@ -9,8 +9,10 @@
 // at http://threecrickets.com/
 //
 
-document.executeOnce('/mongo-db/')
-document.executeOnce('/sincerity/json/')
+document.require(
+	'/mongo-db/',
+	'/sincerity/json/',
+	'/sincerity/objects/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -20,11 +22,19 @@ function handleInit(conversation) {
 function handlePost(conversation) {
 	var database = conversation.locals.get('database')
 	var collection = conversation.locals.get('collection')
-	var id = MongoDB.id(conversation.locals.get('id'))
+	var id = conversation.locals.get('id')
 
 	if (null === id) {
 		return 400
 	}
+	id = decodeURIComponent(id)
+	try {
+		id = Sincerity.JSON.from(id, true)
+	}
+	catch (x) {
+		id = Sincerity.JSON.from('[' + id + ']', true)[0]
+	}
+
 	var text = conversation.entity.text
 	if (null === text) {
 		return 400
@@ -33,10 +43,7 @@ function handlePost(conversation) {
 	if (!data.document) {
 		return 400
 	}
-	if (String(data.document._id) != id) {
-		application.logger.warning('No match!')
-		return 400
-	}
+	data.document._id = id
 	
 	var collection = new MongoDB.Collection(collection, {db: database, client: application.globals.get('mongovision.client')})
 	var r
@@ -81,9 +88,17 @@ function handlePost(conversation) {
 function handleDelete(conversation) {
 	var database = conversation.locals.get('database')
 	var collection = conversation.locals.get('collection')
-	var id = MongoDB.id(conversation.locals.get('id'))
+	var id = conversation.locals.get('id')
+
 	if (null === id) {
 		return 400
+	}
+	id = decodeURIComponent(id)
+	try {
+		id = Sincerity.JSON.from(id, true)
+	}
+	catch (x) {
+		id = Sincerity.JSON.from('[' + id + ']', true)[0]
 	}
 	
 	var collection = new MongoDB.Collection(collection, {db: database, client: application.globals.get('mongovision.client')})
