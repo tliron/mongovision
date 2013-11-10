@@ -9,10 +9,6 @@
 // at http://threecrickets.com/
 //
 
-app.hosts = {
-	'default': '/mongovision/'
-}
-
 app.routes = {
 	'/*': [
 		'manual',
@@ -30,4 +26,8 @@ app.routes = {
 
 	'/data/db/{database}/{collection}/{id}': '/data/db/collection/document/!',
 	'/data/db/{database}/{collection}/': '/data/db/collection/!'
+}
+
+app.hosts = {
+	'default': '/mongovision/'
 }
