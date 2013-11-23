@@ -86,6 +86,7 @@ Ext.define('MongoVision.DatabasesPanel', {
 						this.store.load();
 					}, this)
 				}, {
+					id: 'connect.button',
 					text: MongoVision.text.connect,
 					handler: Ext.bind(function() {
 						var connect = Ext.bind(function(el) {
@@ -962,6 +963,18 @@ Ext.onReady(function() {
 						}]
 					}
 				});
+			}
+		}
+	});
+
+
+	Ext.Ajax.request({
+		url: 'client/',
+		success: function(response) {
+			var data = Ext.decode(response.responseText);
+			if (Ext.Object.isEmpty(data)) {
+				// Not connected, so show connect dialog
+				Ext.getCmp('connect.button').handler();
 			}
 		}
 	});

@@ -24,18 +24,28 @@ app.settings = {
 
 	errors: {
 		debug: true,
-		homeUrl: 'http://code.google.com/p/mongo-vision/', // Only used when debug=false
-		contactEmail: 'info@threecrickets.com' // Only used when debug=false,
+		homeUrl: 'http://code.google.com/p/mongo-vision/',
+		contactEmail: 'info@threecrickets.com'
 	},
 	
 	code: {
-		libraries: ['libraries'], // Handlers and tasks will be found here
+		debug: true,
+		libraries: ['libraries'],
 		defrost: true,
 		minimumTimeBetweenValidityChecks: '1s',
 		defaultDocumentName: 'default',
 		defaultExtension: 'js',
 		defaultLanguageTag: 'javascript',
 		sourceViewable: true
+	},
+	
+	caching: {
+		debug: true
+	},
+	
+	compression: {
+		sizeThreshold: '1kb',
+		exclude: []
 	},
 	
 	uploads: {
