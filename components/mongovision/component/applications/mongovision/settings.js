@@ -38,7 +38,7 @@ app.settings = {
 		sourceViewable: true
 	},
 	
-	scriptlet: {
+	templates: {
 		debug: true
 	},
 

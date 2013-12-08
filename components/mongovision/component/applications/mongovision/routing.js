@@ -12,7 +12,7 @@
 app.routes = {
 	'/*': [
 		'manual',
-		'scriptlet',
+		'templates',
 		{
 			type: 'cacheControl',
 			mediaTypes: {
