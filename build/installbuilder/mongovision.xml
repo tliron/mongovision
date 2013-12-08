@@ -109,6 +109,12 @@
         <createDirectory>
             <path>${installdir}/.sincerity</path>
         </createDirectory>
+        <setWindowsACL>
+          <action>allow</action>
+          <files>${installdir}</files>
+          <permissions>generic_all</permissions>
+          <users>S-1-1-0</users>
+        </setWindowsACL>
     </postInstallationActionList>
     <disableSplashScreen>1</disableSplashScreen>
     <enableRollback>1</enableRollback>
