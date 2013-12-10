@@ -21,6 +21,7 @@ MongoVision.text = {
 	collections: 'Collections',
 	connect: 'Connect',
 	'connect.addresses': 'Addresses',
+	'connect.ssl': 'Use SSL',
 	'connect.username': 'Username',
 	'connect.password': 'Password',
 	'connect.prompt1': 'One or more host addresses separated by commas',

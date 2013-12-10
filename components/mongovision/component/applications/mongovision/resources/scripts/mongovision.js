@@ -104,6 +104,9 @@ Ext.define('MongoVision.DatabasesPanel', {
 							if (values.password) {
 								options.password = values.password
 							}
+							if (values.ssl) {
+								options.socketFactory = 'ssl'
+							}
 							
 							el.up('window').destroy();
 							Ext.Ajax.request({
@@ -152,6 +155,17 @@ Ext.define('MongoVision.DatabasesPanel', {
 									items: [{
 										fieldLabel: MongoVision.text['connect.addresses'],
 										name: 'uris',
+										listeners: {
+											specialkey: function(field, e) {
+												if (e.getKey() == e.ENTER) {
+													connect(field);
+												}
+											}
+										}
+									}, {
+										xtype: 'checkboxfield',
+										fieldLabel: MongoVision.text['connect.ssl'],
+										name: 'ssl',
 										listeners: {
 											specialkey: function(field, e) {
 												if (e.getKey() == e.ENTER) {
