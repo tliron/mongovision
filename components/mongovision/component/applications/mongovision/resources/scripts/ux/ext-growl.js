@@ -180,7 +180,7 @@
                 },
                 'mouseleave': function(event) {
                     sticky || Gritter._setFadeTimer(item, number);
-                    item.removeClass('hover');
+                    item.removeCls('hover');
                     item.select('.gritter-close').remove();
                 }
             //,scope: Gritter

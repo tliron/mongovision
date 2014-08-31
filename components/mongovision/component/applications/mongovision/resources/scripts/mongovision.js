@@ -50,7 +50,7 @@ Ext.define('MongoVision.DatabasesPanel', {
 	requires: 'Ext.data.proxy.Rest',
 
 	constructor: function(config) {
-	
+		
 		this.store = Ext.create('Ext.data.TreeStore', {
 			storeId: 'mv-databases',
 			proxy: {
@@ -264,8 +264,10 @@ Ext.define('MongoVision.CollectionPanel', {
 		
 		var pageSize = 20;
 		
+		var idBase = config.mvCollection.replace('/', '_') // Ext JS 5.0 won't let us use slashes
+		
 		this.store = Ext.create('Ext.data.Store', {
-			storeId: config.mvCollection,
+			storeId: idBase,
 			proxy: {
 				type: 'rest',
 				url: 'data/db/' + config.mvCollection + '/',
@@ -337,7 +339,7 @@ Ext.define('MongoVision.CollectionPanel', {
 		
 		var tpl = Ext.create('Ext.XTemplate',
 			'<tpl for=".">',
-				'<div class="x-mongovision-document x-unselectable<tpl if="!this.scope.wrap"> x-mongovision-nowrap</tpl>" id="', config.mvCollection, '/{id}">',
+				'<div class="x-mongovision-document x-unselectable<tpl if="!this.scope.wrap"> x-mongovision-nowrap</tpl>" id="', idBase, '/{id}">',
 					'{[Ext.ux.HumanJSON.encode(values.document,true,false)]}',
 				'</div>',
 			'</tpl>',
@@ -350,7 +352,7 @@ Ext.define('MongoVision.CollectionPanel', {
 		
 		this.selectionChanged = Ext.bind(function(view, selections) {
 			// Show selected row in editor
-			if (selections && selections.length && !Ext.getCmp(this.initialConfig.mvCollection + '-keepRefreshing').pressed) {
+			if (selections && selections.length && !Ext.getCmp(idBase + '-keepRefreshing').pressed) {
 				var record = selections[0];
 				var mvEditor = Ext.getCmp(this.mvEditor);
 				mvEditor.setRecord(record, this);
@@ -358,14 +360,13 @@ Ext.define('MongoVision.CollectionPanel', {
 		}, this);
 		
 		this.dataView = Ext.create('Ext.view.View', {
-			id: config.mvCollection + '/dataView',
+			id: idBase + '-dataView',
 			stateful: false,
 			store: this.store,
 			tpl: tpl,
 			autoScroll: true,
 			overItemCls: 'x-mongovision-over',
 			itemSelector: 'div.x-mongovision-document',
-			singleSelect: true,
 			emptyText: '<div class="x-mongovision-empty">' + MongoVision.text.noDocuments + '</div>',
 			listeners: {
 				selectionchange: this.selectionChanged
@@ -382,7 +383,7 @@ Ext.define('MongoVision.CollectionPanel', {
 		
 		config = Ext.apply({
 			title: config.mvCollection,
-			id: config.mvCollection,
+			id: idBase,
 			closable: true,
 			autoScroll: true,
 			layout: 'card',
@@ -401,7 +402,7 @@ Ext.define('MongoVision.CollectionPanel', {
 				displayMsg: MongoVision.text.documentsDisplayed,
 				emptyMsg: MongoVision.text.noDocuments,
 				items: [{
-					id: config.mvCollection + '-keepRefreshing',
+					id: idBase + '-keepRefreshing',
 					stateful: false,
 					enableToggle: true,
 					text: MongoVision.text.keepRefreshing,
@@ -416,11 +417,11 @@ Ext.define('MongoVision.CollectionPanel', {
 				}, '-', {
 					text: MongoVision.text.create,
 					handler: Ext.bind(function() {
-							var mvEditor = Ext.getCmp(this.mvEditor);
-							mvEditor.createRecord(this);
+						var mvEditor = Ext.getCmp(this.mvEditor);
+						mvEditor.createRecord(this);
 					}, this)
 				}, '-', {
-					id: config.mvCollection + '-wrap',
+					id: idBase + '-wrap',
 					stateful: false,
 					pressed: this.wrap,
 					enableToggle: true,
@@ -457,7 +458,7 @@ Ext.define('MongoVision.CollectionPanel', {
 					xtype: 'textfield',
 					plugins: Ext.create('Ext.ux.TextFieldPopup'),
 					title: MongoVision.text.sort,
-					id: config.mvCollection + '/sort',
+					id: idBase + '-sort',
 					stateful: false,
 					width: 150,
 					listeners: {
@@ -476,7 +477,7 @@ Ext.define('MongoVision.CollectionPanel', {
 				}, {
 					xtype: 'textfield',
 					plugins: Ext.create('Ext.ux.TextFieldPopup'),
-					id: config.mvCollection + '/query',
+					id: idBase + '-query',
 					stateful: false,
 					title: MongoVision.text.query,
 					width: 150,
@@ -763,6 +764,7 @@ Ext.define('MongoVision.EditorPanel', {
 	},
 	
 	createTextArea: function(value) {
+		this.removeAll();
 		var textarea = Ext.create('Ext.form.field.TextArea', {
 			id: this.id + '-textarea',
 			value: value,
@@ -791,7 +793,6 @@ Ext.define('MongoVision.EditorPanel', {
 				}
 			}
 		});
-		this.removeAll();
 		this.add(textarea);
 		return textarea;
 	},
@@ -838,8 +839,8 @@ Ext.define('MongoVision.EditorPanel', {
 	},
 	
 	createRecord: function(collectionPanel) {
-		var model = collectionPanel.store.getProxy().getModel();
-		var record = Ext.ModelManager.create({document: {}}, model);
+		var model = collectionPanel.store.getProxy().getReader().getModel();
+		var record = new model({document: {}});
 		this.setRecord(record, collectionPanel);
 	}
 });
@@ -907,7 +908,7 @@ Ext.onReady(function() {
 		items: [{
 			region: 'north',
 			id: 'header-container',
-			margins: '0 0 0 0',
+			margin: '0 0 0 0',
 			border: false,
 			padding: '5 10 5 10',
 			bodyCls: 'x-border-layout-ct', // Uses the neutral background color
@@ -917,7 +918,7 @@ Ext.onReady(function() {
 			id: 'mv-databases',
 			region: 'west',
 			collapsible: true,
-			margins: '0 0 20 20',
+			margin: '0 0 20 20',
 			split: true,
 			width: 200,
 			mvCollections: 'mv-collections',
@@ -926,7 +927,7 @@ Ext.onReady(function() {
 			region: 'center',
 			layout: 'border',
 			border: false,
-			margins: '0 20 20 0',
+			margin: '0 20 20 0',
 			split: true,
 			items: [{
 				region: 'center',
@@ -969,10 +970,11 @@ Ext.onReady(function() {
 								{id: 'mv-theme', prefix: 'style/mongovision/'}
 							],
 							themes: [
+								{id: 'aria', postfix: 'ext-theme-aria/ext-theme-aria-all.css', label: MongoVision.text['theme.aria']},
+								{id: 'classic', postfix: 'ext-theme-classic/ext-theme-classic-all.css', label: MongoVision.text['theme.classic']},
+								{id: 'crisp', postfix: 'ext-theme-crisp/ext-theme-crisp-all.css', label: MongoVision.text['theme.crisp']},
 								{id: 'gray', postfix: 'ext-theme-gray/ext-theme-gray-all.css', label: MongoVision.text['theme.gray']},
-								{id: 'blue', postfix: 'ext-theme-classic/ext-theme-classic-all.css', label: MongoVision.text['theme.blue']},
-								{id: 'neptune', postfix: 'ext-theme-neptune/ext-theme-neptune-all.css', label: MongoVision.text['theme.neptune']},
-								{id: 'access', postfix: 'ext-theme-access/ext-theme-access-all.css', label: MongoVision.text['theme.accessible']}
+								{id: 'neptune', postfix: 'ext-theme-neptune/ext-theme-neptune-all.css', label: MongoVision.text['theme.neptune']}
 							]
 						}]
 					}

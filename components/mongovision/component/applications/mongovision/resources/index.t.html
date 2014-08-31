@@ -26,10 +26,11 @@ if (theme) {
 }
 
 var css = {
+	aria: 'ext-theme-aria',
+	classic: 'ext-theme-classic',
+	crisp: 'ext-theme-crisp',
 	gray: 'ext-theme-gray',
-	blue: 'ext-theme-classic',
-	access: 'ext-theme-access',
-	neptune: 'ext-theme-neptune',
+	neptune: 'ext-theme-neptune'
 }
 
 theme = conversation.query.get('theme') || theme || application.globals.get('mongovision.extJs.theme') || 'gray'
@@ -45,18 +46,22 @@ else {
 	debug = false
 }
 %>
+<!DOCTYPE html>
 <html>
 <head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>MongoVision</title>
 	<link rel="shortcut icon" href="media/mongovision.ico" />
 <% if (debug) { %>
 	<!-- Ext JS Debug -->
 	<link rel="stylesheet" type="text/css" href="style/ext-js/<%= css[theme] %>/<%= css[theme] %>-all-debug.css" id="ext-theme" />
 	<script type="text/javascript" src="scripts/ext-js/ext-all-debug.js"></script>
+	<script type="text/javascript" src="scripts/ext-js/<%= css[theme] %>/<%= css[theme] %>-debug.js"></script>
 <% } else { %>
 	<!-- Ext JS -->
 	<link rel="stylesheet" type="text/css" href="style/ext-js/<%= css[theme] %>/<%= css[theme] %>-all.css" id="ext-theme" />
 	<script type="text/javascript" src="scripts/ext-js/ext-all.js"></script>
+	<script type="text/javascript" src="scripts/ext-js/<%= css[theme] %>/<%= css[theme] %>.js"></script>
 <% } %>
 	<!-- MongoVision's Ext JS Extensions -->
 	<script type="text/javascript" src="scripts/ux/HumanJSON.js"></script>

@@ -48,9 +48,10 @@ MongoVision.text = {
 	'action.read': 'Read',
 	'action.edit': 'Update',
 	'action.destroy': 'Delete',
-	'theme.blue': 'Blue',
+	'theme.aria': 'Accessible',
+	'theme.classic': 'Classic',
+	'theme.crisp': 'Crisp',
 	'theme.gray': 'Gray',
 	'theme.neptune': 'Neptune',
-	'theme.accessible': 'Accessible',
 	switchingTheme: 'Switching to {0} theme...'
 };

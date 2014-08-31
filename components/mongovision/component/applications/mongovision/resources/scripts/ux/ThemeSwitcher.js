@@ -59,10 +59,6 @@ Ext.define('Ext.ux.ThemeSwitcher', {
 			return null;
 		}
 		
-		this.addEvents({
-			switched: true
-		});
-
 		var store = Ext.create('Ext.data.Store', {
 			fields: ['id', 'url', 'label'],
 			data: config.themes
