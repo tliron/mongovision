@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <%
 //
 // Copyright 2010-2014 Three Crickets LLC.
@@ -46,7 +47,6 @@ else {
 	debug = false
 }
 %>
-<!DOCTYPE html>
 <html>
 <head>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -96,8 +96,7 @@ else {
 						<img src="media/mongovision-small.png" width="48" height="49" alt="MongoVision logo: eye on leaf" />
 					</td>
 					<td>
-						<h2 style="font-size: 14px;">MongoVision</h2>
-						<a href="http://code.google.com/p/mongo-vision/">Community and Support Site</a><br />
+						<span class="title">MongoVision</span>
 						Version <%= application.globals.get('mongovision.version') %>
 					</td>
 				</tr></table>		
@@ -107,8 +106,13 @@ else {
 			<td width="1%" align="right">
 				<table height="100%"><tr>
 					<td>
-						Made with <a href="http://threecrickets.com/prudence/">Prudence</a><br />
-						By <a href="http://threecrickets.com/">Three Crickets</a>
+						<p>
+							<a href="http://code.google.com/p/mongo-vision/">Community and Support Site</a>
+						</p>
+						<p>
+							Made with <a href="http://threecrickets.com/prudence/">Prudence</a><br />
+							By <a href="http://threecrickets.com/">Three Crickets</a>
+						</p>
 					</td>
 					<td style="padding-left: 10px;">
 						<a href="http://threecrickets.com/prudence/"><img src="media/prudence-small.png" width="75" height="67" alt="Prudence logo: bullfinch in flight" /></a>

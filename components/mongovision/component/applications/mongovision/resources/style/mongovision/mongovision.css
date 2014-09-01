@@ -21,8 +21,13 @@ div#header a:hover {
 }
 
 div#header td {
-	font-size: x-small;
+	font-size: 10px;
 	white-space: nowrap;
+}
+
+div#header td span.title {
+	font-size: 22px;
+	display: block;
 }
 
 /* Collections Panel */
