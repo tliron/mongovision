@@ -59,7 +59,7 @@ Ext.define('MongoVision.DatabasesPanel', {
 				appendId: false,
 				noCache: false
 			},
-			autoLoad: true // maybe not?
+			//autoLoad: true
 		});
 		
 		config = Ext.apply({
