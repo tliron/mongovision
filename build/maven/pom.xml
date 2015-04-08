@@ -15,7 +15,7 @@
 
 	<scm>
 		<connection>scm:git:https://code.google.com/p/mongo-vision/</connection>
-		<url>http://code.google.com/p/mongo-vision/source/browse/</url>
+		<url>https://github.com/tliron/mongovision</url>
 	</scm>
 
 	<organization>

@@ -7,7 +7,7 @@ Build-Depends: cdbs (>=0.4), debhelper (>=9)
 
 Package: mongovision
 Architecture: all
-Homepage: http://code.google.com/p/mongo-vision/
+Homepage: https://github.com/tliron/mongovision
 Recommends: java5-runtime
 Suggests: openjdk-7-jre
 Description: MongoVision is a web front-end for MongoDB.

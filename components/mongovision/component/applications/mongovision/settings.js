@@ -24,7 +24,7 @@ app.settings = {
 
 	errors: {
 		debug: true,
-		homeUrl: 'http://code.google.com/p/mongo-vision/',
+		homeUrl: 'https://github.com/tliron/mongovision',
 		contactEmail: 'info@threecrickets.com'
 	},
 	

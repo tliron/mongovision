@@ -7,7 +7,7 @@ web interface.
 
 For more information, see the MongoVision web site:
 
-http://code.google.com/p/mongo-vision/
+https://github.com/tliron/mongovision
 
 
 Having Trouble?

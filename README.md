@@ -5,7 +5,7 @@ MongoVision
 Sift through and update documents in your MongoDB databases with this friendly, straightforward
 web interface. 
 
-For more information, see the [MongoVision web site](http://code.google.com/p/mongo-vision/).
+For more information, see the [MongoVision web site](https://github.com/tliron/mongovision).
 
 
 Building MongoVision
