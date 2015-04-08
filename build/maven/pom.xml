@@ -10,11 +10,11 @@
 
 	<name>MongoVision</name>
 	<description>A MongoDB web frontend based on Prudence.</description>
-	<url>http://threecrickets.com/diligence/</url>
+	<url>https://github.com/tliron/mongovision</url>
 	<inceptionYear>2011</inceptionYear>
 
 	<scm>
-		<connection>scm:git:https://code.google.com/p/mongo-vision/</connection>
+		<connection>scm:git:git://github.com/tliron/mongovision.git</connection>
 		<url>https://github.com/tliron/mongovision</url>
 	</scm>
 
