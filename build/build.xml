@@ -139,7 +139,7 @@
 		</exec>
 	</target>
 
-	<target name="deploy-packages" if="packages.repo" description="Deploy to Google Drive">
+	<target name="deploy-packages" if="packages.repo" description="Deploy to packages repository">
 		<packages suffix="-installer.jar" />
 		<packages suffix=".zip" />
 		<packages suffix=".rpm" />
