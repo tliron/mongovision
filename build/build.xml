@@ -16,33 +16,16 @@
 	<property name="distribution" location="${root}/build/distribution" />
 	<property name="distribution.content" location="${distribution}/content" />
 
-	<macrodef name="googledrive">
+	<macrodef name="packages">
 		<attribute name="suffix" />
 		<sequential>
 			<copy
 				file="${distribution}/${component}-${component.version}${component.version.postfix}@{suffix}"
-				todir="${googledrive.repo}/${googledrive.section}/${component.version}${component.version.postfix}"
+				todir="${packages.repo}/${packages.section}/${component.version}${component.version.postfix}"
 				failonerror="false" />
 		</sequential>
 	</macrodef>
 	
-	<property name="googlecode" location="${root}/dependencies/libraries/python/googlecode_upload.py" />
-	<macrodef name="googlecode">
-		<attribute name="description" />
-		<attribute name="label" />
-		<attribute name="suffix" />
-		<sequential>
-			<exec executable="${googlecode}">
-				<arg value="--project=mongo-vision" />
-				<arg value="--user=${googlecode.username}" />
-				<arg value="--password=${googlecode.password}" />
-				<arg value="--summary=@{description} for version ${component.version}${component.version.postfix}" />
-				<arg value="--labels=${component.version.short}${component.version.short.postfix},@{label}" />
-				<arg value="${distribution}/${component}-${component.version}${component.version.postfix}@{suffix}" />
-			</exec>
-		</sequential>
-	</macrodef>
-
 	<target name="distribution" depends="deploy-maven" description="Create Sincerity container">
 		<copy todir="${distribution.content}/configuration/sincerity">
 			<fileset dir="sincerity" />
@@ -156,24 +139,15 @@
 		</exec>
 	</target>
 
-	<target name="deploy-googledrive" if="googledrive.repo" description="Deploy to Google Drive">
-		<googledrive suffix="-installer.jar" />
-		<googledrive suffix=".zip" />
-		<googledrive suffix=".rpm" />
-		<googledrive suffix=".deb" />
-		<googledrive suffix="-osx-installer.zip" />
-		<googledrive suffix="-windows-installer.exe" />
+	<target name="deploy-packages" if="packages.repo" description="Deploy to Google Drive">
+		<packages suffix="-installer.jar" />
+		<packages suffix=".zip" />
+		<packages suffix=".rpm" />
+		<packages suffix=".deb" />
+		<packages suffix="-osx-installer.zip" />
+		<packages suffix="-windows-installer.exe" />
 	</target>
 	
-	<target name="deploy-googlecode" if="googlecode.password" description="Deploy to Google Code">
-		<!--<googlecode description="Universal installer" label="universal" suffix="-installer.jar" />-->
-		<googlecode description="Zip distribution" label="zip" suffix=".zip" />
-		<!--<googlecode description="RPM package" label="rpm" suffix=".rpm" />
-		<googlecode description="Debian package" label="deb" suffix=".deb" />
-		<googlecode description="Mac OS X installer" label="mac" suffix="-osx-installer.zip" />
-		<googlecode description="Windows installer" label="windows" suffix="-windows-installer.exe" />-->
-	</target>
-
 	<target name="build" depends="distribution" description="Build distribution" />
 	
 	<target name="clean" description="Clean">
