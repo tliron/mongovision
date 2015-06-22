@@ -97,7 +97,9 @@ Ext.define('MongoVision.DatabasesPanel', {
 							
 							var values = form.getValues();
 							var uris = values.uris.trim().split(',')
-							var options = {}
+							var options = {
+								description: 'MongoVision'
+							}
 							if (values.username) {
 								options.username = values.username
 							}
