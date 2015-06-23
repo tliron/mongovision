@@ -96,11 +96,14 @@ Ext.define('MongoVision.DatabasesPanel', {
 							}
 							
 							var values = form.getValues();
-							var uris = values.uris.trim().split(',')
+							var uri = values.uri.trim()
+							if (!uri.substring(0, 10) != 'mongodb://') {
+								uri = 'mongodb://' + uri
+							}
 							var options = {
 								description: 'MongoVision'
 							}
-							if (values.username) {
+							/*if (values.username) {
 								options.username = values.username
 							}
 							if (values.password) {
@@ -108,14 +111,14 @@ Ext.define('MongoVision.DatabasesPanel', {
 							}
 							if (values.ssl) {
 								options.socketFactory = 'ssl'
-							}
+							}*/
 							
 							el.up('window').destroy();
 							Ext.Ajax.request({
 								url: 'client/',
 								method: 'PUT',
 								jsonData: {
-									uris: uris,
+									uri: uri,
 									options: options
 								},
 								success: Ext.bind(function(response) {
@@ -156,7 +159,7 @@ Ext.define('MongoVision.DatabasesPanel', {
 									defaultType: 'textfield',
 									items: [{
 										fieldLabel: MongoVision.text['connect.addresses'],
-										name: 'uris',
+										name: 'uri',
 										listeners: {
 											specialkey: function(field, e) {
 												if (e.getKey() == e.ENTER) {

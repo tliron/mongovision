@@ -10,7 +10,7 @@
 //
 
 document.require(
-	'/mongo-db/',
+	'/mongodb/',
 	'/sincerity/json/')
 
 function handleInit(conversation) {
@@ -64,23 +64,14 @@ function handleGet(conversation) {
 		limit = maxLimit
 	}
 	
-	var collection = new MongoDB.Collection(collection, {db: database, client: application.globals.get('mongovision.client')})
+	var client = application.globals.get('mongovision.client')
+	database = client.database(database)
+	collection = database.collection(collection)
 	
 	var documents = []
 	var result
 	try {
-		var cursor = collection.find(query)
-		var count = cursor.count()
-		
-		if (sort) {
-			cursor.sort(sort)
-		}
-		if (start) {
-			cursor.skip(start)
-		}
-		if (limit) {
-			cursor.limit(limit)
-		}
+		var cursor = collection.find(query, {sort: sort, skip: start, limit: limit})
 		
 		while (cursor.hasNext()) {
 			var doc = cursor.next()
@@ -101,7 +92,7 @@ function handleGet(conversation) {
 		result = {
 			success: true,
 			message: 'Fetched documents',
-			total: count,
+			total: documents.length, // cursor.count?
 			documents: documents
 		}
 	}
@@ -140,12 +131,15 @@ function handlePut(conversation) {
 		return 400
 	}
 
-	var collection = new MongoDB.Collection(collection, {db: database, client: application.globals.get('mongovision.client')})
-	data.document._id = MongoDB.newId()
+	var client = application.globals.get('mongovision.client')
+	database = client.database(database)
+	collection = database.collection(collection)
+
+	data.document._id = MongoUtil.id()
 	var r
 	var result
 	try {
-		r = collection.insert(data.document, 1)
+		r = collection.insertOne(data.document)
 	} catch (x) {
 		result = {
 			success: false,
@@ -154,20 +148,12 @@ function handlePut(conversation) {
 	}
 	
 	if (!result) {
-		if (r && r.ok) {
-			var id = String(data.document._id)
-			data.document._id = id
-			result = {
-				success: true,
-				message: 'Inserted document to ' + database + '.' + collection.collection.name,
-				documents: [{id: id, document: data.document}]
-			}
-		}
-		else {
-			result = {
-				success: false,
-				message: 'Could not insert document to ' + database + '.' + collection.collection.name
-			}
+		var id = String(data.document._id)
+		data.document._id = id
+		result = {
+			success: true,
+			message: 'Inserted document to ' + database + '.' + collection.collection.name,
+			documents: [{id: id, document: data.document}]
 		}
 	}
 

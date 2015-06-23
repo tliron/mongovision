@@ -10,7 +10,7 @@
 //
 
 document.require(
-	'/mongo-db/',
+	'/mongodb/',
 	'/sincerity/json/',
 	'/sincerity/objects/')
 
@@ -45,11 +45,14 @@ function handlePost(conversation) {
 	}
 	data.document._id = id
 	
-	var collection = new MongoDB.Collection(collection, {db: database, client: application.globals.get('mongovision.client')})
+	var client = application.globals.get('mongovision.client')
+	database = client.database(database)
+	collection = database.collection(collection)
+	
 	var r
 	var result
 	try {
-		r = collection.save(data.document, 1)
+		r = collection.save(data.document)
 	}
 	catch (x) {
 		result = {
@@ -59,17 +62,17 @@ function handlePost(conversation) {
 	}
 
 	if (!result) {
-		if (r && (r.n == 1)) {
+		if ((r == null) || (r && (r.matchedCount == 1))) {
 			result = {
 				success: true,
 				//documents: [data.document],
-				message: 'Updated document ' + id + ' in ' + database + '.' + collection.collection.name
+				message: 'Updated document ' + id + ' in ' + database.name + '.' + collection.name
 			}
 		}
 		else {
 			result = {
 				success: false,
-				message: 'Could not update document ' + id + ' in ' + database + '.' + collection.collection.name
+				message: 'Could not update document ' + id + ' in ' + database.name + '.' + collection.name
 			}
 		}
 	}
@@ -101,11 +104,15 @@ function handleDelete(conversation) {
 		id = Sincerity.JSON.from('[' + id + ']', true)[0]
 	}
 	
-	var collection = new MongoDB.Collection(collection, {db: database, client: application.globals.get('mongovision.client')})
+	var client = application.globals.get('mongovision.client')
+	database = client.database(database)
+	collection = database.collection(collection)
+
 	var r
 	var result
 	try {
-		r = collection.remove({_id: id}, 1)
+		r = collection.deleteOne({_id: id})
+		java.lang.System.out.println(Sincerity.JSON.to(r))
 	}
 	catch (x) {
 		result = {
@@ -115,16 +122,16 @@ function handleDelete(conversation) {
 	}
 	
 	if (!result) {
-		if (r && (r.n == 1)) {
+		if (r && (r.deletedCount == 1)) {
 			result = {
 				success: true,
-				message: 'Deleted document ' + id + ' from ' + database + '.' + collection.collection.name
+				message: 'Deleted document ' + id + ' from ' + database.name + '.' + collection.name
 			}
 		}
 		else {
 			result = {
 				success: false,
-				message: 'Could not delete document ' + id + ' from ' + database + '.' + collection.collection.name
+				message: 'Could not delete document ' + id + ' from ' + database.name + '.' + collection.name
 			}
 		}
 	}

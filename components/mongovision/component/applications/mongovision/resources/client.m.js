@@ -9,8 +9,9 @@
 // at http://threecrickets.com/
 //
 
-document.executeOnce('/mongo-db/')
-document.executeOnce('/sincerity/json/')
+document.require(
+	'/mongodb/',
+	'/sincerity/json/')
 
 function handleInit(conversation) {
 	conversation.addMediaTypeByName('application/json')
@@ -21,9 +22,9 @@ function handleGet(conversation) {
 	var client = application.globals.get('mongovision.client')
 	if (null !== client) {
 		client = {
-			master: client.address,
-			addresses: client.allAddress,
-			options: client.mongoOptions
+			master: client.client.address,
+			addresses: client.client.allAddress,
+			options: client.client.mongoClientOptions
 		}
 	}
 	else {
@@ -52,7 +53,11 @@ function handlePut(conversation) {
 	application.globals.remove('mongovision.client')
 	
 	try {
-		client = MongoDB.connect(data.uris, data.options)
+		data.options = data.options || {}
+		data.options.writeConcern = data.options.writeConcern || {}
+		data.options.writeConcern.w = 1
+		data.options.writeConcern.fsync = true
+		client = MongoClient.connect(data.uri, data.options)
 		application.globals.put('mongovision.client', client)
 	}
 	catch (x) {

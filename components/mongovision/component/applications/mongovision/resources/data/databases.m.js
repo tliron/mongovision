@@ -10,7 +10,7 @@
 //
 
 document.require(
-	'/mongo-db/',
+	'/mongodb/',
 	'/sincerity/json/')
 
 function handleInit(conversation) {
@@ -31,24 +31,23 @@ function handleGet(conversation) {
 		var client = application.globals.get('mongovision.client')
 		if (null !== client) {
 			try {
-				var databaseNames = client.databaseNames.toArray()
-				for (var d in databaseNames) {
-					var databaseName = databaseNames[d]
-					var database = client.getDB(databaseName)
+				var databases = client.databases()
+				for (var d in databases) {
+					var database = databases[d]
 					var children = []
 					var systemChildren = []
-					var collectionNames = database.collectionNames.toArray()
+					var collections = database.collections()
 					
-					for (var c in collectionNames) {
-						var collectionName = collectionNames[c]
+					for (var c in collections) {
+						var collection = collections[c]
 						
 						var n = {
-							id: databaseName + '/' + collectionName,
-							text: collectionName,
+							id: database.name + '/' + collection.name,
+							text: collection.name,
 							leaf: true
 						}
 						
-						if (isSystem(collectionName)) {
+						if (isSystem(collection.name)) {
 							n.cls = 'x-mongovision-system-collection'
 							systemChildren.push(n)
 						}
@@ -60,8 +59,8 @@ function handleGet(conversation) {
 					children = children.concat(systemChildren)
 					
 					n = {
-						id: databaseName,
-						text: databaseName,
+						id: database.name,
+						text: database.name,
 						children: children,
 						expanded: true
 					}

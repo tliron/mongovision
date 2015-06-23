@@ -9,11 +9,6 @@
 // at http://threecrickets.com/
 //
 
-document.executeOnce('/sincerity/objects/')
-
-MongoDB = null
-document.execute('/mongo-db/')
-
 app.settings = {
 	description: {
 		name: 'MongoVision',
@@ -64,18 +59,10 @@ app.settings = {
 app.globals = {
 	mongovision: {
 		version: '@VERSION@',
-		client: MongoDB.defaultClient,
 		extJs: {
 			debug: false,
 			theme: 'gray'
 		},
 		locale: 'en'
 	}
-}
-
-if (Sincerity.Objects.exists(app.globals.mongovision.client)) {
-	// Create a new connection pool based on the existing one
-	var uris = app.globals.mongovision.client.allAddress
-	var options = app.globals.mongovision.client.mongoClientOptions
-	app.globals.mongovision.client = new com.mongodb.MongoClient(uris, options)
 }
