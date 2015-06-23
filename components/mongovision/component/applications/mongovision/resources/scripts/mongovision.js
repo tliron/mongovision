@@ -9,14 +9,6 @@
 // at http://threecrickets.com/
 //
 
-//
-// This file makes use of Ext JS 4.1.0.
-// Copyright (c) 2006-2011, Sencha Inc.
-// All rights reserved.
-// licensing@sencha.com
-// http://www.sencha.com/license
-//
-
 Ext.Loader.setConfig({disableCaching: false});
 
 Ext.require([
@@ -222,13 +214,15 @@ Ext.define('MongoVision.DatabasesPanel', {
 			listeners: {
 				itemclick: function(view, model, item, index) {
 					if (model.isLeaf()) {
+						var id = model.getId().replace('/', '_'); // Ext JS 5.0 won't let us use slashes in component IDs
 						var collections = Ext.getCmp(config.mvCollections);
-						var collection = Ext.getCmp(model.getId());
+						var collection = Ext.getCmp(id);
 						if (collection) {
 							collection.load();
 						}
 						else {
 							var collection = Ext.create('MongoVision.CollectionPanel', {
+								id: id,
 								mvCollection: model.getId(),
 								mvEditor: config.mvEditor
 							});
@@ -269,10 +263,8 @@ Ext.define('MongoVision.CollectionPanel', {
 		
 		var pageSize = 20;
 		
-		var idBase = config.mvCollection.replace('/', '_') // Ext JS 5.0 won't let us use slashes
-		
 		this.store = Ext.create('Ext.data.Store', {
-			storeId: idBase,
+			storeId: config.id,
 			proxy: {
 				type: 'rest',
 				url: 'data/db/' + config.mvCollection + '/',
@@ -344,7 +336,7 @@ Ext.define('MongoVision.CollectionPanel', {
 		
 		var tpl = Ext.create('Ext.XTemplate',
 			'<tpl for=".">',
-				'<div class="x-mongovision-document x-unselectable<tpl if="!this.scope.wrap"> x-mongovision-nowrap</tpl>" id="', idBase, '/{id}">',
+				'<div class="x-mongovision-document x-unselectable<tpl if="!this.scope.wrap"> x-mongovision-nowrap</tpl>" id="', config.id, '/{id}">',
 					'{[Ext.ux.HumanJSON.encode(values.document,true,false)]}',
 				'</div>',
 			'</tpl>',
@@ -357,7 +349,7 @@ Ext.define('MongoVision.CollectionPanel', {
 		
 		this.selectionChanged = Ext.bind(function(view, selections) {
 			// Show selected row in editor
-			if (selections && selections.length && !Ext.getCmp(idBase + '-keepRefreshing').pressed) {
+			if (selections && selections.length && !Ext.getCmp(config.id + '-keepRefreshing').pressed) {
 				var record = selections[0];
 				var mvEditor = Ext.getCmp(this.mvEditor);
 				mvEditor.setRecord(record, this);
@@ -365,7 +357,7 @@ Ext.define('MongoVision.CollectionPanel', {
 		}, this);
 		
 		this.dataView = Ext.create('Ext.view.View', {
-			id: idBase + '-dataView',
+			id: config.id + '-dataView',
 			stateful: false,
 			store: this.store,
 			tpl: tpl,
@@ -388,7 +380,7 @@ Ext.define('MongoVision.CollectionPanel', {
 		
 		config = Ext.apply({
 			title: config.mvCollection,
-			id: idBase,
+			id: config.id,
 			closable: true,
 			autoScroll: true,
 			layout: 'card',
@@ -407,7 +399,7 @@ Ext.define('MongoVision.CollectionPanel', {
 				displayMsg: MongoVision.text.documentsDisplayed,
 				emptyMsg: MongoVision.text.noDocuments,
 				items: [{
-					id: idBase + '-keepRefreshing',
+					id: config.id + '-keepRefreshing',
 					stateful: false,
 					enableToggle: true,
 					text: MongoVision.text.keepRefreshing,
@@ -426,7 +418,7 @@ Ext.define('MongoVision.CollectionPanel', {
 						mvEditor.createRecord(this);
 					}, this)
 				}, '-', {
-					id: idBase + '-wrap',
+					id: config.id + '-wrap',
 					stateful: false,
 					pressed: this.wrap,
 					enableToggle: true,
@@ -463,7 +455,7 @@ Ext.define('MongoVision.CollectionPanel', {
 					xtype: 'textfield',
 					plugins: Ext.create('Ext.ux.TextFieldPopup'),
 					title: MongoVision.text.sort,
-					id: idBase + '-sort',
+					id: config.id + '-sort',
 					stateful: false,
 					width: 150,
 					listeners: {
@@ -482,7 +474,7 @@ Ext.define('MongoVision.CollectionPanel', {
 				}, {
 					xtype: 'textfield',
 					plugins: Ext.create('Ext.ux.TextFieldPopup'),
-					id: idBase + '-query',
+					id: config.id + '-query',
 					stateful: false,
 					title: MongoVision.text.query,
 					width: 150,
@@ -564,7 +556,7 @@ Ext.define('MongoVision.CollectionPanel', {
 					// We'll update the "sort" box to reflect what the current sort is
 					// (this is faked: the sorted column is handled specially by the server)
 					var field = column.initialConfig.header;
-					Ext.getCmp(this.initialConfig.mvCollection + '/sort').setValue(field + ':' + (direction == 'ASC' ? '1' : '-1'));
+					Ext.getCmp(this.initialConfig.id + '-sort').setValue(field + ':' + (direction == 'ASC' ? '1' : '-1'));
 					this.load();
 				}, this)
 			}
@@ -580,11 +572,11 @@ Ext.define('MongoVision.CollectionPanel', {
 	
 	load: function() {
 		var params = this.store.getProxy().extraParams;
-		params.sort = Ext.getCmp(this.initialConfig.mvCollection + '/sort').getValue();
+		params.sort = Ext.getCmp(this.initialConfig.id + '-sort').getValue();
 		if (!params.sort) {
 			delete params.sort;
 		}
-		params.query = Ext.getCmp(this.initialConfig.mvCollection + '/query').getValue();
+		params.query = Ext.getCmp(this.initialConfig.id + '-query').getValue();
 		if (!params.query) {
 			delete params.query;
 		}
