@@ -2,17 +2,31 @@
 MongoVision
 ===========
 
-Sift through and update documents in your MongoDB databases with this friendly, straightforward
-web interface. 
+Sift through and update documents in your MongoDB databases with this friendly,
+straightforward web interface. 
 
-For more information, see the [MongoVision web site](https://github.com/tliron/mongovision).
+To run MongoVision, run "./sincerity start prudence" and browse to
+http://localhost:8080/mongovision/ (use "sincerity.bat start prudence" in Windows).
+
+The default distribution includes [Sincerity](http://threecrickets.com/sincerity/),
+as well as the
+[logging plugin](http://threecrickets.com/sincerity/ecosystem/feature-plugins/#logging-plugin).
+You can install other plugins easily. For example, you might want to install the
+[service plugin](http://threecrickets.com/sincerity/ecosystem/feature-plugins/#service-plugin)
+to allow you to run it as a daemon. Much more is possible! See the Sincerity Manual for
+instructions.
+
+MongoVision is a [Prudence application](http://threecrickets.com/prudence/), so it may
+live happily with other Prudence applications in the container.
 
 
 Building MongoVision
 --------------------
 
-To build MongoVision you need [Ant](http://ant.apache.org/),
-[Maven](http://maven.apache.org/) and [Sincerity](http://threecrickets.com/sincerity/).
+To build MongoVision you need [Ant](http://ant.apache.org/) for the basic build script,
+[Maven](http://maven.apache.org/) if you want to publish it via the "deploy-maven"
+target, and [Sincerity](http://threecrickets.com/sincerity/) if you want to create the
+final distribution (the "distribution" target). 
 
 You may need to create a file named "/build/private.properties" (see below) and override
 the default locations for Maven and Sincerity.
@@ -23,9 +37,9 @@ During the build process, build and distribution dependencies will be downloaded
 an online repository at http://repository.threecrickets.com/, so you will need Internet
 access.
 
-The result of the build will go into the "/build/distribution/" directory. Temporary
-files used during the build process will go into "/build/cache/", which you are free to
-delete.
+The result of the build will go into the "/build/distribution/conent/" directory.
+Temporary files used during the build process will go into "/build/cache/", which you
+are free to delete.
 
 
 Configuring the Build
