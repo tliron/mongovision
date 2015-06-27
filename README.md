@@ -5,14 +5,14 @@ MongoVision
 Sift through and update documents in your MongoDB databases with this friendly,
 straightforward web interface. 
 
-To start MongoVision, run "./sincerity start prudence" and browse to
+To start the MongoVision server, run "./sincerity start prudence" and browse to
 "[http://localhost:8080/mongovision/](http://localhost:8080/mongovision/)"
 (use "sincerity.bat start prudence" in Windows).
 
 The default distribution includes [Sincerity](http://threecrickets.com/sincerity/),
 as well as its
 [logging plugin](http://threecrickets.com/sincerity/ecosystem/feature-plugins/#logging-plugin).
-You can install other plugins into the distribution using the "sincerity" command.
+You can install additional plugins into the distribution using the "sincerity" command.
 For example, you might want to install the
 [service plugin](http://threecrickets.com/sincerity/ecosystem/feature-plugins/#service-plugin)
 to allow you to run it as a daemon. Much more is possible! See the Sincerity Manual for
