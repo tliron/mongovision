@@ -40,7 +40,25 @@ function handlePut(conversation) {
 		return 400
 	}
 	var data = Sincerity.JSON.from(text, true)
+
+	handleDelete(conversation)
 	
+	try {
+		data.options = data.options || {}
+		data.options.writeConcern = data.options.writeConcern || {}
+		data.options.writeConcern.w = 1
+		data.options.writeConcern.fsync = true
+		var client = new MongoClient(data.uri, data.options)
+		application.globals.put('mongovision.client', client)
+	}
+	catch (x) {
+		return 500
+	}
+
+	return handleGet(conversation)
+}
+
+function handleDelete(conversation) {
 	var client = application.globals.get('mongovision.client')
 	if (null !== client) {
 		try {
@@ -51,18 +69,4 @@ function handlePut(conversation) {
 	}
 
 	application.globals.remove('mongovision.client')
-	
-	try {
-		data.options = data.options || {}
-		data.options.writeConcern = data.options.writeConcern || {}
-		data.options.writeConcern.w = 1
-		data.options.writeConcern.fsync = true
-		client = MongoClient.connect(data.uri, data.options)
-		application.globals.put('mongovision.client', client)
-	}
-	catch (x) {
-		return 500
-	}
-
-	return handleGet(conversation)
 }
