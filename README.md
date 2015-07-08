@@ -5,6 +5,8 @@ MongoVision
 Sift through and update documents in your MongoDB databases with this friendly,
 straightforward web interface.
 
+![Screenshot](http://threecrickets.com/media/mongovision-screenshot.png "Screenshot")
+
 To start the MongoVision server, run
 
     ./sincerity start prudence
