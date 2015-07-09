@@ -7,6 +7,8 @@ straightforward web interface.
 
 ![Screenshot](http://threecrickets.com/media/mongovision-screenshot.png "Screenshot")
 
+[![Download](http://threecrickets.com/media/download.png "Download")](https://drive.google.com/folderview?id=0B5XU4AmCevRXYVVhbWhCbUM1NjQ)
+
 To start the MongoVision server, run
 
     ./sincerity start prudence
@@ -36,7 +38,9 @@ MongoVision is a [Prudence application] (http://threecrickets.com/prudence/)
 applications in the container. See the Prudence Manual for instructions on how
 to further configure MongoVision.
 
-[![Download](http://threecrickets.com/media/download.png "Download")](https://drive.google.com/folderview?id=0B5XU4AmCevRXYVVhbWhCbUM1NjQ)
+To install in an existing Sincerity container:
+
+    sincerity use mycontainer : attach three-crickets : add com.threecrickets.mongovision mongovision : install
 
 
 Building MongoVision
