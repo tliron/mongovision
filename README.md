@@ -38,9 +38,9 @@ MongoVision is a [Prudence application] (http://threecrickets.com/prudence/)
 applications in the container. See the Prudence Manual for instructions on how
 to further configure MongoVision.
 
-To install in an existing Sincerity container:
+Full install via Sincerity:
 
-    sincerity use mycontainer : attach three-crickets : add com.threecrickets.mongovision mongovision : install
+    sincerity create mycontainer : attach public three-crickets maven http://repository.threecrickets.com/maven/ : add com.threecrickets.mongovision mongovision : install
 
 
 Building MongoVision
