@@ -6,7 +6,7 @@ http://www.oracle.com/us/legal/third-party-trademarks/index.html
 
 "Restlet" is a registered trademark of Restlet S.A.S.:
 
-http://restlet.org/download/legal
+http://restlet.com/legal/
 
 
 MongoDB, Mongo, and the leaf logo are registered trademarks of MongoDB, Inc.:
